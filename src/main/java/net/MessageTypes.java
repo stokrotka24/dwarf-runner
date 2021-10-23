@@ -1,0 +1,29 @@
+package net;
+
+/**
+ * Enumeration of  msg codes
+ * should be uniform between server and clients
+ */
+public enum MessageTypes {
+    CLIENT_HELLO,
+    SERVER_HELLO,
+    LOG_IN_REQUEST,
+    LOG_IN_RESPONSE,
+    REGISTER_REQUEST,
+    REGISTER_RESPONSE,
+    LOG_OUT_REQUEST,
+    CHANGE_SETTINGS_REQUEST,
+    CHANGE_SETTINGS_RESPONSE,
+    SHOW_LOBBY_REQUEST,
+    LOBBY_DATA,
+    JOIN_GAME_REQUEST,
+    JOIN_GAME_RESPONSE,
+    CREATE_GAME_REQUEST,
+    CREATE_GAME_RESPONSE,
+    POSITION_DATA,
+    GAME_STATE_UPDATE,
+    PICK_DWARF_REQUEST,
+    PICK_DWARF_RESPONSE,
+    RANKING_DATA,
+    ERROR
+}
