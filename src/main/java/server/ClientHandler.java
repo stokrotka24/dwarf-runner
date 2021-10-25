@@ -6,6 +6,12 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 
+import net.GenericMsgContent;
+import net.Message;
+import net.MessageBuilder;
+import net.MessageParser;
+import net.MessageTypes;
+
 /**
  * ClientHandler
  */
@@ -22,16 +28,42 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             return;
         }
-
+        MessageParser<GenericMsgContent> jsonParser = new MessageParser<GenericMsgContent>(GenericMsgContent.class);
+        MessageBuilder msgBuilder = new MessageBuilder();
+        msgBuilder.setType(MessageTypes.SERVER_HELLO);
+        mainLoop:
         while (true) {
             try {
                 System.out.println("Waiting for client message");
-                String clientMessage = in.readLine();
-                if (clientMessage == null ) {
-                    break;
+                StringBuilder builder = new StringBuilder();
+                Integer bracketCount = 0;
+                do {
+                    int nextCh = in.read();
+                    if (nextCh == -1) {
+                        break mainLoop;
+                    }
+                    String nextChar = Character.toString((char) nextCh);
+                    if (nextChar.equals("{")) {
+                        bracketCount += 1;
+                    } else if (nextChar.equals("}")) {
+                        bracketCount -= 1;
+                    }
+                    builder.append(nextChar);
+                } while (bracketCount > 0);
+                Message<GenericMsgContent> message;
+                try {
+                    message = jsonParser.fromJsonString(builder.toString());
+                } catch (Exception e) {
+                    continue;
                 }
-                System.out.println("Client wrote :" + clientMessage);
-                out.println("Message accepted");
+                if (message.header.senderId > 0) {
+                    msgBuilder.addField("response", "Good senderId");
+                } else {
+                    msgBuilder.addField("response", "Wrong senderId");
+                }
+                String outJson = jsonParser.toJsonString(msgBuilder.get());
+                System.out.println("Client wrote :" + jsonParser.toJsonString(message));
+                out.println(outJson);
             } catch (IOException e) {
                 out.close();
                 try {
