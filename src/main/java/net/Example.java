@@ -30,33 +30,34 @@ public class Example {
         // it is needed only for conversion from json string to object,
         // not the other way round
         // This if the first example
-        MessageParser<ExampleClass> msgParser = new MessageParser<>((Class<ExampleClass>) withContent.content.getClass());
-        System.out.println("This is header only msg: " + msgParser.toJsonString(headerOnly));
-        String string = msgParser.toJsonString(withContent);
+        System.out.println("This is header only msg: " + MessageParser.toJsonString(headerOnly));
+        String string = MessageParser.toJsonString(withContent);
         System.out.println("This is msg with content: " + string);
-        String genericString = msgParser.toJsonString(customMessage);
+        String genericString = MessageParser.toJsonString(customMessage);
         System.out.println("This is msg with generic content: " + genericString);
 
         // You can also convert to Message Object
-        Message<ExampleClass> converted = msgParser.fromJsonString(string);
+        Message<ExampleClass> converted = MessageParser.fromJsonString(string, ExampleClass.class);
         System.out.println(converted.content.b);
 
         // This is another way of providing type information to class, probably prettier
-        MessageParser<GenericMsgContent> genericParser = new MessageParser<>(GenericMsgContent.class);
-        Message<GenericMsgContent> convertedGeneric = genericParser.fromJsonString(genericString);
-        System.out.println(msgParser.jsonElementToObject(convertedGeneric.content.get("someInt"), Integer.class));
-        System.out.println(msgParser.jsonElementToObject(convertedGeneric.content.get("someString"), String.class));
+        Message<GenericMsgContent> convertedGeneric = MessageParser.fromJsonString(genericString, GenericMsgContent.class);
+        System.out.println(MessageParser.jsonElementToObject(convertedGeneric.content.get("someInt"), Integer.class));
+        System.out.println(MessageParser.jsonElementToObject(convertedGeneric.content.get("someString"), String.class));
 
-        var myConvertedElement = msgParser.jsonElementToObject(convertedGeneric.content.get("someObject"), ExampleClass.class);
+        var myConvertedElement = MessageParser.jsonElementToObject(convertedGeneric.content.get("someObject"), ExampleClass.class);
         System.out.println(myConvertedElement.b);
 
         // While surrounding parsing with try catch isn't currently enforced,
         // it is recommended, as issues might appear if types don't match
         try {
-            var myIncorrectElement = msgParser.jsonElementToObject(convertedGeneric.content.get("someInt"), ExampleClass.class);
+            var myIncorrectElement = MessageParser.jsonElementToObject(convertedGeneric.content.get("someInt"), ExampleClass.class);
         } catch (Exception ex) {
             System.out.println("This exception was expected: " + ex.getMessage());
         }
+
+
+
     }
 
     public static class ExampleClass {

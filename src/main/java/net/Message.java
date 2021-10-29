@@ -8,7 +8,7 @@ public class Message<T> {
     public MessageHeader header;
     public T content;
 
-    public Message(MessageTypes type, T content) {
+    public Message(final MessageTypes type, final T content) {
         header = new MessageHeader(type);
         this.content = content;
     }

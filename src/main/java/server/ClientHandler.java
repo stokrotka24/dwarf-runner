@@ -28,7 +28,6 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             return;
         }
-        MessageParser<GenericMsgContent> jsonParser = new MessageParser<GenericMsgContent>(GenericMsgContent.class);
         MessageBuilder msgBuilder = new MessageBuilder();
         msgBuilder.setType(MessageTypes.SERVER_HELLO);
         mainLoop:
@@ -52,7 +51,7 @@ public class ClientHandler extends Thread {
                 } while (bracketCount > 0);
                 Message<GenericMsgContent> message;
                 try {
-                    message = jsonParser.fromJsonString(builder.toString());
+                    message = MessageParser.fromJsonString(builder.toString(), GenericMsgContent.class);
                 } catch (Exception e) {
                     continue;
                 }
@@ -61,8 +60,8 @@ public class ClientHandler extends Thread {
                 } else {
                     msgBuilder.addField("response", "Wrong senderId");
                 }
-                String outJson = jsonParser.toJsonString(msgBuilder.get());
-                System.out.println("Client wrote :" + jsonParser.toJsonString(message));
+                String outJson = MessageParser.toJsonString(msgBuilder.get());
+                System.out.println("Client wrote :" + MessageParser.toJsonString(message));
                 out.println(outJson);
             } catch (IOException e) {
                 out.close();
@@ -85,5 +84,4 @@ public class ClientHandler extends Thread {
     public ClientHandler(Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
-
 }
