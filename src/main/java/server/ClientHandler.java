@@ -41,8 +41,7 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             return;
         }
-        mainLoop:
-        while (isRunning.get()) {
+        mainLoop: while (isRunning.get()) {
             try {
                 StringBuilder builder = new StringBuilder();
                 Integer bracketCount = 0;
