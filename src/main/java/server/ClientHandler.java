@@ -5,40 +5,50 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
-
-import net.GenericMsgContent;
-import net.Message;
-import net.MessageBuilder;
-import net.MessageParser;
-import net.MessageTypes;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ClientHandler
  */
 public class ClientHandler extends Thread {
     private Socket clientSocket;
+    private PrintStream clientInput;
+    private BufferedReader clientOutput;
+    private AtomicBoolean isRunning = new AtomicBoolean(true);
+    private Integer maxJsonLength;
+    public LinkedBlockingQueue<String> output;
+
+    public void sendMessage(String message) {
+        if (clientInput != null) {
+            clientInput.print(message);
+        }
+    }
+
+    public void stopRunning() {
+        this.isRunning.set(false);
+    }
+
+    public Boolean isRunning() {
+        return this.isRunning.get();
+    }
 
     @Override
     public void run() {
-        PrintStream out;
-        BufferedReader in;
         try {
-            out = new PrintStream(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            clientInput = new PrintStream(clientSocket.getOutputStream(), true);
+            clientOutput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         } catch (IOException e) {
             return;
         }
-        MessageBuilder msgBuilder = new MessageBuilder();
-        msgBuilder.setType(MessageTypes.SERVER_HELLO);
-        mainLoop:
-        while (true) {
+        mainLoop: while (isRunning.get()) {
             try {
-                System.out.println("Waiting for client message");
                 StringBuilder builder = new StringBuilder();
                 Integer bracketCount = 0;
                 do {
-                    int nextCh = in.read();
+                    int nextCh = clientOutput.read();
                     if (nextCh == -1) {
+                        isRunning.set(false);
                         break mainLoop;
                     }
                     String nextChar = Character.toString((char) nextCh);
@@ -48,40 +58,41 @@ public class ClientHandler extends Thread {
                         bracketCount -= 1;
                     }
                     builder.append(nextChar);
+                    if (builder.length() > this.maxJsonLength) {
+                        continue mainLoop;
+                    }
                 } while (bracketCount > 0);
-                Message<GenericMsgContent> message;
-                try {
-                    message = MessageParser.fromJsonString(builder.toString(), GenericMsgContent.class);
-                } catch (Exception e) {
-                    continue;
-                }
-                if (message.header.senderId > 0) {
-                    msgBuilder.addField("response", "Good senderId");
-                } else {
-                    msgBuilder.addField("response", "Wrong senderId");
-                }
-                String outJson = MessageParser.toJsonString(msgBuilder.get());
-                System.out.println("Client wrote :" + MessageParser.toJsonString(message));
-                out.println(outJson);
+                output.put(builder.toString());
             } catch (IOException e) {
-                out.close();
+                clientInput.close();
                 try {
-                    in.close();
+                    clientOutput.close();
                 } catch (IOException e1) {
                 }
                 return;
+            } catch (InterruptedException e) {
+                continue mainLoop;
             }
         }
-        out.close();
+        clientInput.close();
         try {
-            in.close();
+            clientOutput.close();
             clientSocket.close();
         } catch (IOException e) {
         }
 
     }
 
-    public ClientHandler(Socket clientSocket) {
+    public ClientHandler(Socket clientSocket, Integer maxJsonLength) {
         this.clientSocket = clientSocket;
+        this.maxJsonLength = maxJsonLength;
+        this.output = new LinkedBlockingQueue<String>();
     }
+
+    public ClientHandler(Socket clientSocket, Integer maxJsonLength, LinkedBlockingQueue<String> output) {
+        this.clientSocket = clientSocket;
+        this.maxJsonLength = maxJsonLength;
+        this.output = output;
+    }
+
 }
