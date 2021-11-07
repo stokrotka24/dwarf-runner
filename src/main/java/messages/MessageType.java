@@ -1,10 +1,10 @@
-package net;
+package messages;
 
 /**
  * Enumeration of  msg codes
  * should be uniform between server and clients
  */
-public enum MessageTypes {
+public enum MessageType {
     CLIENT_HELLO,
     SERVER_HELLO,
     LOG_IN_REQUEST,
@@ -14,16 +14,23 @@ public enum MessageTypes {
     LOG_OUT_REQUEST,
     CHANGE_SETTINGS_REQUEST,
     CHANGE_SETTINGS_RESPONSE,
-    SHOW_LOBBY_REQUEST,
-    LOBBY_DATA,
-    JOIN_GAME_REQUEST,
-    JOIN_GAME_RESPONSE,
-    CREATE_GAME_REQUEST,
-    CREATE_GAME_RESPONSE,
+    CREATE_LOBBY_REQUEST,
+    SHOW_LOBBYS_REQUEST,
+    LOBBYS_DATA,
+    JOIN_LOBBY_REQUEST,
+    JOIN_LOBBY_RESPONSE,
+    START_GAME_REQUEST,
+    START_GAME_RESPONSE,
     POSITION_DATA,
     GAME_STATE_UPDATE,
     PICK_DWARF_REQUEST,
     PICK_DWARF_RESPONSE,
     RANKING_DATA,
-    ERROR
+    ERROR;
+
+    private static MessageType[] msgTypeValues = MessageType.values();
+
+    public static MessageType fromInt(int i) {
+        return msgTypeValues[i];
+    }
 }

@@ -1,4 +1,4 @@
-package net;
+package messages;
 
 /**
  * Represents header of message
@@ -11,7 +11,7 @@ public class MessageHeader {
     public final int type;
     public final int senderId;
 
-    public MessageHeader(final MessageTypes type) {
+    public MessageHeader(final MessageType type) {
         this.type = type.ordinal();
         senderId = SERVER_ID;
     }

@@ -1,4 +1,4 @@
-import net.*;
+import messages.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -11,7 +11,7 @@ public class MessageParserTest {
             "SERVER_HELLO; {\"header\":{\"type\":1,\"senderId\":0}}",
             "CLIENT_HELLO; {\"header\":{\"type\":0,\"senderId\":0}}"
     }, delimiter = ';')
-    void toJsonString_HeaderOnly(MessageTypes type, String expected) {
+    void toJsonString_HeaderOnly(MessageType type, String expected) {
         var msg = new Message<>(type);
         var actual = MessageParser.toJsonString(msg);
         assertEquals(expected, actual);
@@ -22,7 +22,7 @@ public class MessageParserTest {
             "SERVER_HELLO; 7; Hello World; {\"header\":{\"type\":1,\"senderId\":0},\"content\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}",
             "CLIENT_HELLO; -12345; δ; {\"header\":{\"type\":0,\"senderId\":0},\"content\":{\"a\":-12345,\"b\":\"δ\",\"c\":[1,2,3,4]}}"
     }, delimiter = ';')
-    public void toJsonString_WithContent(MessageTypes type, int a, String b, String expected) {
+    public void toJsonString_WithContent(MessageType type, int a, String b, String expected) {
         var msg = new Message<>(type, new ExampleClass(a, b));
         var actual = MessageParser.toJsonString(msg);
         assertEquals(expected, actual);
@@ -30,11 +30,11 @@ public class MessageParserTest {
 
     @Test
     public void toJsonString_GenericContent() {
-        String expected = "{\"header\":{\"type\":10,\"senderId\":0},\"content\":{\"json\":{\"someInt\":1,\"someString\":\"Hello\",\"someObject\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}}}";
-        MessageBuilder builder = new MessageBuilder(MessageTypes.LOBBY_DATA);
+        String expected = "{\"header\":{\"type\":11,\"senderId\":0},\"content\":{\"json\":{\"someInt\":1,\"someString\":\"Hello\",\"someObject\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}}}";
+        MessageBuilder builder = new MessageBuilder(MessageType.LOBBYS_DATA);
         builder.addField("someInt", 1);
         builder.addField("someString", "Hello");
-        builder.addField("someObject", new Example.ExampleClass(7, "Hello World"));
+        builder.addField("someObject", new ExampleClass(7, "Hello World"));
         var customMessage = builder.get();
 
         var actual = MessageParser.toJsonString(customMessage);
@@ -46,7 +46,7 @@ public class MessageParserTest {
             "{\"header\":{\"type\":1,\"senderId\":0}}; SERVER_HELLO; 0",
             "{\"header\":{\"type\":0,\"senderId\":0}}; CLIENT_HELLO; 0"
     }, delimiter = ';')
-    void fromJsonString_HeaderOnly(String msg, MessageTypes expectedType, int expectedId) {
+    void fromJsonString_HeaderOnly(String msg, MessageType expectedType, int expectedId) {
         Message actual = MessageParser.fromJsonString(msg, Object.class);
         assertEquals(expectedType.ordinal(), actual.header.type);
         assertEquals(expectedId, actual.header.senderId);

@@ -1,4 +1,4 @@
-package net;
+package messages;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -10,9 +10,9 @@ import com.google.gson.JsonObject;
 public class MessageBuilder implements IMessageBuilder {
     private final JsonObject json = new JsonObject();
     private final Gson gson = new Gson();
-    private MessageTypes type = MessageTypes.ERROR;
+    private MessageType type = MessageType.ERROR;
 
-    public MessageBuilder(final MessageTypes type) {
+    public MessageBuilder(final MessageType type) {
         this.type = type;
     }
 
@@ -29,7 +29,7 @@ public class MessageBuilder implements IMessageBuilder {
     }
 
     @Override
-    public void setType(final MessageTypes type) {
+    public void setType(final MessageType type) {
         this.type = type;
     }
 }

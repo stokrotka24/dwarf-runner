@@ -1,4 +1,4 @@
-package net;
+package messages;
 
 /**
  * generic Message class
@@ -8,12 +8,12 @@ public class Message<T> {
     public MessageHeader header;
     public T content;
 
-    public Message(final MessageTypes type, final T content) {
+    public Message(final MessageType type, final T content) {
         header = new MessageHeader(type);
         this.content = content;
     }
 
-    public Message(MessageTypes type) {
+    public Message(MessageType type) {
         header = new MessageHeader(type);
     }
 }
