@@ -1,0 +1,12 @@
+package game;
+
+public enum GameMap {
+    OLD_TOWN,
+    CENTENNIAL_HALL,
+    MAIN_STATION,
+    WESTERN_PARK,
+    PWR_MAIN_CAMPUS,
+    PWR_ARCHITECTURE_CAMPUS,
+    CATHEDRAL_ISLAND,
+    SZCZYTNICKI_PARK,
+}
