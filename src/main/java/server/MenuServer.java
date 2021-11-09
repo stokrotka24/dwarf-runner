@@ -41,7 +41,7 @@ public class MenuServer {
 		clientAccepter.run();
 		while(true) {
 			
-			try{
+			try {
 				String msgReceived = inMsgQueue.take();
 				var header = MessageParser.getMsgHeader(msgReceived);
 			    if (header == MessageType.CREATE_LOBBY_REQUEST) {
