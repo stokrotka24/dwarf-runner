@@ -87,6 +87,7 @@ public class LobbyManager {
         Lobby lobby = getLobbyInfo(lobbyId);
 
         if (lobby == null || lobby.players >= lobby.maxPlayers) {
+            onJoinLobbyRequest(player, false);
             return false;
         }
 
@@ -100,9 +101,28 @@ public class LobbyManager {
 
     private void addToLobby(AbstractPlayer player, int lobbyId, Lobby lobby) {
         lobby.players++;
+        lobbyToPlayers.computeIfAbsent(lobbyId, k -> new ArrayList<>());
         lobbyToPlayers.get(lobbyId).add(player);
+        onJoinLobbyRequest(player, true);
         removeFromSubscribed(player);
+        notifyLobby(lobby);
         notifySubscribed();
+    }
+
+    private void notifyLobby(Lobby lobby) {
+        Message<Lobby> lobbyMsg = new Message<>(MessageType.CURRENT_LOBBY_DATA, lobby);
+        var stringMsg = MessageParser.toJsonString(lobbyMsg);
+
+        for (AbstractPlayer p: lobbyToPlayers.get(lobby.id)) {
+            p.sendMessage(stringMsg);
+        }
+    }
+
+    private void onJoinLobbyRequest(AbstractPlayer player, boolean status) {
+        Message<Boolean> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, status);
+        var stringMsg = MessageParser.toJsonString(lobbyMsg);
+
+        player.sendMessage(stringMsg);
     }
 
     /**
