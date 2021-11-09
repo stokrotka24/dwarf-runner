@@ -1,7 +1,9 @@
+import server.MenuServer;
 
 public class Hello {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+		MenuServer menuServer = new MenuServer();
+		menuServer.go();
     }
 }

@@ -33,7 +33,7 @@ public class MenuServer {
 	private HashMap<Integer, AbstractPlayer> players;
 	private int currID = 1;
 	
-	private void go() {
+	public void go() {
 		inMsgQueue = new LinkedBlockingQueue<String>(QUEUE_SIZE);
 		lobbyManager = new LobbyManager();
 		players = new HashMap<Integer, AbstractPlayer>();
@@ -58,7 +58,6 @@ public class MenuServer {
 				//TODO: add some handling?
 				e.printStackTrace();
 			}
-			
 		}
 	}
 
@@ -66,7 +65,7 @@ public class MenuServer {
 	 * Stores handler into map of clients, allowing for further communication with client corresponding to handler
 	 * @param handler corresponding to client connected to server
 	 * @return unique ID of client
-	 */
+     */
     public int addInput(ClientHandler handler) {
     	while (players.containsKey(currID)) {
     		currID = currID % MAX_CLIENTS_COUNT + 1;
@@ -84,9 +83,4 @@ public class MenuServer {
     public void deleteInput(int clientID) {
     	players.remove(clientID);
     }
-	
-	public static void main(String[] args) {
-		MenuServer menuServer = new MenuServer();
-		menuServer.go();
-	}
 }
