@@ -20,4 +20,7 @@ public class MenuServer {
     //    if (type == MessageType.SHOW_LOBBYS_REQUEST) {
     //        lobbyManager.addToSubscribed(findPlayerByIdOrSomethingLikeThat(header.senderId));
     //    }
+    public int addInput(ClientHandler handler) {
+        return 0;
+    }
 }
