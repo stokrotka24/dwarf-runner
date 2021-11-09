@@ -44,7 +44,6 @@ public class MenuServer {
 			try{
 				String msgReceived = inMsgQueue.take();
 				var header = MessageParser.getMsgHeader(msgReceived);
-//			    MessageType type = MessageType.fromInt(header.type);
 			    if (header == MessageType.CREATE_LOBBY_REQUEST) {
 			    	int clientID = MessageParser.getClientId(msgReceived);
 			    	lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class), 
@@ -61,10 +60,10 @@ public class MenuServer {
 		}
 	}
 
-	/**
-	 * Stores handler into map of clients, allowing for further communication with client corresponding to handler
-	 * @param handler corresponding to client connected to server
-	 * @return unique ID of client
+    /**
+     * Stores handler into map of clients, allowing for further communication with client corresponding to handler
+     * @param handler corresponding to client connected to server
+     * @return unique ID of client
      */
     public int addInput(ClientHandler handler) {
     	while (players.containsKey(currID)) {
