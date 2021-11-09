@@ -5,15 +5,19 @@ package messages;
  * @param <T> type of content
  */
 public class Message<T> {
-    public MessageHeader header;
+    public static final int SERVER_ID = 0;
+
+    public MessageType header;
+    public int clientId;
     public T content;
 
     public Message(final MessageType type, final T content) {
-        header = new MessageHeader(type);
+        header = type;
+        clientId = SERVER_ID;
         this.content = content;
     }
 
     public Message(MessageType type) {
-        header = new MessageHeader(type);
+        header = type;
     }
 }

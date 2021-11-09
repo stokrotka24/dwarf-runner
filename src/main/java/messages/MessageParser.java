@@ -34,9 +34,19 @@ public class MessageParser {
      * @param msg string msg to parse
      * @return header of message
      */
-    public static MessageHeader getMsgHeader(final String msg) {
+    public static MessageType getMsgHeader(final String msg) {
         Message<Object> parsed = gson.fromJson(msg, TypeToken.getParameterized(Message.class, Object.class).getType());
         return parsed.header;
+    }
+
+    /**
+     * Retrieves just the clientId of string message
+     * @param msg string msg to parse
+     * @return header of message
+     */
+    public static int getClientId(final String msg) {
+        Message<Object> parsed = gson.fromJson(msg, TypeToken.getParameterized(Message.class, Object.class).getType());
+        return parsed.clientId;
     }
 
     /**

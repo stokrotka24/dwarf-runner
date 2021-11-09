@@ -90,8 +90,10 @@ public class LobbyManager {
             return false;
         }
 
-        if (lobby.teams.get(teamId == 1 ? 0 : 1).contains(player))
-        lobby.teams.get(teamId).add(player);
+        if (lobby.teams.get(teamId == 1 ? 0 : 1).contains(player)) {
+            lobby.teams.get(teamId).add(player);
+        }
+        addToLobby(player, lobbyId, lobby);
 
         return true;
     }
