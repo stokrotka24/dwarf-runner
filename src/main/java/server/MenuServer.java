@@ -49,9 +49,9 @@ public class MenuServer {
 			    	lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class), 
 			    			players.get(clientID));
 			    }
-//			    if (type == MessageType.SHOW_LOBBYS_REQUEST) {
-//			    	lobbyManager.addToSubscribed(findPlayerByIdOrSomethingLikeThat(header.senderId));
-//			    }
+			  //if (type == MessageType.SHOW_LOBBYS_REQUEST) {
+			  //	lobbyManager.addToSubscribed(findPlayerByIdOrSomethingLikeThat(header.senderId));
+			  //}
 			} 
 			catch (InterruptedException e){
 				//TODO: add some handling?
