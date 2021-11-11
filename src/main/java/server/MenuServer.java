@@ -1,13 +1,13 @@
 package server;
 
-import java.util.HashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import game.AbstractPlayer;
 import lobby.Lobby;
 import lobby.LobbyManager;
 import messages.MessageParser;
 import messages.MessageType;
+
+import java.util.HashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Thread responsible for creating other threads used for communication with clients, controlling games and controlling lobbies.
@@ -77,7 +77,7 @@ public class MenuServer {
     
     /**
      * deletes entry for client from players map. Should be called after client disconnected
-     * @param ID of client that handler ought to be removed
+     * @param clientID of client that handler ought to be removed
      */
     public void deleteInput(int clientID) {
     	players.remove(clientID);
