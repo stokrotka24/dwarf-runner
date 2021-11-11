@@ -59,9 +59,7 @@ public class LobbyManager {
      * @param player Player to unsubscribe
      */
     public void removeFromSubscribed(AbstractPlayer player) {
-        if (!subscribedToLobbyChanges.contains(player)) {
-            subscribedToLobbyChanges.remove(player);
-        }
+        subscribedToLobbyChanges.remove(player);
     }
 
     /**
