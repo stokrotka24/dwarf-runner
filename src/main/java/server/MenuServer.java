@@ -1,7 +1,9 @@
 package server;
 
 import game.AbstractPlayer;
+import game.User;
 import lobby.Lobby;
+import lobby.LobbyListRequest;
 import lobby.LobbyManager;
 import messages.MessageParser;
 import messages.MessageType;
@@ -30,20 +32,25 @@ public class MenuServer {
 	 */
 	public LinkedBlockingQueue<String> inMsgQueue;
 	private LobbyManager lobbyManager;
-	private HashMap<Integer, AbstractPlayer> players;
+	private HashMap<Integer, User> players;
 	private int currID = 1;
 	
 	public void go() {
 		inMsgQueue = new LinkedBlockingQueue<String>(QUEUE_SIZE);
 		lobbyManager = new LobbyManager();
-		players = new HashMap<Integer, AbstractPlayer>();
+		players = new HashMap<Integer, User>();
 		ClientAccepter clientAccepter = new ClientAccepter(this);
-		clientAccepter.run();
+		clientAccepter.start();
 		while(true) {
-			
+
 			try {
 				String msgReceived = inMsgQueue.take();
 				var header = MessageParser.getMsgHeader(msgReceived);
+				if (header == MessageType.LOBBY_LIST_REQUEST) {
+					int clientID = MessageParser.getClientId(msgReceived);
+					lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
+							players.get(clientID));
+				}
 			    if (header == MessageType.CREATE_LOBBY_REQUEST) {
 			    	int clientID = MessageParser.getClientId(msgReceived);
 			    	lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class), 
@@ -69,7 +76,7 @@ public class MenuServer {
     	while (players.containsKey(currID)) {
     		currID = currID % MAX_CLIENTS_COUNT + 1;
     	}
-    	players.put(currID, new AbstractPlayer(handler));
+    	players.put(currID, new User(handler));
     	int toReturn = currID;
     	currID = currID % MAX_CLIENTS_COUNT + 1;
         return toReturn;

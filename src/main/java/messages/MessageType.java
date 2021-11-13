@@ -15,9 +15,9 @@ public enum MessageType {
     CHANGE_SETTINGS_REQUEST,
     CHANGE_SETTINGS_RESPONSE,
     CREATE_LOBBY_REQUEST,
-    SHOW_LOBBYS_REQUEST,
-    LOBBYS_DATA,
-    CURRENT_LOBBY_DATA,
+    LOBBY_LIST_REQUEST,
+    LOBBY_LIST_DELIVERY,
+    LOBBY_STATUS_UPDATE,
     JOIN_LOBBY_REQUEST,
     JOIN_LOBBY_RESPONSE,
     START_GAME_REQUEST,
@@ -29,7 +29,7 @@ public enum MessageType {
     RANKING_DATA,
     ERROR;
 
-    private static MessageType[] msgTypeValues = MessageType.values();
+    private static final MessageType[] msgTypeValues = MessageType.values();
 
     public static MessageType fromInt(int i) {
         return msgTypeValues[i];

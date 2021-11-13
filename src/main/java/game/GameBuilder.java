@@ -25,7 +25,7 @@ public class GameBuilder {
         // TODO implement
     }
 
-    public void setTeams(Map<Integer, List<AbstractPlayer>> teams) {
+    public void setTeams(Map<Integer, List<User>> teams) {
         // TODO implement
     }
 

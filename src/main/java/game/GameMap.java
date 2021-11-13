@@ -1,5 +1,7 @@
 package game;
 
+import messages.MessageType;
+
 public enum GameMap {
     OLD_TOWN,
     CENTENNIAL_HALL,
@@ -8,5 +10,11 @@ public enum GameMap {
     PWR_MAIN_CAMPUS,
     PWR_ARCHITECTURE_CAMPUS,
     CATHEDRAL_ISLAND,
-    SZCZYTNICKI_PARK,
+    SZCZYTNICKI_PARK;
+
+    private static final GameMap[] mapTypeValues = GameMap.values();
+
+    public static GameMap fromInt(int i) {
+        return mapTypeValues[i];
+    }
 }

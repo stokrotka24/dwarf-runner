@@ -1,8 +1,9 @@
 package lobby;
 
 import game.AbstractGame;
-import game.AbstractPlayer;
+import game.User;
 import game.GameBuilder;
+import game.GameMap;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
@@ -12,16 +13,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// TODO I leave some currently not used methods
+//  commented just in case. To rm later.
 public class LobbyManager {
     private final List<Lobby> lobbys;
-    private final Map<Integer, List<AbstractPlayer>> lobbyToPlayers;
-    private final List<AbstractPlayer> subscribedToLobbyChanges;
+    private final Map<Integer, List<User>> lobbyToPlayers;
+    //private final List<User> subscribedToLobbyChanges;
     private static int idCounter = 0;
 
     public LobbyManager() {
         lobbys = new ArrayList<>();
         lobbyToPlayers = new HashMap<>();
-        subscribedToLobbyChanges = new ArrayList<>();
+        //subscribedToLobbyChanges = new ArrayList<>();
     }
 
     /**
@@ -30,15 +33,16 @@ public class LobbyManager {
      * @param msg msg with required data
      * @param creator Player who creates lobby
      */
-    public void createLobby(Message<Lobby> msg, AbstractPlayer creator) {
+    public void createLobby(Message<Lobby> msg, User creator) {
         Lobby lobby = msg.content;
 
         assignId(lobby);
         lobby.players = 0;
-        addPlayerToLobby(creator, lobby.id);
-        notifySubscribed();
-
         lobbys.add(lobby);
+
+        addPlayerToLobby(creator, lobby.id);
+
+        //notifySubscribed();
     }
 
     /**
@@ -46,21 +50,21 @@ public class LobbyManager {
      * LobbyManager will notify player automatically on any important change
      * @param player Player to register
      */
-    public void addToSubscribed(AbstractPlayer player) {
+    /*public void addToSubscribed(User player) {
         if (!subscribedToLobbyChanges.contains(player)) {
             subscribedToLobbyChanges.add(player);
         }
         notifyPlayer(player);
-    }
+    }*/
 
     /**
      * removes player from subscribers if it is there, meaning that
      * LobbyManager will no longer notify player automatically
      * @param player Player to unsubscribe
      */
-    public void removeFromSubscribed(AbstractPlayer player) {
+    /*public void removeFromSubscribed(User player) {
         subscribedToLobbyChanges.remove(player);
-    }
+    }*/
 
     /**
      * Adds player to lobby
@@ -69,7 +73,7 @@ public class LobbyManager {
      * @param lobbyId id of lobby
      * @return result
      */
-    public boolean addPlayerToLobby(AbstractPlayer player, int lobbyId) {
+    public boolean addPlayerToLobby(User player, int lobbyId) {
         return addPlayerToLobby(player, lobbyId, 0);
     }
 
@@ -81,7 +85,7 @@ public class LobbyManager {
      * @param teamId id of chosen team - 0 or 1
      * @return result
      */
-    public boolean addPlayerToLobby(AbstractPlayer player, int lobbyId, int teamId) {
+    public boolean addPlayerToLobby(User player, int lobbyId, int teamId) {
         Lobby lobby = getLobbyInfo(lobbyId);
 
         if (lobby == null || lobby.players >= lobby.maxPlayers) {
@@ -89,6 +93,7 @@ public class LobbyManager {
             return false;
         }
 
+        lobby.teams.computeIfAbsent(teamId == 1 ? 0 : 1, k -> new ArrayList<>());
         if (lobby.teams.get(teamId == 1 ? 0 : 1).contains(player)) {
             lobby.teams.get(teamId).add(player);
         }
@@ -97,26 +102,26 @@ public class LobbyManager {
         return true;
     }
 
-    private void addToLobby(AbstractPlayer player, int lobbyId, Lobby lobby) {
+    private void addToLobby(User player, int lobbyId, Lobby lobby) {
         lobby.players++;
         lobbyToPlayers.computeIfAbsent(lobbyId, k -> new ArrayList<>());
         lobbyToPlayers.get(lobbyId).add(player);
         onJoinLobbyRequest(player, true);
-        removeFromSubscribed(player);
+        //removeFromSubscribed(player);
         notifyLobby(lobby);
-        notifySubscribed();
+        //notifySubscribed();
     }
 
     private void notifyLobby(Lobby lobby) {
-        Message<Lobby> lobbyMsg = new Message<>(MessageType.CURRENT_LOBBY_DATA, lobby);
+        Message<Lobby> lobbyMsg = new Message<>(MessageType.LOBBY_STATUS_UPDATE, lobby);
         var stringMsg = MessageParser.toJsonString(lobbyMsg);
 
-        for (AbstractPlayer p: lobbyToPlayers.get(lobby.id)) {
+        for (User p: lobbyToPlayers.get(lobby.id)) {
             p.sendMessage(stringMsg);
         }
     }
 
-    private void onJoinLobbyRequest(AbstractPlayer player, boolean status) {
+    private void onJoinLobbyRequest(User player, boolean status) {
         Message<Boolean> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, status);
         var stringMsg = MessageParser.toJsonString(lobbyMsg);
 
@@ -129,7 +134,7 @@ public class LobbyManager {
      * @param teamId team id - 0 or 1
      * @return result
      */
-    public boolean changeTeam(AbstractPlayer player, int teamId) {
+    public boolean changeTeam(User player, int teamId) {
         for (Lobby l : lobbys) {
             if (lobbyToPlayers.get(l.id).contains(player)) {
                 var otherTeam = l.teams.get(teamId == 1 ? 0 : 1);
@@ -150,7 +155,7 @@ public class LobbyManager {
      * @param player player to remove
      * @param lobbyId id of lobby
      */
-    public void removePlayerFromLobby(AbstractPlayer player, int lobbyId) {
+    public void removePlayerFromLobby(User player, int lobbyId) {
         Lobby lobby = getLobbyInfo(lobbyId);
         if (lobby == null) {
             return;
@@ -160,7 +165,7 @@ public class LobbyManager {
             lobby.players--;
             lobby.teams.get(0).remove(player);
             lobby.teams.get(1).remove(player);
-            notifySubscribed();
+            //notifySubscribed();
         }
     }
 
@@ -182,7 +187,7 @@ public class LobbyManager {
      * @param lobbyId id of lobby
      * @return list of players in specified lobby
      */
-    public List<AbstractPlayer> getPlayerList(int lobbyId) {
+    public List<User> getPlayerList(int lobbyId) {
         return lobbyToPlayers.get(lobbyId);
     }
 
@@ -206,7 +211,7 @@ public class LobbyManager {
     private AbstractGame buildGame(Lobby lobby) {
         GameBuilder builder = new GameBuilder();
         builder.setId(lobby.id);
-        builder.setMapType(lobby.map);
+        builder.setMapType(GameMap.fromInt(lobby.mapId));
         builder.setDwarfs(lobby.dwarfs);
         builder.setMaxMobileSpeed(lobby.maxSpeed);
         builder.setWebSpeed(lobby.speed);
@@ -224,32 +229,48 @@ public class LobbyManager {
         Lobby lobby = getLobbyInfo(lobbyId);
         var players = lobbyToPlayers.get(lobbyId);
 
-        for (AbstractPlayer p: players) {
+        for (User p: players) {
             removePlayerFromLobby(p, lobbyId);
-            addToSubscribed(p);
+            //addToSubscribed(p);
         }
 
         lobbys.remove(lobby);
     }
 
+    /*
     private void notifySubscribed() {
         Message<List<Lobby>> lobbyStateMsg = new Message<>(MessageType.LOBBYS_DATA, lobbys);
         var stringMsg = MessageParser.toJsonString(lobbyStateMsg);
 
-        for (AbstractPlayer p: subscribedToLobbyChanges) {
+        for (User p: subscribedToLobbyChanges) {
             p.sendMessage(stringMsg);
         }
     }
 
-    private void notifyPlayer(AbstractPlayer player) {
+    private void notifyPlayer(User player) {
         Message<List<Lobby>> lobbyStateMsg = new Message<>(MessageType.LOBBYS_DATA, lobbys);
         var stringMsg = MessageParser.toJsonString(lobbyStateMsg);
 
         player.sendMessage(stringMsg);
     }
+    */
 
     private static synchronized void assignId(Lobby lobby) {
         lobby.id = idCounter;
         idCounter++;
+    }
+
+    public void sendLobbyList(LobbyListRequest request, User player) {
+        List<Lobby> lobbyList = new ArrayList<Lobby>();
+        int i = request.rangeBegin;
+        while (i < lobbys.size() && i <= request.rangeEnd) {
+            if (request.includeFull || lobbys.get(i).players < lobbys.get(i).maxPlayers) {
+                lobbyList.add(lobbys.get(i));
+            }
+            i++;
+        }
+        LobbyListDelivery delivery = new LobbyListDelivery(lobbyList);
+        Message<LobbyListDelivery> msg = new Message<>(MessageType.LOBBY_LIST_DELIVERY, delivery);
+        player.sendMessage(MessageParser.toJsonString(msg));
     }
 }
