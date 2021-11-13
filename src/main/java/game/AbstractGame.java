@@ -18,4 +18,8 @@ public abstract class AbstractGame {
         this.mobileMaxSpeed = mobileMaxSpeed;
         this.dwarfs = dwarfs;
     }
+
+    public List<AbstractPlayer> getPlayers() {
+        return players;
+    }
 }
