@@ -9,7 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ClientMock implements Runnable {
     private DataOutputStream dataOut  = null;
     private Socket skt                = null;
-    private Queue<String> queue = new LinkedBlockingQueue<>();
+    public LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>();
     private PrintStream out;
 
     public ClientMock(String address, int port) {
@@ -24,6 +24,7 @@ public class ClientMock implements Runnable {
     }
 
     public void sendMsg(String msg) {
+        System.out.println("Sending msg: " + msg);
         out.print(msg);
     }
 
@@ -47,7 +48,7 @@ public class ClientMock implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mainLoop: while (true) {
+        while (true) {
             try {
                 StringBuilder builder = new StringBuilder();
                 Integer bracketCount = 0;
@@ -64,8 +65,8 @@ public class ClientMock implements Runnable {
                     }
                     builder.append(nextChar);
                 } while (bracketCount > 0);
-                if (builder.toString().length() > 1)
-                    System.out.println(builder.toString());
+                System.out.println("got response: " + builder.toString());
+                queue.add(builder.toString());
             } catch (IOException e) {
                 try {
                     br.close();
