@@ -12,6 +12,10 @@ public class MobilePlayer extends AbstractPlayer {
         super(handler, id, node, positionX, positionY);
     }
 
+    public void setBanTimestamp(Timestamp banTimestamp) {
+        this.banTimestamp = banTimestamp;
+    }
+
     @Override
     public GamePlatform getPlatform() {
         return GamePlatform.MOBILE;
