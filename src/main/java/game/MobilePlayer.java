@@ -1,6 +1,5 @@
 package game;
 
-import osm.Node;
 import server.ClientHandler;
 
 import java.sql.Timestamp;
@@ -8,8 +7,8 @@ import java.sql.Timestamp;
 public class MobilePlayer extends AbstractPlayer {
     private Timestamp banTimestamp = null;
 
-    public MobilePlayer(ClientHandler handler, int id, Node node, float positionX, float positionY) {
-        super(handler, id, node, positionX, positionY);
+    public MobilePlayer(int id, ClientHandler handler) {
+        super(id,handler);
     }
 
     public void setBanTimestamp(Timestamp banTimestamp) {

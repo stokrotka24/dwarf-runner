@@ -1,8 +1,7 @@
 package game;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class GameBuilder {
     private int id;
@@ -12,7 +11,7 @@ public final class GameBuilder {
     private float mobileMaxSpeed;
     private List<Dwarf> dwarfs;
     private GameType gameType;
-    private Map<Integer, List<User>> teams;
+    private Map<Integer, List<AbstractPlayer>> teams;
 
     private GameBuilder() {}
 
@@ -30,8 +29,10 @@ public final class GameBuilder {
         return this;
     }
 
-    public GameBuilder withPlayers(List<AbstractPlayer> players) {
-        this.players = players;
+    public GameBuilder withPlayers(List<User> users) {
+        this.players = users.stream()
+                .map(this::mapUserToPlayer)
+                .collect(Collectors.toList());
         return this;
     }
 
@@ -57,7 +58,13 @@ public final class GameBuilder {
     }
 
     public GameBuilder withTeams(Map<Integer, List<User>> teams) {
-        this.teams = teams;
+        Map<Integer, List<AbstractPlayer>> mappedTeams = new HashMap<>();
+        for (var teamEntry : teams.entrySet()) {
+            mappedTeams.put(teamEntry.getKey(), teamEntry.getValue().stream()
+                            .map(this::mapUserToPlayer)
+                            .collect(Collectors.toList()));
+        }
+        this.teams = mappedTeams;
         return this;
     }
 
@@ -71,5 +78,21 @@ public final class GameBuilder {
         }
 
         return game;
+    }
+
+    private AbstractPlayer mapUserToPlayer(User user) {
+        AbstractPlayer player = null;
+        Optional<GamePlatform> gamePlatform = user.getPlatform();
+
+        if (gamePlatform.isPresent()) {
+            //TODO add id from user
+            if (gamePlatform.get().equals(GamePlatform.MOBILE)) {
+                player = new MobilePlayer(0, user.getHandler());
+            } else if (gamePlatform.get().equals(GamePlatform.WEB)) {
+                player = new WebPlayer(0, user.getHandler());
+            }
+        }
+
+        return player;
     }
 }

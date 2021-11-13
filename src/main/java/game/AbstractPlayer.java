@@ -11,12 +11,9 @@ public abstract class AbstractPlayer {
     private float positionY;
     private ClientHandler handler;
 
-    public AbstractPlayer(ClientHandler handler, int id, Node node, float positionX, float positionY) {
-        this.handler = handler;
+    public AbstractPlayer(int id, ClientHandler handler) {
         this.id = id;
-        this.node = node;
-        this.positionX = positionX;
-        this.positionY = positionY;
+        this.handler = handler;
     }
 
     public void sendMessage(String msg) {

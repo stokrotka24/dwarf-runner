@@ -212,6 +212,7 @@ public class LobbyManager {
         return GameBuilder.aGame()
                 .withId(lobby.id)
                 .withGameMap(GameMap.fromInt(lobby.mapId))
+                .withPlayers(lobbyToPlayers.get(lobby.id))
                 .withDwarfs(lobby.dwarfs)
                 .withMobileMaxSpeed(lobby.maxSpeed)
                 .withWebSpeed(lobby.speed)

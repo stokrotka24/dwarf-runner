@@ -2,6 +2,9 @@ package game;
 
 import server.ClientHandler;
 
+import java.util.Optional;
+
+//TODO user id is necessary
 public class User {
     private ClientHandler handler;
     private GamePlatform platform = null;
@@ -14,14 +17,15 @@ public class User {
         this.platform = platform;
     }
 
-    public GamePlatform getPlatform() throws Exception {
-        if (platform == null) {
-            throw new Exception("User's platform isn't defined yet!");
-        }
-        return platform;
+    public Optional<GamePlatform> getPlatform() {
+        return Optional.of(platform);
     }
 
     public void sendMessage(String msg) {
         handler.sendMessage(msg);
+    }
+
+    public ClientHandler getHandler() {
+        return this.handler;
     }
 }
