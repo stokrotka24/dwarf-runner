@@ -1,5 +1,7 @@
 package messages;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * generic Message class
  * @param <T> type of content
@@ -8,6 +10,8 @@ public class Message<T> {
     public static final int SERVER_ID = 0;
 
     public MessageType header;
+
+    @SerializedName("client_id")
     public int clientId;
     public T content;
 
