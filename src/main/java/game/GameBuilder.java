@@ -1,36 +1,75 @@
 package game;
 
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GameBuilder {
-    public void setId(int id) {
-        // TODO implement
+public final class GameBuilder {
+    private int id;
+    private GameMap gameMap;
+    private List<AbstractPlayer> players;
+    private float webSpeed;
+    private float mobileMaxSpeed;
+    private List<Dwarf> dwarfs;
+    private GameType gameType;
+    private Map<Integer, List<User>> teams;
+
+    private GameBuilder() {}
+
+    public static GameBuilder aGame() {
+        return new GameBuilder();
     }
 
-    public void setMapType(GameMap mapType) {
-        // TODO implement
+    public GameBuilder withId(int id) {
+        this.id = id;
+        return this;
     }
 
-    public void setDwarfs(int numberOfDwarfs) {
-        // TODO implement
+    public GameBuilder withGameMap(GameMap gameMap) {
+        this.gameMap = gameMap;
+        return this;
     }
 
-    public void setMaxMobileSpeed(float maxSpeed) {
-        // TODO implement
+    public GameBuilder withPlayers(List<AbstractPlayer> players) {
+        this.players = players;
+        return this;
     }
 
-    public void setWebSpeed(float speed) {
-        // TODO implement
+    public GameBuilder withWebSpeed(float webSpeed) {
+        this.webSpeed = webSpeed;
+        return this;
     }
 
-    public void setTeams(Map<Integer, List<User>> teams) {
-        // TODO implement
+    public GameBuilder withMobileMaxSpeed(float mobileMaxSpeed) {
+        this.mobileMaxSpeed = mobileMaxSpeed;
+        return this;
+    }
+
+    public GameBuilder withDwarfs(int nofDwarfs) {
+        //TODO generate random list of dwarfs using OsmService
+        this.dwarfs = new ArrayList<>();
+        return this;
+    }
+
+    public GameBuilder withGameType(GameType gameType) {
+        this.gameType = gameType;
+        return this;
+    }
+
+    public GameBuilder withTeams(Map<Integer, List<User>> teams) {
+        this.teams = teams;
+        return this;
     }
 
     public AbstractGame build() {
-        // TODO implement
-        return null;
+        AbstractGame game = null;
+
+        if (gameType.equals(GameType.SOLO_GAME)) {
+            game = new SoloGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs);
+        } else if (gameType.equals(GameType.TEAM_GAME)) {
+            game = new TeamGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs, teams);
+        }
+
+        return game;
     }
 }
