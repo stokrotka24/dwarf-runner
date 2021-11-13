@@ -9,19 +9,22 @@ import java.util.List;
 import java.util.Map;
 
 public class Lobby {
+    @SerializedName("lobby_id")
     public int id;
+
+    @SerializedName("lobby_name")
     public String name;
 
-    @SerializedName("map_id")
+    @SerializedName("gametype")
+    public GameType type;
+
+    @SerializedName("map")
     public int mapId;
 
     @SerializedName("curr_players")
     public int players;
 
-    @SerializedName("game_mode")
-    public GameType type;
-
-    @SerializedName("max_amount")
+    @SerializedName("max_players")
     public int maxPlayers;
 
     // TODO end - possibly enum?

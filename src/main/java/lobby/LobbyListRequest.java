@@ -4,10 +4,10 @@ import com.google.gson.annotations.SerializedName;
 import game.GameType;
 
 public class LobbyListRequest {
-    @SerializedName("game_mode")
+    @SerializedName("gametype")
     public GameType gameMode;
 
-    @SerializedName("map_id")
+    @SerializedName("map")
     public int mapId;
 
     @SerializedName("include_full")

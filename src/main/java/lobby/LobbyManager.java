@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 // TODO I leave some currently not used methods
 //  commented just in case. To rm later.
@@ -35,6 +36,10 @@ public class LobbyManager {
      */
     public void createLobby(Message<Lobby> msg, User creator) {
         Lobby lobby = msg.content;
+        if (!validateLobby(lobby)) {
+            onJoinLobbyRequest(creator, false);
+            return;
+        }
 
         assignId(lobby);
         lobby.players = 0;
@@ -43,6 +48,20 @@ public class LobbyManager {
         addPlayerToLobby(creator, lobby.id);
 
         //notifySubscribed();
+    }
+
+    private boolean validateLobby(Lobby lobby) {
+        try {
+            var type = GameMap.fromInt(lobby.mapId);
+        } catch (Exception ex) {
+            return false;
+        }
+
+        if (lobby.maxPlayers < 1 || lobby.dwarfs < 1 || lobby.maxSpeed <= 0 || lobby.speed <= 0) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -262,14 +281,27 @@ public class LobbyManager {
 
     public void sendLobbyList(LobbyListRequest request, User player) {
         List<Lobby> lobbyList = new ArrayList<Lobby>();
+        List<Lobby> tmp = new ArrayList<>();
+
+        if (request.mapId != -1) {
+            tmp = lobbys.stream()
+                    .filter(x -> x.mapId == request.mapId)
+                    .collect(Collectors.toList());
+        }
+        if (request.gameMode != null) {
+            tmp = tmp.stream()
+                    .filter(x -> x.type == request.gameMode)
+                    .collect(Collectors.toList());
+        }
+
         int i = request.rangeBegin;
-        while (i < lobbys.size() && i <= request.rangeEnd) {
+        while (i < tmp.size() && i <= request.rangeEnd) {
             if (request.includeFull || lobbys.get(i).players < lobbys.get(i).maxPlayers) {
-                lobbyList.add(lobbys.get(i));
+                lobbyList.add(tmp.get(i));
             }
             i++;
         }
-        LobbyListDelivery delivery = new LobbyListDelivery(lobbyList);
+        LobbyListDelivery delivery = new LobbyListDelivery(lobbyList, tmp.size());
         Message<LobbyListDelivery> msg = new Message<>(MessageType.LOBBY_LIST_DELIVERY, delivery);
         player.sendMessage(MessageParser.toJsonString(msg));
     }
