@@ -19,4 +19,16 @@ public class LobbyListDelivery {
         amount = lobbys.size();
         this.total = total;
     }
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public List<Lobby> getLobbys() {
+        return lobbys;
+    }
 }

@@ -41,7 +41,6 @@ class LobbyManagerTest {
                 "        \"dwarves_amount\": 4\n" +
                 "    }\n" +
                 "}";
-        //client.sendMsg(MessageParser.toJsonString(msg));
         client.sendMsg(request);
 
         String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"client_id\":0,\"content\":true}";
@@ -133,11 +132,19 @@ class LobbyManagerTest {
         try {
             String response = client.queue.take();
             LobbyListDelivery delivery = MessageParser.getMsgContent(response, LobbyListDelivery.class);
-            for (GameMap m : GameMap.values()) {
-                if (m.ordinal() != mapId) {
 
-                }
+            if (mapId != -1) {
+                assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getMapId() != mapId));
             }
+
+            if (!includeFull) {
+                assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getPlayers() == l.getMaxPlayers()));
+            }
+
+            if (type != null) {
+                assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getType() != type));
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
