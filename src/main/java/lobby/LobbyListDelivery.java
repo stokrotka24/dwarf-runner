@@ -6,13 +6,13 @@ import java.util.List;
 
 public class LobbyListDelivery {
     @SerializedName("lobbys_amount")
-    public int amount;
+    private int amount;
 
     @SerializedName("total_lobbys_amount")
-    public int total;
+    private int total;
 
     @SerializedName("lobbys_list")
-    public List<Lobby> lobbys;
+    private List<Lobby> lobbys;
 
     public LobbyListDelivery(List<Lobby> lobbys, int total) {
         this.lobbys = lobbys;
