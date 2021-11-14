@@ -228,15 +228,16 @@ public class LobbyManager {
 
     // TODO might need changes after GameBuilder implementation
     private AbstractGame buildGame(Lobby lobby) {
-        GameBuilder builder = new GameBuilder();
-        builder.setId(lobby.id);
-        builder.setMapType(GameMap.fromInt(lobby.mapId));
-        builder.setDwarfs(lobby.dwarfs);
-        builder.setMaxMobileSpeed(lobby.maxSpeed);
-        builder.setWebSpeed(lobby.speed);
-        builder.setTeams(lobby.teams);
-
-        return builder.build();
+        return GameBuilder.aGame()
+                .withId(lobby.id)
+                .withGameMap(GameMap.fromInt(lobby.mapId))
+                .withPlayers(lobbyToPlayers.get(lobby.id))
+                .withDwarfs(lobby.dwarfs)
+                .withMobileMaxSpeed(lobby.maxSpeed)
+                .withWebSpeed(lobby.speed)
+                .withTeams(lobby.teams)
+                .withGameType(lobby.type)
+                .build();
     }
 
     /**
