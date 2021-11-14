@@ -33,7 +33,6 @@ public class LobbyManager {
     public void createLobby(Message<Lobby> msg, User creator) {
         Lobby lobby = msg.content;
         if (!validateLobby(lobby)) {
-            System.out.println("Rejected here");
             onJoinLobbyRequest(creator, false);
             return;
         }
@@ -159,7 +158,6 @@ public class LobbyManager {
             lobby.setPlayers(lobby.getPlayers() - 1);
             lobby.getTeams().get(0).remove(player);
             lobby.getTeams().get(1).remove(player);
-            //notifySubscribed();
         }
     }
 
@@ -202,15 +200,16 @@ public class LobbyManager {
 
     // TODO might need changes after GameBuilder implementation
     private AbstractGame buildGame(Lobby lobby) {
-        GameBuilder builder = new GameBuilder();
-        builder.setId(lobby.getId());
-        builder.setMapType(lobby.getMap());
-        builder.setDwarfs(lobby.getDwarfs());
-        builder.setMaxMobileSpeed(lobby.getMaxSpeed());
-        builder.setWebSpeed(lobby.getSpeed());
-        builder.setTeams(lobby.getTeams());
-
-        return builder.build();
+        return GameBuilder.aGame()
+                .withId(lobby.getId())
+                .withGameMap(lobby.getMap())
+                .withPlayers(lobbyToPlayers.get(lobby.getId()))
+                .withDwarfs(lobby.getDwarfs())
+                .withMobileMaxSpeed(lobby.getMaxSpeed())
+                .withWebSpeed(lobby.getSpeed())
+                .withTeams(lobby.getTeams())
+                .withGameType(lobby.getType())
+                .build();
     }
 
     /**
