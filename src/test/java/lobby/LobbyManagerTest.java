@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import utility.ClientMock;
 
@@ -27,23 +28,25 @@ class LobbyManagerTest {
 
     @Test
     void createLobby_ShouldSucceed() {
-        Lobby lobby = new Lobby();
-        lobby.type = GameType.SOLO_GAME;
-        lobby.maxPlayers = 16;
-        lobby.mapId = GameMap.MAIN_STATION.ordinal();
-        lobby.end = 5;
-        lobby.speed = 5.0f;
-        lobby.maxSpeed = 6.0f;
-        lobby.dwarfs = 20;
-        Message<Lobby> msg = new Message<>(MessageType.CREATE_LOBBY_REQUEST, lobby);
-        msg.clientId = 1;
-
-        client.sendMsg(MessageParser.toJsonString(msg));
+        String request = "{\n" +
+                "    \"header\": \"CREATE_LOBBY_REQUEST\",\n" +
+                "    \"client_id\": 1,\n" +
+                "    \"content\": {\n" +
+                "        \"gametype\": \"solo\",\n" +
+                "        \"players_amount\": 6,\n" +
+                "        \"map\": 1,\n" +
+                "        \"endgame_cond\": \"no_time\",\n" +
+                "        \"web_speed\": 3,\n" +
+                "        \"mobile_max_speed\": 5,\n" +
+                "        \"dwarves_amount\": 4\n" +
+                "    }\n" +
+                "}";
+        client.sendMsg(request);
 
         String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"client_id\":0,\"content\":true}";
         String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"client_id\":0,\"content\":{\"lobby_id\":0," +
-                "\"gametype\":\"SOLO_GAME\",\"map\":2,\"curr_players\":1,\"max_players\":16," +
-                "\"endgame_cond\":5,\"web_speed\":5.0,\"mobile_max_speed\":6.0,\"dwarves_amount\":20}}";
+                "\"gametype\":\"solo\",\"map\":1,\"curr_players\":1,\"players_amount\":6,\"endgame_cond\":\"no_time\"," +
+                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4}}";
 
         try {
             String response1 = client.queue.take();
@@ -55,20 +58,15 @@ class LobbyManagerTest {
         }
     }
 
-    @Test
-    void createLobby_ShouldFail() {
-        Lobby lobby = new Lobby();
-        lobby.type = GameType.SOLO_GAME;
-        lobby.maxPlayers = -2;
-        lobby.mapId = 333;
-        lobby.end = 5;
-        lobby.speed = 5.0f;
-        lobby.maxSpeed = 6.0f;
-        lobby.dwarfs = 20;
-        Message<Lobby> msg = new Message<>(MessageType.CREATE_LOBBY_REQUEST, lobby);
-        msg.clientId = 1;
-
-        client.sendMsg(MessageParser.toJsonString(msg));
+    @ParameterizedTest(name = "{index} => msg={0}")
+    @ValueSource(strings = { "{\"header\":\"CREATE_LOBBY_REQUEST\",\"client_id\":1,\"content\":" +
+            "{\"gametype\":\"solo\",\"players_amount\":-6,\"map\":1,\"endgame_cond\":\"no_time\", \"web_speed\": 3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}",
+            "{\"header\":\"CREATE_LOBBY_REQUEST\",\"client_id\":1,\"content\"" +
+                    ":{\"gametype\":\"solo\",\"players_amount\":6,\"map\":-1,\"endgame_cond\":\"no_time\", \"web_speed\": 3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}",
+            "{\"header\":\"CREATE_LOBBY_REQUEST\",\"client_id\":1,\"content\":" +
+                    "{\"gametype\":\"solo\",\"players_amount\":6,\"map\":1,\"endgame_cond\":\"no_time\", \"web_speed\": -3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}" })
+    void createLobby_ShouldFail(String msg) {
+        client.sendMsg(msg);
 
         String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"client_id\":0,\"content\":false}";
 
@@ -121,11 +119,11 @@ class LobbyManagerTest {
     }, delimiter = ';')
     void sendLobbyList(GameType type, int mapId, boolean includeFull, int rangeBegin, int rangeEnd) {
         LobbyListRequest request = new LobbyListRequest();
-        request.gameMode = type;
-        request.mapId = mapId;
-        request.includeFull = includeFull;
-        request.rangeBegin = rangeBegin;
-        request.rangeEnd = rangeEnd;
+        request.setGameMode(type);
+        request.setMapId(mapId);
+        request.setIncludeFull(includeFull);
+        request.setRangeBegin(rangeBegin);
+        request.setRangeEnd(rangeEnd);
 
         Message<LobbyListRequest> msg = new Message<>(MessageType.LOBBY_LIST_REQUEST, request);
         msg.clientId = 1;
@@ -134,11 +132,19 @@ class LobbyManagerTest {
         try {
             String response = client.queue.take();
             LobbyListDelivery delivery = MessageParser.getMsgContent(response, LobbyListDelivery.class);
-            for (GameMap m : GameMap.values()) {
-                if (m.ordinal() != mapId) {
 
-                }
+            if (mapId != -1) {
+                assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getMapId() != mapId));
             }
+
+            if (!includeFull) {
+                assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getPlayers() == l.getMaxPlayers()));
+            }
+
+            if (type != null) {
+                assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getType() != type));
+            }
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -1,6 +1,7 @@
 package lobby;
 
 import com.google.gson.annotations.SerializedName;
+import game.GameMap;
 import game.GameType;
 import game.User;
 
@@ -10,35 +11,127 @@ import java.util.Map;
 
 public class Lobby {
     @SerializedName("lobby_id")
-    public int id;
+    private int id;
 
     @SerializedName("lobby_name")
-    public String name;
+    private String name;
 
     @SerializedName("gametype")
-    public GameType type;
+    private String type;
 
     @SerializedName("map")
-    public int mapId;
+    private int mapId;
 
     @SerializedName("curr_players")
-    public int players;
+    private int players;
 
-    @SerializedName("max_players")
-    public int maxPlayers;
+    @SerializedName("players_amount")
+    private int maxPlayers;
 
     // TODO end - possibly enum?
     @SerializedName("endgame_cond")
-    public int end;
+    private String end;
 
     @SerializedName("web_speed")
-    public float speed;
+    private float speed;
 
     @SerializedName("mobile_max_speed")
-    public float maxSpeed;
+    private float maxSpeed;
 
     @SerializedName("dwarves_amount")
-    public int dwarfs;
+    private int dwarfs;
 
-    public transient Map<Integer, List<User>> teams = new HashMap<>();
+    private transient Map<Integer, List<User>> teams = new HashMap<>();
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public GameType getType() {
+        return type.equals("solo") ? GameType.SOLO_GAME : GameType.TEAM_GAME;
+    }
+
+    public void setType(GameType type) {
+        this.type = type == GameType.SOLO_GAME ? "solo" : "team";
+    }
+
+    public GameMap getMap() {
+        return GameMap.fromInt(mapId);
+    }
+
+    public void setMap(GameMap map) {
+        this.mapId = map.ordinal();
+    }
+
+    public int getMapId() {
+        return mapId;
+    }
+
+    public int getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(int players) {
+        this.players = players;
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
+    public void setMaxPlayers(int maxPlayers) {
+        this.maxPlayers = maxPlayers;
+    }
+
+    public String getEnd() {
+        return end;
+    }
+
+    public void setEnd(String end) {
+        this.end = end;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public float getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    public void setMaxSpeed(float maxSpeed) {
+        this.maxSpeed = maxSpeed;
+    }
+
+    public int getDwarfs() {
+        return dwarfs;
+    }
+
+    public void setDwarfs(int dwarfs) {
+        this.dwarfs = dwarfs;
+    }
+
+    public Map<Integer, List<User>> getTeams() {
+        return teams;
+    }
+
+    public void setTeams(Map<Integer, List<User>> teams) {
+        this.teams = teams;
+    }
 }
