@@ -46,19 +46,15 @@ public class MenuServer {
 			try {
 				String msgReceived = inMsgQueue.take();
 				var header = MessageParser.getMsgHeader(msgReceived);
+                int clientID = MessageParser.getClientId(msgReceived);
 				if (header == MessageType.LOBBY_LIST_REQUEST) {
-					int clientID = MessageParser.getClientId(msgReceived);
 					lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
 							players.get(clientID));
 				}
 			    if (header == MessageType.CREATE_LOBBY_REQUEST) {
-			    	int clientID = MessageParser.getClientId(msgReceived);
 			    	lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class), 
 			    			players.get(clientID));
 			    }
-			  //if (type == MessageType.SHOW_LOBBYS_REQUEST) {
-			  //	lobbyManager.addToSubscribed(findPlayerByIdOrSomethingLikeThat(header.senderId));
-			  //}
 			} 
 			catch (InterruptedException e){
 				//TODO: add some handling?

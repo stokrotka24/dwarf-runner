@@ -39,6 +39,7 @@ public class LobbyManager {
 
         assignId(lobby);
         lobby.setPlayers(0);
+        lobby.setReadyPlayers(0);
         lobbys.add(lobby);
 
         addPlayerToLobby(creator, lobby.getId());
