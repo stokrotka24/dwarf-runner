@@ -5,38 +5,38 @@ package osm;
  */
 public class Node {
 
-    private Integer id;
-    private Float x;
-    private Float y;
+    private Long id;
+    private Double lat;
+    private Double lon;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Float getX() {
-        return x;
+    public Double getX() {
+        return lat;
     }
 
-    public void setX(Float x) {
-        this.x = x;
+    public void setX(Double lat) {
+        this.lat = lat;
     }
 
-    public Float getY() {
-        return y;
+    public Double getY() {
+        return lon;
     }
 
-    public void setY(Float y) {
-        this.y = y;
+    public void setY(Double lon) {
+        this.lon = lon;
     }
 
-    public Node(OsmElement element) {
-        this.x = element.getLon();
-        this.y = element.getLat();
-        this.id = element.getId();
+    public Node(Long id, Double lat, Double lon) {
+        this.lat = lat;
+        this.lon = lon;
+        this.id = id;
     }
 
 }
