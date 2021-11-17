@@ -28,9 +28,8 @@ public class Lobby {
     @SerializedName("players_amount")
     private int maxPlayers;
 
-    // TODO end - possibly enum?
     @SerializedName("endgame_cond")
-    private String end;
+    private Integer end;
 
     @SerializedName("web_speed")
     private float speed;
@@ -98,11 +97,11 @@ public class Lobby {
         this.maxPlayers = maxPlayers;
     }
 
-    public String getEnd() {
+    public Integer getEnd() {
         return end;
     }
 
-    public void setEnd(String end) {
+    public void setEnd(Integer end) {
         this.end = end;
     }
 
@@ -144,5 +143,13 @@ public class Lobby {
 
     public void setReadyPlayers(int readyPlayers) {
         this.readyPlayers = readyPlayers;
+    }
+
+    public void incrementReadyPlayers() {
+        this.readyPlayers++;
+    }
+
+    public void decrementReadyPlayers() {
+        this.readyPlayers--;
     }
 }

@@ -1,12 +1,10 @@
 package server;
 
-import game.AbstractPlayer;
 import game.User;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
 import lobby.LobbyManager;
 import messages.MessageParser;
-import messages.MessageType;
 
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -47,14 +45,33 @@ public class MenuServer {
 				String msgReceived = inMsgQueue.take();
 				var header = MessageParser.getMsgHeader(msgReceived);
                 int clientID = MessageParser.getClientId(msgReceived);
-				if (header == MessageType.LOBBY_LIST_REQUEST) {
-					lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
-							players.get(clientID));
+				switch(header) {
+					case LOBBY_LIST_REQUEST: {
+						lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
+								players.get(clientID));
+						break;
+					}
+					case CREATE_LOBBY_REQUEST: {
+						lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
+								players.get(clientID));
+						break;
+					}
+					case PLAYER_IS_READY: {
+						lobbyManager.setPlayerIsReady(players.get(clientID));
+						break;
+					}
+					case PLAYER_IS_UNREADY: {
+						lobbyManager.setPlayerIsUnready(players.get(clientID));
+						break;
+					}
+					case START_GAME_REQUEST: {
+						lobbyManager.tryStartGame(players.get(clientID));
+					}
+					default: {
+						//TODO: Error handling
+						break;
+					}
 				}
-			    if (header == MessageType.CREATE_LOBBY_REQUEST) {
-			    	lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class), 
-			    			players.get(clientID));
-			    }
 			} 
 			catch (InterruptedException e){
 				//TODO: add some handling?

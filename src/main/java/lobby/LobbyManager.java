@@ -263,4 +263,35 @@ public class LobbyManager {
         Message<LobbyListDelivery> msg = new Message<>(MessageType.LOBBY_LIST_DELIVERY, delivery);
         player.sendMessage(MessageParser.toJsonString(msg));
     }
+
+    private Lobby getLobbyForUser(User user) {
+        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId()).contains(user)).findFirst().get();
+    }
+
+    public void setPlayerIsReady(User user) {
+        getLobbyForUser(user).incrementReadyPlayers();
+    }
+
+    public void setPlayerIsUnready(User user) {
+        getLobbyForUser(user).decrementReadyPlayers();
+    }
+
+    public void tryStartGame(User user) {
+        var lobby = getLobbyForUser(user);
+        if (lobby.getPlayers() != lobby.getReadyPlayers() + 1) {
+            onStartGameRequest(user, false);
+        } else {
+            onStartGameRequest(user, true);
+            //TODO: here we start a game
+        }
+    }
+
+    private void onStartGameRequest(User player, boolean status) {
+        Message<Boolean> gameMsg = new Message<>(MessageType.START_GAME_RESPONSE, status);
+        var stringMsg = MessageParser.toJsonString(gameMsg);
+
+        if (player != null) {
+            player.sendMessage(stringMsg);
+        }
+    }
 }
