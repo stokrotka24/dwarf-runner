@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MessageParserTest {
     @ParameterizedTest(name = "{index} => type={0}, expected={1}")
     @CsvSource(value = {
-            "SERVER_HELLO; {\"header\":\"SERVER_HELLO\",\"client_id\":0}",
-            "CLIENT_HELLO; {\"header\":\"CLIENT_HELLO\",\"client_id\":0}"
+            "SERVER_HELLO; {\"header\":\"SERVER_HELLO\"}",
+            "CLIENT_HELLO; {\"header\":\"CLIENT_HELLO\"}"
     }, delimiter = ';')
     void toJsonString_HeaderOnly(MessageType type, String expected) {
         var msg = new Message<>(type);
@@ -19,8 +19,8 @@ public class MessageParserTest {
 
     @ParameterizedTest(name = "{index} => type={0}, a={1}, b={2} expected={1}")
     @CsvSource(value = {
-            "SERVER_HELLO; 7; Hello World; {\"header\":\"SERVER_HELLO\",\"client_id\":0,\"content\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}",
-            "CLIENT_HELLO; -12345; δ; {\"header\":\"CLIENT_HELLO\",\"client_id\":0,\"content\":{\"a\":-12345,\"b\":\"δ\",\"c\":[1,2,3,4]}}"
+            "SERVER_HELLO; 7; Hello World; {\"header\":\"SERVER_HELLO\",\"content\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}",
+            "CLIENT_HELLO; -12345; δ; {\"header\":\"CLIENT_HELLO\",\"content\":{\"a\":-12345,\"b\":\"δ\",\"c\":[1,2,3,4]}}"
     }, delimiter = ';')
     public void toJsonString_WithContent(MessageType type, int a, String b, String expected) {
         var msg = new Message<>(type, new ExampleClass(a, b));
@@ -30,7 +30,7 @@ public class MessageParserTest {
 
     @Test
     public void toJsonString_GenericContent() {
-        String expected = "{\"header\":\"LOBBY_LIST_DELIVERY\",\"client_id\":0,\"content\":{\"json\":{\"someInt\":1,\"someString\":\"Hello\",\"someObject\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}}}";
+        String expected = "{\"header\":\"LOBBY_LIST_DELIVERY\",\"content\":{\"json\":{\"someInt\":1,\"someString\":\"Hello\",\"someObject\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}}}";
         MessageBuilder builder = new MessageBuilder(MessageType.LOBBY_LIST_DELIVERY);
         builder.addField("someInt", 1);
         builder.addField("someString", "Hello");
