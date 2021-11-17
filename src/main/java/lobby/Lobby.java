@@ -41,6 +41,9 @@ public class Lobby {
     @SerializedName("dwarves_amount")
     private int dwarfs;
 
+    @SerializedName("ready_players")
+    private int readyPlayers;
+
     private transient Map<Integer, List<User>> teams = new HashMap<>();
 
     public int getId() {
@@ -133,5 +136,13 @@ public class Lobby {
 
     public void setTeams(Map<Integer, List<User>> teams) {
         this.teams = teams;
+    }
+
+    public int getReadyPlayers() {
+        return readyPlayers;
+    }
+
+    public void setReadyPlayers(int readyPlayers) {
+        this.readyPlayers = readyPlayers;
     }
 }
