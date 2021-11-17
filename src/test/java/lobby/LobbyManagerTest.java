@@ -1,5 +1,6 @@
 package lobby;
 
+import com.google.gson.Gson;
 import game.GameMap;
 import game.GameType;
 import game.User;
@@ -43,10 +44,10 @@ class LobbyManagerTest {
                 "}";
         client.sendMsg(request);
 
-        String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"client_id\":0,\"content\":true}";
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"client_id\":0,\"content\":{\"lobby_id\":0," +
+        String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":true}";
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0," +
                 "\"gametype\":\"solo\",\"map\":1,\"curr_players\":1,\"players_amount\":6,\"endgame_cond\":\"no_time\"," +
-                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4}}";
+                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0}}";
 
         try {
             String response1 = client.queue.take();
@@ -68,8 +69,7 @@ class LobbyManagerTest {
     void createLobby_ShouldFail(String msg) {
         client.sendMsg(msg);
 
-        String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"client_id\":0,\"content\":false}";
-
+        String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":false}";
         try {
             String response1 = client.queue.take();
             assertEquals(expected1, response1);
@@ -127,7 +127,7 @@ class LobbyManagerTest {
 
         Message<LobbyListRequest> msg = new Message<>(MessageType.LOBBY_LIST_REQUEST, request);
         msg.clientId = 1;
-        client.sendMsg(MessageParser.toJsonString(msg));
+        client.sendMsg(new Gson().toJson(msg));
 
         try {
             String response = client.queue.take();

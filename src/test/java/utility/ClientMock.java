@@ -1,9 +1,10 @@
 package utility;
 
+import messages.MessageParser;
+import messages.MessageType;
+
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ClientMock implements Runnable {
@@ -11,6 +12,7 @@ public class ClientMock implements Runnable {
     private Socket skt                = null;
     public LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>();
     private PrintStream out;
+    public int id;
 
     public ClientMock(String address, int port) {
         try {
@@ -65,7 +67,12 @@ public class ClientMock implements Runnable {
                     }
                     builder.append(nextChar);
                 } while (bracketCount > 0);
-                System.out.println("got response: " + builder.toString());
+                String readMsg = builder.toString();
+                System.out.println("got response: " + readMsg);
+                if (MessageParser.getMsgHeader(readMsg) == MessageType.SERVER_HELLO) {
+                    id = MessageParser.getMsgContent(readMsg, Integer.class);
+                    continue;
+                }
                 queue.add(builder.toString());
             } catch (IOException e) {
                 try {

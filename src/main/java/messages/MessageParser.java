@@ -1,11 +1,24 @@
 package messages;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
 public class MessageParser {
-    private static final Gson gson = new Gson();
+    private static final ExclusionStrategy strategy = new ExclusionStrategy() {
+        @Override
+        public boolean shouldSkipClass(Class<?> clazz) {
+            return false;
+        }
+
+        @Override
+        public boolean shouldSkipField(FieldAttributes field) {
+            return field.getName().equals("clientId");
+        }
+    };
+
+    private static final Gson gson = new GsonBuilder()
+            .addSerializationExclusionStrategy(strategy)
+            .create();
 
     /**
      * Converts Message of any type to json string
