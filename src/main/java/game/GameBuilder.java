@@ -1,5 +1,7 @@
 package game;
 
+import osm.Node;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,9 +48,8 @@ public final class GameBuilder {
         return this;
     }
 
-    public GameBuilder withDwarfs(int nofDwarfs) {
-        //TODO generate random list of dwarfs using OsmService
-        this.dwarfs = new ArrayList<>();
+    public GameBuilder withDwarfs(List<Node> nodes) {
+        this.dwarfs = nodes.stream().map(Dwarf::new).collect(Collectors.toList());
         return this;
     }
 
@@ -85,11 +86,10 @@ public final class GameBuilder {
         Optional<GamePlatform> gamePlatform = user.getPlatform();
 
         if (gamePlatform.isPresent()) {
-            //TODO add id from user
             if (gamePlatform.get().equals(GamePlatform.MOBILE)) {
-                player = new MobilePlayer(0, user.getHandler());
+                player = new MobilePlayer(user.getServerId());
             } else if (gamePlatform.get().equals(GamePlatform.WEB)) {
-                player = new WebPlayer(0, user.getHandler());
+                player = new WebPlayer(user.getServerId());
             }
         }
 

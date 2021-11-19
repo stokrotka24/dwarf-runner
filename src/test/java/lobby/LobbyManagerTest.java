@@ -1,7 +1,6 @@
 package lobby;
 
 import com.google.gson.Gson;
-import game.GameMap;
 import game.GameType;
 import game.User;
 import messages.Message;
@@ -15,7 +14,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import utility.ClientMock;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class LobbyManagerTest {
     private final User creator = Mockito.mock(User.class);
@@ -103,10 +103,6 @@ class LobbyManagerTest {
 
     @Test
     void getPlayerList() {
-    }
-
-    @Test
-    void createGame() {
     }
 
     @Test

@@ -1,5 +1,6 @@
 package server;
 
+import game.GameManager;
 import game.User;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
@@ -30,13 +31,15 @@ public class MenuServer {
 	 */
 	public LinkedBlockingQueue<String> inMsgQueue;
 	private LobbyManager lobbyManager;
-	private HashMap<Integer, User> players;
+	private GameManager gameManager;
+	private HashMap<Integer, User> users;
 	private int currID = 1;
 	
 	public void go() {
 		inMsgQueue = new LinkedBlockingQueue<String>(QUEUE_SIZE);
 		lobbyManager = new LobbyManager();
-		players = new HashMap<Integer, User>();
+		gameManager = new GameManager();
+		users = new HashMap<Integer, User>();
 		ClientAccepter clientAccepter = new ClientAccepter(this);
 		clientAccepter.start();
 		while(true) {
@@ -48,24 +51,29 @@ public class MenuServer {
 				switch(header) {
 					case LOBBY_LIST_REQUEST: {
 						lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
-								players.get(clientID));
+								users.get(clientID));
 						break;
 					}
 					case CREATE_LOBBY_REQUEST: {
 						lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
-								players.get(clientID));
+								users.get(clientID));
 						break;
 					}
 					case PLAYER_IS_READY: {
-						lobbyManager.setPlayerIsReady(players.get(clientID));
+						lobbyManager.setPlayerIsReady(users.get(clientID));
 						break;
 					}
 					case PLAYER_IS_UNREADY: {
-						lobbyManager.setPlayerIsUnready(players.get(clientID));
+						lobbyManager.setPlayerIsUnready(users.get(clientID));
 						break;
 					}
 					case START_GAME_REQUEST: {
-						lobbyManager.tryStartGame(players.get(clientID));
+						var lobby = lobbyManager.getLobbyIfReady(users.get(clientID));
+						if (lobby.isPresent()) {
+							var players = lobbyManager.getPlayerList(lobby.get().getId());
+							gameManager.runGame(lobby.get(), players);
+						}
+						break;
 					}
 					default: {
 						//TODO: Error handling
@@ -86,10 +94,10 @@ public class MenuServer {
      * @return unique ID of client
      */
     public int addInput(ClientHandler handler) {
-    	while (players.containsKey(currID)) {
+    	while (users.containsKey(currID)) {
     		currID = currID % MAX_CLIENTS_COUNT + 1;
     	}
-    	players.put(currID, new User(handler));
+    	users.put(currID, new User(currID, handler));
     	int toReturn = currID;
     	currID = currID % MAX_CLIENTS_COUNT + 1;
         return toReturn;
@@ -100,6 +108,6 @@ public class MenuServer {
      * @param clientID of client that handler ought to be removed
      */
     public void deleteInput(int clientID) {
-    	players.remove(clientID);
+    	users.remove(clientID);
     }
 }

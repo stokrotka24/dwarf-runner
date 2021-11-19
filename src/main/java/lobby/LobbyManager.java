@@ -1,17 +1,12 @@
 package lobby;
 
-import game.AbstractGame;
-import game.User;
-import game.GameBuilder;
 import game.GameMap;
+import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class LobbyManager {
@@ -185,35 +180,6 @@ public class LobbyManager {
     }
 
     /**
-     * creates game from specified lobby
-     * @param lobbyId id of lobby
-     * @return newly created game object
-     */
-    public AbstractGame createGame(int lobbyId) {
-        Lobby lobby = getLobbyInfo(lobbyId);
-
-        if (lobby == null) {
-            return null;
-        }
-
-        return buildGame(lobby);
-    }
-
-    // TODO might need changes after GameBuilder implementation
-    private AbstractGame buildGame(Lobby lobby) {
-        return GameBuilder.aGame()
-                .withId(lobby.getId())
-                .withGameMap(lobby.getMap())
-                .withPlayers(lobbyToPlayers.get(lobby.getId()))
-                .withDwarfs(lobby.getDwarfs())
-                .withMobileMaxSpeed(lobby.getMaxSpeed())
-                .withWebSpeed(lobby.getSpeed())
-                .withTeams(lobby.getTeams())
-                .withGameType(lobby.getType())
-                .build();
-    }
-
-    /**
      * removes lobby and redirect players back to
      * lobby browsing view
      * @param lobbyId id of lobby to remove
@@ -276,14 +242,16 @@ public class LobbyManager {
         getLobbyForUser(user).decrementReadyPlayers();
     }
 
-    public void tryStartGame(User user) {
+    public Optional<Lobby> getLobbyIfReady(User user) {
         var lobby = getLobbyForUser(user);
-        if (lobby.getPlayers() != lobby.getReadyPlayers() + 1) {
-            onStartGameRequest(user, false);
-        } else {
-            onStartGameRequest(user, true);
-            //TODO: here we start a game
+        boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers() + 1;
+        onStartGameRequest(user, playersAreReady);
+
+        if (playersAreReady) {
+            return Optional.of(lobby);
         }
+
+        return Optional.empty();
     }
 
     private void onStartGameRequest(User player, boolean status) {
