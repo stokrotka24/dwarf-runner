@@ -5,6 +5,7 @@ import game.GameMap;
 import game.GameType;
 import game.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +45,8 @@ public class Lobby {
     private int readyPlayers;
 
     private transient Map<Integer, List<User>> teams = new HashMap<>();
+
+    private transient List<Integer> readyPlayersIds = new ArrayList<>();
 
     public int getId() {
         return id;
@@ -145,11 +148,17 @@ public class Lobby {
         this.readyPlayers = readyPlayers;
     }
 
-    public void incrementReadyPlayers() {
-        this.readyPlayers++;
+    public void addPlayerToReadyPlayers(Integer id) {
+        if (!readyPlayersIds.contains(id)) {
+            readyPlayersIds.add(id);
+            this.readyPlayers++;
+        }
     }
 
-    public void decrementReadyPlayers() {
-        this.readyPlayers--;
+    public void removePlayerFromReadyPlayers(Integer id) {
+        if (readyPlayersIds.contains(id)) {
+            readyPlayersIds.remove(id);
+            this.readyPlayers--;
+        }
     }
 }

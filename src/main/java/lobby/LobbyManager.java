@@ -154,6 +154,7 @@ public class LobbyManager {
             lobby.setPlayers(lobby.getPlayers() - 1);
             lobby.getTeams().get(0).remove(player);
             lobby.getTeams().get(1).remove(player);
+            lobby.removePlayerFromReadyPlayers(player.getServerId());
         }
     }
 
@@ -235,11 +236,13 @@ public class LobbyManager {
     }
 
     public void setPlayerIsReady(User user) {
-        getLobbyForUser(user).incrementReadyPlayers();
+        Lobby lobby = getLobbyForUser(user);
+        lobby.addPlayerToReadyPlayers(user.getServerId());
     }
 
     public void setPlayerIsUnready(User user) {
-        getLobbyForUser(user).decrementReadyPlayers();
+        Lobby lobby = getLobbyForUser(user);
+        lobby.removePlayerFromReadyPlayers(user.getServerId());
     }
 
     public Optional<Lobby> getLobbyIfReady(User user) {
