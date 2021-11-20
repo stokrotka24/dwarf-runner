@@ -1,12 +1,11 @@
 package server;
 
-import game.AbstractPlayer;
+import game.GameManager;
 import game.User;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
 import lobby.LobbyManager;
 import messages.MessageParser;
-import messages.MessageType;
 
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,13 +31,15 @@ public class MenuServer {
 	 */
 	public LinkedBlockingQueue<String> inMsgQueue;
 	private LobbyManager lobbyManager;
-	private HashMap<Integer, User> players;
+	private GameManager gameManager;
+	private HashMap<Integer, User> users;
 	private int currID = 1;
 	
 	public void go() {
 		inMsgQueue = new LinkedBlockingQueue<String>(QUEUE_SIZE);
 		lobbyManager = new LobbyManager();
-		players = new HashMap<Integer, User>();
+		gameManager = new GameManager();
+		users = new HashMap<Integer, User>();
 		ClientAccepter clientAccepter = new ClientAccepter(this);
 		clientAccepter.start();
 		while(true) {
@@ -47,14 +48,38 @@ public class MenuServer {
 				String msgReceived = inMsgQueue.take();
 				var header = MessageParser.getMsgHeader(msgReceived);
                 int clientID = MessageParser.getClientId(msgReceived);
-				if (header == MessageType.LOBBY_LIST_REQUEST) {
-					lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
-							players.get(clientID));
+				switch(header) {
+					case LOBBY_LIST_REQUEST: {
+						lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
+								users.get(clientID));
+						break;
+					}
+					case CREATE_LOBBY_REQUEST: {
+						lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
+								users.get(clientID));
+						break;
+					}
+					case PLAYER_IS_READY: {
+						lobbyManager.setPlayerIsReady(users.get(clientID));
+						break;
+					}
+					case PLAYER_IS_UNREADY: {
+						lobbyManager.setPlayerIsUnready(users.get(clientID));
+						break;
+					}
+					case START_GAME_REQUEST: {
+						var lobby = lobbyManager.getLobbyIfReady(users.get(clientID));
+						if (lobby.isPresent()) {
+							var players = lobbyManager.getPlayerList(lobby.get().getId());
+							gameManager.runGame(lobby.get(), players);
+						}
+						break;
+					}
+					default: {
+						//TODO: Error handling
+						break;
+					}
 				}
-			    if (header == MessageType.CREATE_LOBBY_REQUEST) {
-			    	lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class), 
-			    			players.get(clientID));
-			    }
 			} 
 			catch (InterruptedException e){
 				//TODO: add some handling?
@@ -69,10 +94,10 @@ public class MenuServer {
      * @return unique ID of client
      */
     public int addInput(ClientHandler handler) {
-    	while (players.containsKey(currID)) {
+    	while (users.containsKey(currID)) {
     		currID = currID % MAX_CLIENTS_COUNT + 1;
     	}
-    	players.put(currID, new User(handler));
+    	users.put(currID, new User(currID, handler));
     	int toReturn = currID;
     	currID = currID % MAX_CLIENTS_COUNT + 1;
         return toReturn;
@@ -83,6 +108,6 @@ public class MenuServer {
      * @param clientID of client that handler ought to be removed
      */
     public void deleteInput(int clientID) {
-    	players.remove(clientID);
+    	users.remove(clientID);
     }
 }

@@ -5,6 +5,7 @@ import game.GameMap;
 import game.GameType;
 import game.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +29,8 @@ public class Lobby {
     @SerializedName("players_amount")
     private int maxPlayers;
 
-    // TODO end - possibly enum?
     @SerializedName("endgame_cond")
-    private String end;
+    private Integer end;
 
     @SerializedName("web_speed")
     private float speed;
@@ -45,6 +45,8 @@ public class Lobby {
     private int readyPlayers;
 
     private transient Map<Integer, List<User>> teams = new HashMap<>();
+
+    private transient List<Integer> readyPlayersIds = new ArrayList<>();
 
     public int getId() {
         return id;
@@ -98,11 +100,11 @@ public class Lobby {
         this.maxPlayers = maxPlayers;
     }
 
-    public String getEnd() {
+    public Integer getEnd() {
         return end;
     }
 
-    public void setEnd(String end) {
+    public void setEnd(Integer end) {
         this.end = end;
     }
 
@@ -144,5 +146,19 @@ public class Lobby {
 
     public void setReadyPlayers(int readyPlayers) {
         this.readyPlayers = readyPlayers;
+    }
+
+    public void addPlayerToReadyPlayers(Integer id) {
+        if (!readyPlayersIds.contains(id)) {
+            readyPlayersIds.add(id);
+            this.readyPlayers++;
+        }
+    }
+
+    public void removePlayerFromReadyPlayers(Integer id) {
+        if (readyPlayersIds.contains(id)) {
+            readyPlayersIds.remove(id);
+            this.readyPlayers--;
+        }
     }
 }

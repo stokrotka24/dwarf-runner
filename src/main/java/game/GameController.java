@@ -2,13 +2,17 @@ package game;
 
 import osm.OsmService;
 
-public class GameController {
-    private AbstractGame game;
-    private OsmService osmService;
+import java.util.Map;
 
-    public GameController(AbstractGame game) {
+public class GameController {
+    private final Map<Integer, User> playerToUser;
+    private AbstractGame game;
+    private final OsmService osmService;
+
+    public GameController(AbstractGame game, OsmService osmService, Map<Integer, User> playerToUser) {
         this.game = game;
-        sendDwarfsInitialLocation();
+        this.osmService = osmService;
+        this.playerToUser = playerToUser;
     }
 
     private void sendDwarfsInitialLocation() {

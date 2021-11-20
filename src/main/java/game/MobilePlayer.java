@@ -1,14 +1,12 @@
 package game;
 
-import server.ClientHandler;
-
 import java.sql.Timestamp;
 
 public class MobilePlayer extends AbstractPlayer {
     private Timestamp banTimestamp = null;
 
-    public MobilePlayer(int id, ClientHandler handler) {
-        super(id,handler);
+    public MobilePlayer(int id) {
+        super(id);
     }
 
     public void setBanTimestamp(Timestamp banTimestamp) {

@@ -1,7 +1,6 @@
 package lobby;
 
 import com.google.gson.Gson;
-import game.GameMap;
 import game.GameType;
 import game.User;
 import messages.Message;
@@ -15,7 +14,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import utility.ClientMock;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class LobbyManagerTest {
     private final User creator = Mockito.mock(User.class);
@@ -36,7 +36,7 @@ class LobbyManagerTest {
                 "        \"gametype\": \"solo\",\n" +
                 "        \"players_amount\": 6,\n" +
                 "        \"map\": 1,\n" +
-                "        \"endgame_cond\": \"no_time\",\n" +
+                "        \"endgame_cond\": 1,\n" +
                 "        \"web_speed\": 3,\n" +
                 "        \"mobile_max_speed\": 5,\n" +
                 "        \"dwarves_amount\": 4\n" +
@@ -46,7 +46,7 @@ class LobbyManagerTest {
 
         String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":true}";
         String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0," +
-                "\"gametype\":\"solo\",\"map\":1,\"curr_players\":1,\"players_amount\":6,\"endgame_cond\":\"no_time\"," +
+                "\"gametype\":\"solo\",\"map\":1,\"curr_players\":1,\"players_amount\":6,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0}}";
 
         try {
@@ -61,11 +61,11 @@ class LobbyManagerTest {
 
     @ParameterizedTest(name = "{index} => msg={0}")
     @ValueSource(strings = { "{\"header\":\"CREATE_LOBBY_REQUEST\",\"client_id\":1,\"content\":" +
-            "{\"gametype\":\"solo\",\"players_amount\":-6,\"map\":1,\"endgame_cond\":\"no_time\", \"web_speed\": 3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}",
+            "{\"gametype\":\"solo\",\"players_amount\":-6,\"map\":1,\"endgame_cond\":1, \"web_speed\": 3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}",
             "{\"header\":\"CREATE_LOBBY_REQUEST\",\"client_id\":1,\"content\"" +
-                    ":{\"gametype\":\"solo\",\"players_amount\":6,\"map\":-1,\"endgame_cond\":\"no_time\", \"web_speed\": 3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}",
+                    ":{\"gametype\":\"solo\",\"players_amount\":6,\"map\":-1,\"endgame_cond\":1, \"web_speed\": 3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}",
             "{\"header\":\"CREATE_LOBBY_REQUEST\",\"client_id\":1,\"content\":" +
-                    "{\"gametype\":\"solo\",\"players_amount\":6,\"map\":1,\"endgame_cond\":\"no_time\", \"web_speed\": -3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}" })
+                    "{\"gametype\":\"solo\",\"players_amount\":6,\"map\":1,\"endgame_cond\":1, \"web_speed\": -3,\"mobile_max_speed\": 5,\"dwarves_amount\": 4}}" })
     void createLobby_ShouldFail(String msg) {
         client.sendMsg(msg);
 
@@ -103,10 +103,6 @@ class LobbyManagerTest {
 
     @Test
     void getPlayerList() {
-    }
-
-    @Test
-    void createGame() {
     }
 
     @Test
