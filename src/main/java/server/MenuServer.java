@@ -5,7 +5,10 @@ import game.User;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
 import lobby.LobbyManager;
+import messages.Message;
+import messages.MessageException;
 import messages.MessageParser;
+import messages.MessageType;
 
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -36,59 +39,80 @@ public class MenuServer {
 	private int currID = 1;
 	
 	public void go() {
-		inMsgQueue = new LinkedBlockingQueue<String>(QUEUE_SIZE);
-		lobbyManager = new LobbyManager();
-		gameManager = new GameManager();
-		users = new HashMap<Integer, User>();
-		ClientAccepter clientAccepter = new ClientAccepter(this);
-		clientAccepter.start();
-		while(true) {
+		initComponents();
 
+		while(true) {
 			try {
 				String msgReceived = inMsgQueue.take();
-				var header = MessageParser.getMsgHeader(msgReceived);
-                int clientID = MessageParser.getClientId(msgReceived);
-				switch(header) {
-					case LOBBY_LIST_REQUEST: {
-						lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
-								users.get(clientID));
-						break;
+				System.out.println("Got msg" + msgReceived);
+
+				User sender = null;
+				try {
+					int clientID = MessageParser.getClientId(msgReceived);
+					sender = users.get(clientID);
+					if (sender == null) {
+						continue;
 					}
-					case CREATE_LOBBY_REQUEST: {
-						lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
-								users.get(clientID));
-						break;
-					}
-					case PLAYER_IS_READY: {
-						lobbyManager.setPlayerIsReady(users.get(clientID));
-						break;
-					}
-					case PLAYER_IS_UNREADY: {
-						lobbyManager.setPlayerIsUnready(users.get(clientID));
-						break;
-					}
-					case START_GAME_REQUEST: {
-						var lobby = lobbyManager.getLobbyIfReady(users.get(clientID));
-						if (lobby.isPresent()) {
-							var players = lobbyManager.getPlayerList(lobby.get().getId());
-							gameManager.runGame(lobby.get(), players);
+
+					var header = MessageParser.getMsgHeader(msgReceived);
+
+					switch(header) {
+						case LOBBY_LIST_REQUEST: {
+							lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
+									sender);
+							break;
 						}
-						break;
+						case CREATE_LOBBY_REQUEST: {
+							lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
+									sender);
+							break;
+						}
+						case PLAYER_IS_READY: {
+							lobbyManager.setPlayerIsReady(sender);
+							break;
+						}
+						case PLAYER_IS_UNREADY: {
+							lobbyManager.setPlayerIsUnready(sender);
+							break;
+						}
+						case START_GAME_REQUEST: {
+							var lobby = lobbyManager.getLobbyIfReady(sender);
+							if (lobby.isPresent()) {
+								var players = lobbyManager.getPlayerList(lobby.get().getId());
+								gameManager.runGame(lobby.get(), players);
+							}
+							break;
+						}
+						default: {
+							Message<String> msg = new Message<>(MessageType.ERROR, "Header has been read correctly, " +
+									"but server doesn't currently support this kind of message\nYour message was: " + msgReceived);
+							sender.sendMessage(MessageParser.toJsonString(msg));
+							break;
+						}
 					}
-					default: {
-						//TODO: Error handling
-						break;
+				} catch (MessageException e) {
+					if (sender != null) {
+						Message<String> msg = new Message<>(MessageType.ERROR, e.getMessage() + " Your message was: " + msgReceived);
+						sender.sendMessage(MessageParser.toJsonString(msg));
 					}
 				}
-			} 
-			catch (InterruptedException e){
+			} catch (InterruptedException e) {
 				//TODO: add some handling?
 				e.printStackTrace();
 			}
 		}
 	}
 
-    /**
+	private void initComponents() {
+		inMsgQueue = new LinkedBlockingQueue<>(QUEUE_SIZE);
+		lobbyManager = new LobbyManager();
+		gameManager = new GameManager();
+		users = new HashMap<>();
+		ClientAccepter clientAccepter = new ClientAccepter(this);
+		clientAccepter.start();
+	}
+
+	/**
      * Stores handler into map of clients, allowing for further communication with client corresponding to handler
      * @param handler corresponding to client connected to server
      * @return unique ID of client

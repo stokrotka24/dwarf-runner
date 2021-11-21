@@ -47,7 +47,12 @@ public class MessageParserTest {
             "{\"header\":\"CLIENT_HELLO\",\"client_id\":3}; CLIENT_HELLO; 3"
     }, delimiter = ';')
     void fromJsonString_HeaderOnly(String msg, MessageType expectedType, int expectedId) {
-        Message actual = MessageParser.fromJsonString(msg, Object.class);
+        Message actual = null;
+        try {
+            actual = MessageParser.fromJsonString(msg, Object.class);
+        } catch (MessageException e) {
+            e.printStackTrace();
+        }
         assertEquals(expectedType, actual.header);
         assertEquals(expectedId, actual.clientId);
     }
@@ -58,7 +63,12 @@ public class MessageParserTest {
             "{\"header\":\"CLIENT_HELLO\",\"client_id\":0,\"content\":{\"a\":-12345,\"b\":\"δ\",\"c\":[1,2,3,4]}}; -12345; δ"
     }, delimiter = ';')
     void fromJsonString_WithContent(String msg, int expectedA, String expectedB) {
-        Message<ExampleClass> actual = MessageParser.fromJsonString(msg, ExampleClass.class);
+        Message<ExampleClass> actual = null;
+        try {
+            actual = MessageParser.fromJsonString(msg, ExampleClass.class);
+        } catch (MessageException e) {
+            e.printStackTrace();
+        }
         assertEquals(expectedA, actual.content.a);
         assertEquals(expectedB, actual.content.b);
     }
@@ -67,7 +77,12 @@ public class MessageParserTest {
     void fromJsonString_GenericContent() {
         String msg = "{\"header\":\"CREATE_LOBBY_REQUEST\", \"client_id\": 14,\"content\":{\"json\":{\"someInt\":1,\"someString\":\"Hello\",\"someObject\":{\"a\":7,\"b\":\"Hello World\",\"c\":[1,2,3,4]}}}}";
 
-        Message<GenericMsgContent> actual = MessageParser.fromJsonString(msg, GenericMsgContent.class);
+        Message<GenericMsgContent> actual = null;
+        try {
+            actual = MessageParser.fromJsonString(msg, GenericMsgContent.class);
+        } catch (MessageException e) {
+            e.printStackTrace();
+        }
 
         assertTrue(actual.content.hasField("someInt"));
         assertTrue(actual.content.hasField("someObject"));
@@ -75,7 +90,11 @@ public class MessageParserTest {
 
         assertEquals(1, actual.content.get("someInt").getAsInt());
         assertEquals("Hello", actual.content.get("someString").getAsString());
-        assertEquals(7, MessageParser.jsonElementToObject(actual.content.get("someObject"), ExampleClass.class).a);
+        try {
+            assertEquals(7, MessageParser.jsonElementToObject(actual.content.get("someObject"), ExampleClass.class).a);
+        } catch (MessageException e) {
+            e.printStackTrace();
+        }
         assertNull(actual.content.get("someFloat"));
     }
 

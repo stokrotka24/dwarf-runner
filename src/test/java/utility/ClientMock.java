@@ -1,5 +1,6 @@
 package utility;
 
+import messages.MessageException;
 import messages.MessageParser;
 import messages.MessageType;
 
@@ -71,7 +72,6 @@ public class ClientMock implements Runnable {
                 System.out.println("got response: " + readMsg);
                 if (MessageParser.getMsgHeader(readMsg) == MessageType.SERVER_HELLO) {
                     id = MessageParser.getMsgContent(readMsg, Integer.class);
-                    continue;
                 }
                 queue.add(builder.toString());
             } catch (IOException e) {
@@ -81,6 +81,8 @@ public class ClientMock implements Runnable {
                     ex.printStackTrace();
                 }
                 return;
+            } catch (MessageException e) {
+
             }
         }
     }

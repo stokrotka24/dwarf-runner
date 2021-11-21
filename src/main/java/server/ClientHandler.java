@@ -21,7 +21,7 @@ public class ClientHandler extends Thread {
 
     public void sendMessage(String message) {
         if (clientInput != null) {
-            clientInput.print(message);
+            clientInput.print(message + '\n');
         }
     }
 
