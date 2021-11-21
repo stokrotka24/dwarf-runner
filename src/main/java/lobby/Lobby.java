@@ -17,27 +17,34 @@ public class Lobby {
     @SerializedName("lobby_name")
     private String name;
 
+    @JsonRequired
     @SerializedName("gametype")
     private String type;
 
+    @JsonRequired
     @SerializedName("map")
     private int mapId;
 
     @SerializedName("curr_players")
     private int players;
 
+    @JsonRequired
     @SerializedName("players_amount")
     private int maxPlayers;
 
+    @JsonRequired
     @SerializedName("endgame_cond")
     private Integer end;
 
+    @JsonRequired
     @SerializedName("web_speed")
     private float speed;
 
+    @JsonRequired
     @SerializedName("mobile_max_speed")
     private float maxSpeed;
 
+    @JsonRequired
     @SerializedName("dwarves_amount")
     private int dwarfs;
 

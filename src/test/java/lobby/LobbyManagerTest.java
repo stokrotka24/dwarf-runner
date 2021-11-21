@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import game.GameType;
 import game.User;
 import messages.Message;
+import messages.MessageException;
 import messages.MessageParser;
 import messages.MessageType;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,13 +26,18 @@ class LobbyManagerTest {
     static void prepareClient() {
         Thread thread = new Thread(client);
         thread.start();
+        try {
+            client.queue.take();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     void createLobby_ShouldSucceed() {
         String request = "{\n" +
                 "    \"header\": \"CREATE_LOBBY_REQUEST\",\n" +
-                "    \"client_id\": 1,\n" +
+                "    \"client_id\":" + client.id + ",\n" +
                 "    \"content\": {\n" +
                 "        \"gametype\": \"solo\",\n" +
                 "        \"players_amount\": 6,\n" +
@@ -122,7 +128,7 @@ class LobbyManagerTest {
         request.setRangeEnd(rangeEnd);
 
         Message<LobbyListRequest> msg = new Message<>(MessageType.LOBBY_LIST_REQUEST, request);
-        msg.clientId = 1;
+        msg.clientId = client.id;
         client.sendMsg(new Gson().toJson(msg));
 
         try {
@@ -142,6 +148,8 @@ class LobbyManagerTest {
             }
 
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (MessageException e) {
             e.printStackTrace();
         }
     }
