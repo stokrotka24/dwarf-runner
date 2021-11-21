@@ -21,7 +21,7 @@ public class ClientHandler extends Thread {
 
     public void sendMessage(String message) {
         if (clientInput != null) {
-            clientInput.print(message);
+            clientInput.print(message + '\n');
         }
     }
 
@@ -35,12 +35,6 @@ public class ClientHandler extends Thread {
 
     @Override
     public void run() {
-        try {
-            clientInput = new PrintStream(clientSocket.getOutputStream(), true);
-            clientOutput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        } catch (IOException e) {
-            return;
-        }
         mainLoop: while (isRunning.get()) {
             try {
                 StringBuilder builder = new StringBuilder();
@@ -83,16 +77,26 @@ public class ClientHandler extends Thread {
 
     }
 
+    private void initStreams() {
+        try {
+            clientInput = new PrintStream(clientSocket.getOutputStream(), true);
+            clientOutput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ClientHandler(Socket clientSocket, Integer maxJsonLength) {
         this.clientSocket = clientSocket;
         this.maxJsonLength = maxJsonLength;
         this.output = new LinkedBlockingQueue<String>();
+        initStreams();
     }
 
     public ClientHandler(Socket clientSocket, Integer maxJsonLength, LinkedBlockingQueue<String> output) {
         this.clientSocket = clientSocket;
         this.maxJsonLength = maxJsonLength;
         this.output = output;
+        initStreams();
     }
-
 }

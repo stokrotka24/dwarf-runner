@@ -5,6 +5,7 @@ import game.GameMap;
 import game.GameType;
 import game.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,28 +17,34 @@ public class Lobby {
     @SerializedName("lobby_name")
     private String name;
 
+    @JsonRequired
     @SerializedName("gametype")
     private String type;
 
+    @JsonRequired
     @SerializedName("map")
     private int mapId;
 
     @SerializedName("curr_players")
     private int players;
 
+    @JsonRequired
     @SerializedName("players_amount")
     private int maxPlayers;
 
-    // TODO end - possibly enum?
+    @JsonRequired
     @SerializedName("endgame_cond")
-    private String end;
+    private Integer end;
 
+    @JsonRequired
     @SerializedName("web_speed")
     private float speed;
 
+    @JsonRequired
     @SerializedName("mobile_max_speed")
     private float maxSpeed;
 
+    @JsonRequired
     @SerializedName("dwarves_amount")
     private int dwarfs;
 
@@ -45,6 +52,8 @@ public class Lobby {
     private int readyPlayers;
 
     private transient Map<Integer, List<User>> teams = new HashMap<>();
+
+    private transient List<Integer> readyPlayersIds = new ArrayList<>();
 
     public int getId() {
         return id;
@@ -98,11 +107,11 @@ public class Lobby {
         this.maxPlayers = maxPlayers;
     }
 
-    public String getEnd() {
+    public Integer getEnd() {
         return end;
     }
 
-    public void setEnd(String end) {
+    public void setEnd(Integer end) {
         this.end = end;
     }
 
@@ -144,5 +153,19 @@ public class Lobby {
 
     public void setReadyPlayers(int readyPlayers) {
         this.readyPlayers = readyPlayers;
+    }
+
+    public void addPlayerToReadyPlayers(Integer id) {
+        if (!readyPlayersIds.contains(id)) {
+            readyPlayersIds.add(id);
+            this.readyPlayers++;
+        }
+    }
+
+    public void removePlayerFromReadyPlayers(Integer id) {
+        if (readyPlayersIds.contains(id)) {
+            readyPlayersIds.remove(id);
+            this.readyPlayers--;
+        }
     }
 }

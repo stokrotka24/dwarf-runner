@@ -1,10 +1,8 @@
 package game;
 
-import server.ClientHandler;
-
 public class WebPlayer extends AbstractPlayer {
-    public WebPlayer(int id, ClientHandler handler) {
-        super(id,handler);
+    public WebPlayer(int id) {
+        super(id);
     }
 
     @Override

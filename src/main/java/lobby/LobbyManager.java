@@ -1,17 +1,12 @@
 package lobby;
 
-import game.AbstractGame;
-import game.User;
-import game.GameBuilder;
 import game.GameMap;
+import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class LobbyManager {
@@ -159,6 +154,7 @@ public class LobbyManager {
             lobby.setPlayers(lobby.getPlayers() - 1);
             lobby.getTeams().get(0).remove(player);
             lobby.getTeams().get(1).remove(player);
+            lobby.removePlayerFromReadyPlayers(player.getServerId());
         }
     }
 
@@ -182,35 +178,6 @@ public class LobbyManager {
      */
     public List<User> getPlayerList(int lobbyId) {
         return lobbyToPlayers.get(lobbyId);
-    }
-
-    /**
-     * creates game from specified lobby
-     * @param lobbyId id of lobby
-     * @return newly created game object
-     */
-    public AbstractGame createGame(int lobbyId) {
-        Lobby lobby = getLobbyInfo(lobbyId);
-
-        if (lobby == null) {
-            return null;
-        }
-
-        return buildGame(lobby);
-    }
-
-    // TODO might need changes after GameBuilder implementation
-    private AbstractGame buildGame(Lobby lobby) {
-        return GameBuilder.aGame()
-                .withId(lobby.getId())
-                .withGameMap(lobby.getMap())
-                .withPlayers(lobbyToPlayers.get(lobby.getId()))
-                .withDwarfs(lobby.getDwarfs())
-                .withMobileMaxSpeed(lobby.getMaxSpeed())
-                .withWebSpeed(lobby.getSpeed())
-                .withTeams(lobby.getTeams())
-                .withGameType(lobby.getType())
-                .build();
     }
 
     /**
@@ -262,5 +229,40 @@ public class LobbyManager {
         LobbyListDelivery delivery = new LobbyListDelivery(lobbyList, tmp.size());
         Message<LobbyListDelivery> msg = new Message<>(MessageType.LOBBY_LIST_DELIVERY, delivery);
         player.sendMessage(MessageParser.toJsonString(msg));
+    }
+
+    private Lobby getLobbyForUser(User user) {
+        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId()).contains(user)).findFirst().get();
+    }
+
+    public void setPlayerIsReady(User user) {
+        Lobby lobby = getLobbyForUser(user);
+        lobby.addPlayerToReadyPlayers(user.getServerId());
+    }
+
+    public void setPlayerIsUnready(User user) {
+        Lobby lobby = getLobbyForUser(user);
+        lobby.removePlayerFromReadyPlayers(user.getServerId());
+    }
+
+    public Optional<Lobby> getLobbyIfReady(User user) {
+        var lobby = getLobbyForUser(user);
+        boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers() + 1;
+        onStartGameRequest(user, playersAreReady);
+
+        if (playersAreReady) {
+            return Optional.of(lobby);
+        }
+
+        return Optional.empty();
+    }
+
+    private void onStartGameRequest(User player, boolean status) {
+        Message<Boolean> gameMsg = new Message<>(MessageType.START_GAME_RESPONSE, status);
+        var stringMsg = MessageParser.toJsonString(gameMsg);
+
+        if (player != null) {
+            player.sendMessage(stringMsg);
+        }
     }
 }
