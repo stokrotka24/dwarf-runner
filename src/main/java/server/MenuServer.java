@@ -13,6 +13,9 @@ import messages.MessageType;
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import dbconn.UserAuthenticator;
+import dbconn.jsonclasses.LoginCredentials;
+
 /**
  * Thread responsible for creating other threads used for communication with clients, controlling games and controlling lobbies.
  * Thread itself is responsible for parsing requests from clients and passing them to adequate classes that manage them.
@@ -64,6 +67,11 @@ public class MenuServer {
 						}
 						case CREATE_LOBBY_REQUEST: {
 							lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
+									sender);
+							break;
+						}
+						case LOG_IN_REQUEST: {
+							UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, LoginCredentials.class), 
 									sender);
 							break;
 						}
