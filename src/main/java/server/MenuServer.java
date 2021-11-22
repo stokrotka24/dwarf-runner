@@ -72,7 +72,7 @@ public class MenuServer {
 						}
 						case LOG_IN_REQUEST: {
                             UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, LoginCredentials.class), 
-	                                sender);
+                                    sender);
                             break;
                         }
 						case PLAYER_IS_READY: {
