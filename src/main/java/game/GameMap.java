@@ -17,4 +17,8 @@ public enum GameMap {
     public static GameMap fromInt(int i) {
         return mapTypeValues[i];
     }
+
+    public static int nofMaps() {
+        return mapTypeValues.length;
+    }
 }

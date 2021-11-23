@@ -1,41 +1,171 @@
 package lobby;
 
 import com.google.gson.annotations.SerializedName;
+import game.GameMap;
 import game.GameType;
 import game.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Lobby {
-    public int id;
-    public String name;
+    @SerializedName("lobby_id")
+    private int id;
 
-    @SerializedName("map_id")
-    public int mapId;
+    @SerializedName("lobby_name")
+    private String name;
+
+    @JsonRequired
+    @SerializedName("gametype")
+    private String type;
+
+    @JsonRequired
+    @SerializedName("map")
+    private int mapId;
 
     @SerializedName("curr_players")
-    public int players;
+    private int players;
 
-    @SerializedName("game_mode")
-    public GameType type;
+    @JsonRequired
+    @SerializedName("players_amount")
+    private int maxPlayers;
 
-    @SerializedName("max_amount")
-    public int maxPlayers;
-
-    // TODO end - possibly enum?
+    @JsonRequired
     @SerializedName("endgame_cond")
-    public int end;
+    private Integer end;
 
+    @JsonRequired
     @SerializedName("web_speed")
-    public float speed;
+    private float speed;
 
+    @JsonRequired
     @SerializedName("mobile_max_speed")
-    public float maxSpeed;
+    private float maxSpeed;
 
+    @JsonRequired
     @SerializedName("dwarves_amount")
-    public int dwarfs;
+    private int dwarfs;
 
-    public transient Map<Integer, List<User>> teams = new HashMap<>();
+    @SerializedName("ready_players")
+    private int readyPlayers;
+
+    private transient Map<Integer, List<User>> teams = new HashMap<>();
+
+    private transient List<Integer> readyPlayersIds = new ArrayList<>();
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public GameType getType() {
+        return type.equals("solo") ? GameType.SOLO_GAME : GameType.TEAM_GAME;
+    }
+
+    public void setType(GameType type) {
+        this.type = type == GameType.SOLO_GAME ? "solo" : "team";
+    }
+
+    public GameMap getMap() {
+        return GameMap.fromInt(mapId);
+    }
+
+    public void setMap(GameMap map) {
+        this.mapId = map.ordinal();
+    }
+
+    public int getMapId() {
+        return mapId;
+    }
+
+    public int getPlayers() {
+        return players;
+    }
+
+    public void setPlayers(int players) {
+        this.players = players;
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
+    public void setMaxPlayers(int maxPlayers) {
+        this.maxPlayers = maxPlayers;
+    }
+
+    public Integer getEnd() {
+        return end;
+    }
+
+    public void setEnd(Integer end) {
+        this.end = end;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public float getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    public void setMaxSpeed(float maxSpeed) {
+        this.maxSpeed = maxSpeed;
+    }
+
+    public int getDwarfs() {
+        return dwarfs;
+    }
+
+    public void setDwarfs(int dwarfs) {
+        this.dwarfs = dwarfs;
+    }
+
+    public Map<Integer, List<User>> getTeams() {
+        return teams;
+    }
+
+    public void setTeams(Map<Integer, List<User>> teams) {
+        this.teams = teams;
+    }
+
+    public int getReadyPlayers() {
+        return readyPlayers;
+    }
+
+    public void setReadyPlayers(int readyPlayers) {
+        this.readyPlayers = readyPlayers;
+    }
+
+    public void addPlayerToReadyPlayers(Integer id) {
+        if (!readyPlayersIds.contains(id)) {
+            readyPlayersIds.add(id);
+            this.readyPlayers++;
+        }
+    }
+
+    public void removePlayerFromReadyPlayers(Integer id) {
+        if (readyPlayersIds.contains(id)) {
+            readyPlayersIds.remove(id);
+            this.readyPlayers--;
+        }
+    }
 }
