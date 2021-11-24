@@ -22,7 +22,16 @@ public class Node {
     public Double getLat() {
         return coords.getLat();
     }
+
+    public Double getY() {
+        return coords.getLat();
+    }
+
     public Double getLon() {
+        return coords.getLon();
+    }
+
+    public Double getX() {
         return coords.getLon();
     }
 

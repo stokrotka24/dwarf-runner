@@ -14,7 +14,15 @@ public class Coordinates {
         return lat;
     }
 
+    public Double getY() {
+        return lat;
+    }
+
     public Double getLon() {
+        return lon;
+    }
+
+    public Double getX() {
         return lon;
     }
 
