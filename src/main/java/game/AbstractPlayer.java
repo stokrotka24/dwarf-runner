@@ -12,10 +12,8 @@ public abstract class AbstractPlayer {
     private Coordinates coords;
 
 
-    public AbstractPlayer(int id, Node node) {
+    public AbstractPlayer(int id) {
         this.id = id;
-        this.node = node;
-        this.coords = node.getCoords();
     }
 
     public int getId() {
@@ -28,6 +26,7 @@ public abstract class AbstractPlayer {
 
     public void setNode(Node node) {
         this.node = node;
+        this.coords = node.getCoords();
     }
 
     public Node getNode() {

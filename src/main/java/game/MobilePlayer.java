@@ -6,8 +6,8 @@ import osm.Node;
 public class MobilePlayer extends AbstractPlayer {
     private Timestamp banTimestamp = null;
   
-    public MobilePlayer(int id, Node node) {
-        super(id, node);
+    public MobilePlayer(int id) {
+        super(id);
     }
 
     public void setBanTimestamp(Timestamp banTimestamp) {
