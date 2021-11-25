@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.LoginResponseData;
+import game.GamePlatform;
 import game.User;
 import messages.Message;
 import messages.MessageParser;
@@ -28,7 +29,7 @@ public class UserAuthenticator {
         }
         
         sendSuccessResponse("Przemek", creator);
-        return;
+//        return;
         //TODO: uncomment this when DB works again :)))
 //        try {
 //            CallableStatement cStatement = DBConnection.getConnection().prepareCall(loginQuery);
@@ -38,6 +39,7 @@ public class UserAuthenticator {
 //            cStatement.executeQuery();
 //            String userNickname = cStatement.getString(1);
 //            if (!userNickname.isEmpty()) {
+//                creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
 //                sendSuccessResponse(userNickname, creator);
 //                return;
 //            }

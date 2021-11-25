@@ -8,6 +8,9 @@ public class LoginCredentials {
 
     @SerializedName("password")
     private String password;
+    
+    @SerializedName("is_mobile")
+    private boolean isMobile;
 
     public String getEmail() {
         return email;
@@ -23,6 +26,16 @@ public class LoginCredentials {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isMobile()
+    {
+        return isMobile;
+    }
+
+    public void setMobile(boolean isMobile)
+    {
+        this.isMobile = isMobile;
     }
 
 }
