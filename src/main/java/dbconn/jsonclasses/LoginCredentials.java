@@ -2,13 +2,18 @@ package dbconn.jsonclasses;
 
 import com.google.gson.annotations.SerializedName;
 
+import lobby.JsonRequired;
+
 public class LoginCredentials {
+    @JsonRequired
     @SerializedName("email")
     private String email;
 
+    @JsonRequired
     @SerializedName("password")
     private String password;
-    
+
+    @JsonRequired
     @SerializedName("is_mobile")
     private boolean isMobile;
 
