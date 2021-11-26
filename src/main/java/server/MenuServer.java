@@ -2,6 +2,7 @@ package server;
 
 import game.GameManager;
 import game.User;
+import lobby.JoinLobbyRequest;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
 import lobby.LobbyManager;
@@ -68,6 +69,19 @@ public class MenuServer {
 						case CREATE_LOBBY_REQUEST: {
 							lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
 									sender);
+							break;
+						}
+						case JOIN_LOBBY_REQUEST: {
+							lobbyManager.addPlayerToLobby(MessageParser.getMsgContent(msgReceived, JoinLobbyRequest.class),
+									sender);
+							break;
+						}
+						case CHANGE_TEAM_REQUEST: {
+							lobbyManager.changeTeam(sender, MessageParser.getMsgContent(msgReceived, Integer.class));
+							break;
+						}
+						case QUIT_LOBBY_REQUEST: {
+							lobbyManager.removePlayerFromLobby(sender);
 							break;
 						}
 						case LOG_IN_REQUEST: {
