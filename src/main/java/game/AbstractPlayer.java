@@ -5,12 +5,10 @@ import osm.Node;
 
 public abstract class AbstractPlayer {
 
-
     private final int id;
     protected int points = 0;
     private Node node;
     private Coordinates coords;
-
 
     public AbstractPlayer(int id) {
         this.id = id;
@@ -42,12 +40,12 @@ public abstract class AbstractPlayer {
         return false;
     }
 
-    public void setLon(Double lon) {
-        coords.setLon(lon);
+    public void setX(Double x) {
+        coords.setX(x);
     }
 
-    public void setLat(Double lat) {
-        coords.setLat(lat);
+    public void setY(Double y) {
+        coords.setY(y);
     }
 
     public Coordinates getCoords() {

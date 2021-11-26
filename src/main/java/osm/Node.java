@@ -1,10 +1,7 @@
 package osm;
 
-import game.WebMove;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Node
@@ -19,20 +16,12 @@ public class Node {
         neighbors.add(coords);
     }
 
-    public Double getLat() {
-        return coords.getLat();
-    }
-
     public Double getY() {
-        return coords.getLat();
-    }
-
-    public Double getLon() {
-        return coords.getLon();
+        return coords.getY();
     }
 
     public Double getX() {
-        return coords.getLon();
+        return coords.getX();
     }
 
     public Coordinates getCoords() {
@@ -51,8 +40,8 @@ public class Node {
         return neighbors;
     }
 
-    public Node(Long id, Double lat, Double lon) {
-        this.coords = new Coordinates(lat, lon);
+    public Node(Long id, Double y, Double x) {
+        this.coords = new Coordinates(y, x);
         this.id = id;
         this.neighbors = new ArrayList<>();
     }

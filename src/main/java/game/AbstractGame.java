@@ -71,8 +71,8 @@ public abstract class AbstractGame {
             double t = Math.min(1, webSpeed / dist);
             double newX = from.getX() + t * (to.getX() - from.getX());
             double newY = from.getY() + t * (to.getY() - from.getY());
-            player.setLon(newX);
-            player.setLat(newY);
+            player.setX(newX);
+            player.setY(newY);
         }
     }
 }

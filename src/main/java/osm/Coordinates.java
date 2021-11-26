@@ -2,35 +2,27 @@ package osm;
 
 public class Coordinates {
 
-    private Double lat;
-    private Double lon;
+    private Double y;
+    private Double x;
 
-    public Coordinates(Double lat, Double lon) {
-        this.lat = lat;
-        this.lon = lon;
-    }
-
-    public Double getLat() {
-        return lat;
+    public Coordinates(Double y, Double x) {
+        this.y = y;
+        this.x = x;
     }
 
     public Double getY() {
-        return lat;
-    }
-
-    public Double getLon() {
-        return lon;
+        return y;
     }
 
     public Double getX() {
-        return lon;
+        return x;
     }
 
-    public void setLat(Double lat) {
-        this.lat = lat;
+    public void setY(Double y) {
+        this.y = y;
     }
 
-    public void setLon(Double lon) {
-        this.lon = lon;
+    public void setX(Double x) {
+        this.x = x;
     }
 }
