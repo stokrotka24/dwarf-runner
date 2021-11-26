@@ -1,5 +1,7 @@
 package server;
 
+import dbconn.UserAuthenticator;
+import dbconn.jsonclasses.LoginCredentials;
 import game.GameManager;
 import game.User;
 import lobby.JoinLobbyRequest;
@@ -13,9 +15,6 @@ import messages.MessageType;
 
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import dbconn.UserAuthenticator;
-import dbconn.jsonclasses.LoginCredentials;
 
 /**
  * Thread responsible for creating other threads used for communication with clients, controlling games and controlling lobbies.
@@ -91,10 +90,12 @@ public class MenuServer {
 						}
 						case PLAYER_IS_READY: {
 							lobbyManager.setPlayerIsReady(sender);
+							sendServerAcknowledge(sender, MessageType.PLAYER_IS_READY);
 							break;
 						}
 						case PLAYER_IS_UNREADY: {
 							lobbyManager.setPlayerIsUnready(sender);
+							sendServerAcknowledge(sender, MessageType.PLAYER_IS_UNREADY);
 							break;
 						}
 						case START_GAME_REQUEST: {
@@ -102,6 +103,7 @@ public class MenuServer {
 							if (lobby.isPresent() && sender == lobby.get().getCreator()) {
 								var players = lobbyManager.getPlayerList(lobby.get().getId());
 								gameManager.runGame(lobby.get(), players);
+								lobbyManager.removeLobby(lobby.get().getId());
 							}
 							break;
 						}
@@ -156,4 +158,13 @@ public class MenuServer {
     public void deleteInput(int clientID) {
     	users.remove(clientID);
     }
+
+	private void sendServerAcknowledge(User user, MessageType type) {
+		Message<MessageType> acknowledgeMsg = new Message<>(MessageType.ACKNOWLEDGE, type);
+		var stringMsg = MessageParser.toJsonString(acknowledgeMsg);
+
+		if (user != null) {
+			user.sendMessage(stringMsg);
+		}
+	}
 }
