@@ -1,7 +1,8 @@
 package game;
 
-import java.util.List;
 import osm.Coordinates;
+
+import java.util.List;
 
 public abstract class AbstractGame {
 
@@ -11,19 +12,25 @@ public abstract class AbstractGame {
     private double webSpeed;
     private double mobileMaxSpeed;
     private List<Dwarf> dwarfs;
+    private Integer timeToEnd;
 
     public AbstractGame(int id, GameMap gameMap, List<AbstractPlayer> players, float webSpeed,
-        float mobileMaxSpeed, List<Dwarf> dwarfs) {
+        float mobileMaxSpeed, List<Dwarf> dwarfs, Integer timeToEnd) {
         this.id = id;
         this.gameMap = gameMap;
         this.players = players;
         this.webSpeed = webSpeed;
         this.mobileMaxSpeed = mobileMaxSpeed;
         this.dwarfs = dwarfs;
+        this.timeToEnd = timeToEnd;
     }
 
     public List<AbstractPlayer> getPlayers() {
         return players;
+    }
+
+    public Integer getTimeToEnd() {
+        return timeToEnd;
     }
 
     public void webMove(WebPlayer player, WebMove move) {

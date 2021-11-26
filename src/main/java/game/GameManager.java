@@ -15,6 +15,11 @@ public class GameManager {
     }
 
     public void runGame(Lobby lobby, List<User> users) {
+        var gameController = createGameController(lobby, users);
+        gameController.runGame();
+    }
+
+    private GameController createGameController(Lobby lobby, List<User> users) {
         var osmService = new OsmService(lobby.getMapId());
         var game = buildGame(lobby, users, osmService);
 
@@ -27,6 +32,7 @@ public class GameManager {
         for (User user : users) {
             userToGameController.put(user.getServerId(), gameController);
         }
+        return gameController;
     }
 
     private AbstractGame buildGame(Lobby lobby, List<User> users, OsmService osmService) {
@@ -39,6 +45,7 @@ public class GameManager {
                 .withWebSpeed(lobby.getSpeed())
                 .withTeams(lobby.getTeams())
                 .withGameType(lobby.getType())
+                .withEndCondition(lobby.getEnd())
                 .build();
     }
 }
