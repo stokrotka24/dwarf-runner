@@ -78,6 +78,7 @@ public class MenuServer {
 						}
 						case CHANGE_TEAM_REQUEST: {
 							lobbyManager.changeTeam(sender, MessageParser.getMsgContent(msgReceived, Integer.class));
+							break;
 						}
 						case QUIT_LOBBY_REQUEST: {
 							lobbyManager.removePlayerFromLobby(sender);
