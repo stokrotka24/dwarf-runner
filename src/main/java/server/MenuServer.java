@@ -98,11 +98,13 @@ public class MenuServer {
 						case PLAYER_IS_READY: {
 							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
 							lobbyManager.setPlayerIsReady(sender);
+							sendServerAcknowledge(sender, MessageType.PLAYER_IS_READY);
 							break;
 						}
 						case PLAYER_IS_UNREADY: {
 							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
 							lobbyManager.setPlayerIsUnready(sender);
+							sendServerAcknowledge(sender, MessageType.PLAYER_IS_UNREADY);
 							break;
 						}
 						case START_GAME_REQUEST: {
@@ -111,6 +113,7 @@ public class MenuServer {
 							if (lobby.isPresent() && sender == lobby.get().getCreator()) {
 								var players = lobbyManager.getPlayerList(lobby.get().getId());
 								gameManager.runGame(lobby.get(), players);
+								lobbyManager.removeLobby(lobby.get().getId());
 							}
 							break;
 						}
@@ -166,4 +169,13 @@ public class MenuServer {
     public void deleteInput(int clientID) {
     	users.remove(clientID);
     }
+
+	private void sendServerAcknowledge(User user, MessageType type) {
+		Message<MessageType> acknowledgeMsg = new Message<>(MessageType.ACKNOWLEDGE, type);
+		var stringMsg = MessageParser.toJsonString(acknowledgeMsg);
+
+		if (user != null) {
+			user.sendMessage(stringMsg);
+		}
+	}
 }

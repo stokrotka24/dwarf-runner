@@ -174,7 +174,14 @@ public class LobbyManager {
     public void changeTeam(User player, int teamId) {
         Message<Boolean> msg = new Message<>(MessageType.CHANGE_TEAM_RESPONSE);
         msg.content = false;
-        Lobby lobby = getLobbyForUser(player);
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            player.sendMessage(MessageParser.toJsonString(msg));
+            return;
+        }
 
         if (lobby.getType() == GameType.SOLO_GAME ||
                 (teamId != 1 && teamId != 2)) {
@@ -198,8 +205,13 @@ public class LobbyManager {
      * @param player player to remove
      */
     public void removePlayerFromLobby(User player) {
-        Lobby lobby = getLobbyForUser(player);
-        removePlayerFromLobby(player, lobby);
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(player);
+            removePlayerFromLobby(player, lobby);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void removePlayerFromLobby(User player, Lobby lobby) {
@@ -300,24 +312,43 @@ public class LobbyManager {
         return tmp;
     }
 
-    private Lobby getLobbyForUser(User user) {
-        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId()).contains(user)).findFirst().orElse(null);
+    private Lobby getLobbyForUser(User user) throws Exception {
+        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId())
+                .contains(user)).findFirst()
+                .orElseThrow(() -> new Exception("User " + user.getServerId() + " with username " + user.getUsername() + " isn't in any lobby"));
     }
 
     public void setPlayerIsReady(User user) {
-        Lobby lobby = getLobbyForUser(user);
-        lobby.addPlayerToReadyPlayers(user.getServerId());
-        notifyLobby(lobby);
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(user);
+            lobby.addPlayerToReadyPlayers(user.getServerId());
+            notifyLobby(lobby);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setPlayerIsUnready(User user) {
-        Lobby lobby = getLobbyForUser(user);
-        lobby.removePlayerFromReadyPlayers(user.getServerId());
-        notifyLobby(lobby);
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(user);
+            lobby.removePlayerFromReadyPlayers(user.getServerId());
+            notifyLobby(lobby);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Optional<Lobby> getLobbyIfReady(User user) {
-        var lobby = getLobbyForUser(user);
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            onStartGameRequest(user, false);
+            return Optional.empty();
+        }
         boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers() + 1;
         onStartGameRequest(user, playersAreReady);
 

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
-import server.MenuServer;
 import utility.ClientMock;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -125,7 +124,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
     @Test
     @Order(2)
     void addPlayerToLobby_ShouldSucceed() {
-        JoinLobbyRequest request = new JoinLobbyRequest(0, 1);
+        JoinLobbyRequest request = new JoinLobbyRequest(0, 1, 100.0, 100.0);
         Message<JoinLobbyRequest> msg = new Message<>(MessageType.JOIN_LOBBY_REQUEST, request);
         msg.clientId = client2.id;
         client2.sendMsg(gson.toJson(msg));
@@ -150,7 +149,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
     @Test
     @Order(3)
     void addPlayerToLobby_ShouldFail() {
-        JoinLobbyRequest request = new JoinLobbyRequest(0, 0);
+        JoinLobbyRequest request = new JoinLobbyRequest(0, 0, 100.0, 100.0);
         Message<JoinLobbyRequest> msg = new Message<>(MessageType.JOIN_LOBBY_REQUEST, request);
         msg.clientId = client3.id;
         client3.sendMsg(gson.toJson(msg));

@@ -11,9 +11,19 @@ public class JoinLobbyRequest {
     @SerializedName("team_id")
     private int team;
 
-    public JoinLobbyRequest(int lobbyId, int team) {
+    @JsonRequired
+    @SerializedName("lon")
+    private Double x;
+
+    @JsonRequired
+    @SerializedName("lat")
+    private Double y;
+
+    public JoinLobbyRequest(int lobbyId, int team, Double x, Double y) {
         this.lobbyId = lobbyId;
         this.team = team;
+        this.x = x;
+        this.y = y;
     }
 
     public int getLobbyId() {
