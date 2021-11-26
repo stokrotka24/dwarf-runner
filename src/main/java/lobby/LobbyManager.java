@@ -1,6 +1,7 @@
 package lobby;
 
 import game.GameMap;
+import game.GameType;
 import game.User;
 import messages.Message;
 import messages.MessageParser;
@@ -17,6 +18,28 @@ public class LobbyManager {
     public LobbyManager() {
         lobbys = new ArrayList<>();
         lobbyToPlayers = new HashMap<>();
+        // TODO rm for release
+        generateDummyLobbys(20);
+    }
+
+    // TODO rm for release
+    private void generateDummyLobbys(int n) {
+        Random rnd = new Random();
+        for (int i = 0; i < n; i++) {
+            Lobby lobby = new Lobby();
+            lobby.setDwarfs(rnd.nextInt(15) + 5);
+            lobby.setMap(GameMap.fromInt(rnd.nextInt(8)));
+            lobby.setSpeed(rnd.nextFloat() * 5);
+            lobby.setMaxSpeed(rnd.nextFloat() * 5);
+            lobby.setName("Test lobby " + i);
+            lobby.setType(rnd.nextInt(2) == 1 ? GameType.TEAM_GAME : GameType.SOLO_GAME);
+            lobby.setPlayers(rnd.nextInt(10));
+            lobby.setReadyPlayers(rnd.nextInt(lobby.getPlayers() + 1));
+            lobby.setMaxPlayers(rnd.nextInt(10) + lobby.getPlayers());
+            lobby.setId(i + 1357);
+            lobbys.add(lobby);
+            lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
+        }
     }
 
     /**
@@ -36,12 +59,14 @@ public class LobbyManager {
         lobby.setPlayers(0);
         lobby.setReadyPlayers(0);
         lobbys.add(lobby);
+        lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
 
-        addPlayerToLobby(creator, lobby.getId());
+        addPlayerToLobby(creator, lobby.getId(), 0);
     }
 
     private boolean validateLobby(Lobby lobby) {
-        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps()) {
+        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps() ||
+                !(lobby.getEnd() == 0 || lobby.getEnd() == 1)) {
             return false;
         }
 
@@ -53,31 +78,10 @@ public class LobbyManager {
         return true;
     }
 
-    /**
-     * Adds player to lobby
-     * Intended for SOLO_GAME
-     * @param player player to add to lobby
-     * @param lobbyId id of lobby
-     * @return result
-     */
-    public boolean addPlayerToLobby(User player, int lobbyId) {
-        return addPlayerToLobby(player, lobbyId, 0);
-    }
-
-    /**
-     * Adds player to lobby
-     * Intended for TEAM_GAME
-     * @param player player to add to lobby
-     * @param lobbyId id of lobby
-     * @param teamId id of chosen team - 0 or 1
-     * @return result
-     */
-    public boolean addPlayerToLobby(User player, int lobbyId, int teamId) {
+    private boolean addPlayerToLobby(User player, int lobbyId, int teamId) {
         Lobby lobby = getLobbyInfo(lobbyId);
 
         if (lobby == null || lobby.getPlayers() >= lobby.getMaxPlayers()) {
-            System.out.println("Rejected there");
-
             onJoinLobbyRequest(player, false);
             return false;
         }
@@ -91,9 +95,20 @@ public class LobbyManager {
         return true;
     }
 
+    /**
+     * Adds player to lobby
+     * Intended for TEAM_GAME
+     * @param player player to add to lobby
+     * @param request consist of:
+     *      id of lobby
+     *      id of chosen team - 0 or 1
+     */
+    public void addPlayerToLobby(JoinLobbyRequest request, User player) {
+        addPlayerToLobby(player, request.getLobbyId(), request.getTeam());
+    }
+
     private void addToLobby(User player, int lobbyId, Lobby lobby) {
         lobby.setPlayers(lobby.getPlayers() + 1);
-        lobbyToPlayers.computeIfAbsent(lobbyId, k -> new ArrayList<>());
         lobbyToPlayers.get(lobbyId).add(player);
         onJoinLobbyRequest(player, true);
         notifyLobby(lobby);
@@ -123,39 +138,47 @@ public class LobbyManager {
      * @param teamId team id - 0 or 1
      * @return result
      */
-    public boolean changeTeam(User player, int teamId) {
+    public void changeTeam(User player, int teamId) {
+        Message<Boolean> msg = new Message<>(MessageType.CHANGE_TEAM_RESPONSE);
+        msg.content = false;
+
         for (Lobby l : lobbys) {
             if (lobbyToPlayers.get(l.getId()).contains(player)) {
-                var otherTeam = l.getTeams().get(teamId == 1 ? 0 : 1);
-                otherTeam.remove(player);
+                l.removePlayerFromTeam(player);
+                l.getTeams().computeIfAbsent(teamId, k -> new ArrayList<>());
                 if (!l.getTeams().get(teamId).contains(player)) {
                     l.getTeams().get(teamId).add(player);
                 }
-
-                return true;
+                msg.content = true;
             }
         }
-
-        return false;
+        player.sendMessage(MessageParser.toJsonString(msg));
     }
 
     /**
      * removes player from lobby
      * @param player player to remove
-     * @param lobbyId id of lobby
      */
-    public void removePlayerFromLobby(User player, int lobbyId) {
-        Lobby lobby = getLobbyInfo(lobbyId);
+    public void removePlayerFromLobby(User player) {
+        Lobby lobby = getLobbyForUser(player);
+        removePlayerFromLobby(player, lobby);
+    }
+
+    private void removePlayerFromLobby(User player, Lobby lobby) {
+        Message<Boolean> msg = new Message<>(MessageType.QUIT_LOBBY_RESPONSE, false);
         if (lobby == null) {
+            player.sendMessage(MessageParser.toJsonString(msg));
             return;
         }
 
-        if (lobbyToPlayers.get(lobbyId).remove(player)) {
+        if (lobbyToPlayers.get(lobby.getId()).remove(player)) {
             lobby.setPlayers(lobby.getPlayers() - 1);
-            lobby.getTeams().get(0).remove(player);
-            lobby.getTeams().get(1).remove(player);
+            lobby.removePlayerFromTeam(player);
             lobby.removePlayerFromReadyPlayers(player.getServerId());
+            notifyLobby(lobby);
         }
+        msg.content = true;
+        player.sendMessage(MessageParser.toJsonString(msg));
     }
 
     /**
@@ -190,7 +213,7 @@ public class LobbyManager {
         var players = lobbyToPlayers.get(lobbyId);
 
         for (User p: players) {
-            removePlayerFromLobby(p, lobbyId);
+            removePlayerFromLobby(p, lobby);
         }
 
         lobbys.remove(lobby);
@@ -205,10 +228,10 @@ public class LobbyManager {
         if (player == null) {
             return;
         }
-        List<Lobby> lobbyList = new ArrayList<Lobby>();
-        List<Lobby> tmp = new ArrayList<>();
+        List<Lobby> lobbyList = new ArrayList<>();
+        List<Lobby> tmp = lobbys;
 
-        if (request.getMapId() != -1) {
+        if (request.getMapId() != null) {
             tmp = lobbys.stream()
                     .filter(x -> x.getMap().ordinal() == request.getMapId())
                     .collect(Collectors.toList());
@@ -221,7 +244,7 @@ public class LobbyManager {
 
         int i = request.getRangeBegin();
         while (i < tmp.size() && i <= request.getRangeEnd()) {
-            if (request.isIncludeFull() || lobbys.get(i).getPlayers() < lobbys.get(i).getMaxPlayers()) {
+            if (request.isIncludeFull() || tmp.get(i).getPlayers() < tmp.get(i).getMaxPlayers()) {
                 lobbyList.add(tmp.get(i));
             }
             i++;
@@ -232,7 +255,7 @@ public class LobbyManager {
     }
 
     private Lobby getLobbyForUser(User user) {
-        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId()).contains(user)).findFirst().get();
+        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId()).contains(user)).findFirst().orElse(null);
     }
 
     public void setPlayerIsReady(User user) {
