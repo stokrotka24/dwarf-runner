@@ -8,7 +8,7 @@ public class LobbyListRequest {
     private String gameMode;
 
     @SerializedName("map")
-    private int mapId;
+    private Integer mapId;
 
     @SerializedName("include_full")
     private boolean includeFull;
@@ -30,7 +30,7 @@ public class LobbyListRequest {
         this.gameMode = type == GameType.SOLO_GAME ? "solo" : "team";
     }
 
-    public int getMapId() {
+    public Integer getMapId() {
         return mapId;
     }
 

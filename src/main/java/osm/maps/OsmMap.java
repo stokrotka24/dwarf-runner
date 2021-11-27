@@ -1,22 +1,26 @@
 package osm.maps;
 
+import game.WebMove;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import osm.Coordinates;
 import osm.Node;
 import osm.Way;
 
 public abstract class OsmMap {
 
-    public ArrayList<Way> ways;
+    //public ArrayList<Way> ways;
     public ArrayList<Node> nodes;
 
     public void parseMap(String file) {
-        ways = new ArrayList<>();
+        List<Way> ways = new ArrayList<>();
         nodes = new ArrayList<>();
         JSONParser jsonParser = new JSONParser();
         try (FileReader reader = new FileReader(file)) {
@@ -39,8 +43,36 @@ public abstract class OsmMap {
                     nodes.add(new Node(id, lat, lon));
                 }
             }
+            for (Way way : ways
+            ) {
+                List<Coordinates> temp = new ArrayList<>();
+                for (Long id : way.getNodes()) {
+                    temp.add(this.getCoordsById(id));
+                }
+                nodes.stream().filter(node -> node.getId().equals(way.getNodes().get(0)))
+                    .forEach(node -> node.addNeighbor(temp.get(1)));
+                for (int i = 1; i < temp.size() - 1; i++) {
+                    int finalI = i;
+                    nodes.stream().filter(node -> node.getId().equals(way.getNodes().get(finalI)))
+                        .forEach(node -> {
+                            node.addNeighbor(temp.get(finalI - 1));
+                            node.addNeighbor(temp.get(finalI + 1));
+                        });
+                }
+                nodes.stream()
+                    .filter(node -> node.getId().equals(way.getNodes().get(temp.size() - 1)))
+                    .forEach(node -> node.addNeighbor(temp.get(temp.size() - 2)));
+            }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    public Coordinates getCoordsById(Long id) {
+        return nodes.stream().filter(node -> node.getId().equals(id)).findFirst().get().getCoords();
+    }
+
+    public Node getNodeByCoords(Coordinates coords) {
+        return nodes.stream().filter(node -> node.getCoords().equals(coords)).findFirst().get();
     }
 }

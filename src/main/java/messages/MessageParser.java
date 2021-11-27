@@ -1,14 +1,10 @@
 package messages;
 
 import com.google.gson.*;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
-import lobby.JsonRequired;
-import lobby.Lobby;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +23,7 @@ public class MessageParser {
 
     private static final Gson gson = new GsonBuilder()
             .addSerializationExclusionStrategy(strategy)
+            .serializeNulls()
             .create();
 
     /**
