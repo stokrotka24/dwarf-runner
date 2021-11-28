@@ -2,7 +2,7 @@ package dbconn.jsonclasses;
 
 import com.google.gson.annotations.SerializedName;
 
-import lobby.JsonRequired;
+import messages.JsonRequired;
 
 public class LoginCredentials {
     @JsonRequired
