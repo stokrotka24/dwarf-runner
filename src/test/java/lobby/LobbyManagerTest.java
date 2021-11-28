@@ -1,30 +1,48 @@
 package lobby;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import game.GameType;
 import game.User;
+import messages.AbstractCommunicationTest;
 import messages.Message;
-import messages.MessageException;
-import messages.MessageParser;
 import messages.MessageType;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
+import server.MenuServer;
 import utility.ClientMock;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class LobbyManagerTest {
+class LobbyManagerTest extends AbstractCommunicationTest {
     private final User creator = Mockito.mock(User.class);
     private static final ClientMock client = new ClientMock("localhost", 2137);
     private static final ClientMock client2 = new ClientMock("localhost", 2137);
     private static final ClientMock client3 = new ClientMock("localhost", 2137);
 
-    private static final Gson gson = new GsonBuilder().serializeNulls().create();
+    private static final ExclusionStrategy strategy = new ExclusionStrategy() {
+        @Override
+        public boolean shouldSkipClass(Class<?> clazz) {
+            return false;
+        }
+
+        @Override
+        public boolean shouldSkipField(FieldAttributes field) {
+            return field.getName().equals("teams");
+        }
+    };
+
+    private static final Gson gson = new GsonBuilder()
+            .serializeNulls()
+            .addDeserializationExclusionStrategy(strategy)
+            .addSerializationExclusionStrategy(strategy)
+            .create();
 
     @BeforeAll
     static void prepareClient() {
@@ -43,6 +61,7 @@ class LobbyManagerTest {
             e.printStackTrace();
         }
     }
+
 
     @Test
     @Order(1)
@@ -65,7 +84,8 @@ class LobbyManagerTest {
         String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":true}";
         String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1," +
-                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0}}";
+                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
+                "\"teams\":{\"team1\":[\"Guest\"],\"team2\":[]}}}";
 
         try {
             String response1 = client.queue.take();
@@ -105,14 +125,15 @@ class LobbyManagerTest {
     @Test
     @Order(2)
     void addPlayerToLobby_ShouldSucceed() {
-        JoinLobbyRequest request = new JoinLobbyRequest(0, 0);
+        JoinLobbyRequest request = new JoinLobbyRequest(0, 1);
         Message<JoinLobbyRequest> msg = new Message<>(MessageType.JOIN_LOBBY_REQUEST, request);
         msg.clientId = client2.id;
         client2.sendMsg(gson.toJson(msg));
         String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":true}";
         String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
-                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0}}";
+                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
+                "\"teams\":{\"team1\":[\"Guest\",\"Guest\"],\"team2\":[]}}}";
         try {
             String response1 = client2.queue.take();
             assertEquals(expected1, response1);
@@ -145,14 +166,22 @@ class LobbyManagerTest {
     @Test
     @Order(4)
     void changeTeam() {
-        Message<Integer> msg = new Message<>(MessageType.CHANGE_TEAM_REQUEST, 1);
+        Message<Integer> msg = new Message<>(MessageType.CHANGE_TEAM_REQUEST, 2);
         msg.clientId = client2.id;
         client2.sendMsg(gson.toJson(msg));
 
         String expected1 = "{\"header\":\"CHANGE_TEAM_RESPONSE\",\"content\":true}";
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
+                "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
+                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
+                "\"teams\":{\"team1\":[\"Guest\"],\"team2\":[\"Guest\"]}}}";
         try {
             String response1 = client2.queue.take();
             assertEquals(expected1, response1);
+            String response2 = client.queue.take();
+            assertEquals(expected2, response2);
+            String response3 = client2.queue.take();
+            assertEquals(expected2, response3);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -161,14 +190,14 @@ class LobbyManagerTest {
     @Test
     @Order(5)
     void removePlayerFromLobby() {
-        Message<Object> msg = new Message(MessageType.QUIT_LOBBY_REQUEST, null);
+        Message<Object> msg = new Message<>(MessageType.QUIT_LOBBY_REQUEST, null);
         msg.clientId = client2.id;
         client2.sendMsg(gson.toJson(msg));
 
         String expected1 = "{\"header\":\"QUIT_LOBBY_RESPONSE\",\"content\":true}";
         String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0," +
-                "\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0}}";
+                "\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0,\"teams\":{\"team1\":[\"Guest\"],\"team2\":[]}}}";
         try {
             String response1 = client2.queue.take();
             assertEquals(expected1, response1);
@@ -212,7 +241,9 @@ class LobbyManagerTest {
 
         try {
             String response = client.queue.take();
-            LobbyListDelivery delivery = MessageParser.getMsgContent(response, LobbyListDelivery.class);
+            Message<LobbyListDelivery> deliveryMsg =
+                    gson.fromJson(response, TypeToken.getParameterized(Message.class, LobbyListDelivery.class).getType());
+            LobbyListDelivery delivery = deliveryMsg.content;
             assertTrue(delivery.getLobbys().size() <= rangeEnd - rangeBegin + 1);
             if (mapId != null) {
                 assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getMapId() != mapId));
@@ -226,11 +257,10 @@ class LobbyManagerTest {
                 assertFalse(delivery.getLobbys().stream().anyMatch(l -> l.getType() != type));
             }
 
-        } catch (InterruptedException | MessageException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
-
     @Test
     void setPlayerIsReady() {
 
