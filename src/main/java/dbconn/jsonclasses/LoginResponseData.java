@@ -2,8 +2,11 @@ package dbconn.jsonclasses;
 
 import com.google.gson.annotations.SerializedName;
 
+import lobby.JsonRequired;
+
 public class LoginResponseData {
 
+    @JsonRequired
     @SerializedName("status")
     private int loginStatus;
 

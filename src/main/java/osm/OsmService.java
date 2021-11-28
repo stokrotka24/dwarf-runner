@@ -1,17 +1,11 @@
 package osm;
 
 import game.GameMap;
-import java.io.FileReader;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import org.json.simple.JSONArray;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import osm.maps.CathedralIsland;
@@ -31,9 +25,9 @@ public class OsmService {
 
     private OsmMap map;
 
-    public ArrayList<Way> getWays() {
+    /*public ArrayList<Way> getWays() {
         return map.ways;
-    }
+    }*/
 
     public ArrayList<Node> getNodes() {
         return map.nodes;

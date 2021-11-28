@@ -5,10 +5,10 @@ import java.sql.DriverManager;
 
 public class DBConnection {
 
-    //TODO: when db is working, update url
-    private static String url = "jdbc:mysql://localhost:3306/thegame";
-    private static String username = "Backend_user";
-    private static String password = "BackendUser!2021";
+    private static String url = "jdbc:sqlserver://SQL5080.site4now.net:1433;databaseName=db_a7d05b_dwarfrunnerdb;"
+            + "user=db_a7d05b_dwarfrunnerdb_admin;password=Dwarf1Runner";
+    private static String username = "db_a7d05b_dwarfrunnerdb_admin";
+    private static String password = "Dwarf1Runner";
 
     /**
      * called to receive connection object to database 
@@ -18,8 +18,8 @@ public class DBConnection {
 
         Connection connection = null;
         try { 
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection(url, username, password);
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(url);
             System.out.println("Connection is successful to the database " + url);
         }
         catch (Exception e) { 

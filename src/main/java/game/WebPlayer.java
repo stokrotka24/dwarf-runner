@@ -1,5 +1,7 @@
 package game;
 
+import osm.Node;
+
 public class WebPlayer extends AbstractPlayer {
     public WebPlayer(int id) {
         super(id);
