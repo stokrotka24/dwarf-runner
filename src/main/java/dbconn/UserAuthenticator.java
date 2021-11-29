@@ -1,12 +1,5 @@
 package dbconn;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.CallableStatement;
-import java.sql.SQLException;
-import java.util.Base64;
-
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.LoginResponseData;
 import game.GamePlatform;
@@ -14,6 +7,13 @@ import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.CallableStatement;
+import java.sql.SQLException;
+import java.util.Base64;
 
 public class UserAuthenticator {
     
@@ -39,7 +39,7 @@ public class UserAuthenticator {
             cStatement.registerOutParameter(3, java.sql.Types.VARCHAR);
             cStatement.execute();
             String userNickname = cStatement.getString(3);
-            if (!userNickname.isEmpty()) {
+            if (userNickname != null && !userNickname.isEmpty()) {
                 creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
                 sendSuccessResponse(userNickname, creator);
                 return;
