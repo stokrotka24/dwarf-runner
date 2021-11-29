@@ -2,7 +2,6 @@ package game;
 
 import osm.OsmService;
 
-import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import java.util.Map;
 
 public class GameController {
@@ -29,24 +28,7 @@ public class GameController {
             new TimerTask(timeMillis);
         }
         sendDwarfsInitialLocation();
-        sendWebPlayersInitialLocation();
-        //TODO  when we get mobile location we can send to all players location of other players
-    }
-
-    private void sendWebPlayersInitialLocation() {
-        for (AbstractPlayer player: game.getPlayers()) {
-            if (player instanceof WebPlayer) {
-                try {
-                    var node = osmService.getRandomNode();
-                    player.setNode(node);
-                    var user = playerToUser.get(player.getId());
-                    //TODO user.sendMessage(); with proper message
-                } catch (InvalidTargetObjectTypeException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
+        //TODO  send to all players location of other players
     }
 
     public void endGame() {
