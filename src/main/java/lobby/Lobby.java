@@ -52,9 +52,11 @@ public class Lobby {
     @SerializedName("ready_players")
     private int readyPlayers;
 
-    private transient Map<Integer, List<User>> teams = new HashMap<>();
+    private Map<Integer, List<User>> teams = new HashMap<>();
 
     private transient List<Integer> readyPlayersIds = new ArrayList<>();
+
+    private transient User creator;
 
     public Lobby() {}
 
@@ -190,5 +192,13 @@ public class Lobby {
                 return;
             }
         }
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
     }
 }
