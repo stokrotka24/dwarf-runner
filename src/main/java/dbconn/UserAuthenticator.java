@@ -19,6 +19,10 @@ public class UserAuthenticator {
     
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
     
+    public static void handleRegisterRequest(Message<LoginCredentials> msg, User creator) {
+        
+    }
+    
     /**
      * function to handle JSON login request from client
      * @param msg received JSON with login request
@@ -39,7 +43,7 @@ public class UserAuthenticator {
             cStatement.registerOutParameter(3, java.sql.Types.VARCHAR);
             cStatement.execute();
             String userNickname = cStatement.getString(3);
-            if (!userNickname.isEmpty()) {
+            if (userNickname != null && !userNickname.isEmpty()) {
                 creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
                 sendSuccessResponse(userNickname, creator);
                 return;
