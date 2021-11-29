@@ -3,10 +3,14 @@ package messages;
 import com.google.gson.*;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import game.User;
+import lobby.Lobby;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MessageParser {
     private static final ExclusionStrategy strategy = new ExclusionStrategy() {
@@ -21,10 +25,36 @@ public class MessageParser {
         }
     };
 
-    private static final Gson gson = new GsonBuilder()
-            .addSerializationExclusionStrategy(strategy)
-            .serializeNulls()
-            .create();
+    private static JsonSerializer<Map<Integer, List<User>>> serializer = new JsonSerializer<>() {
+        @Override
+        public JsonElement serialize(Map<Integer, List<User>> integerListMap, Type type, JsonSerializationContext jsonSerializationContext) {
+            var json = new JsonObject();
+
+            for (var key : integerListMap.keySet()) {
+                var usernames = new JsonArray();
+                for (var user : integerListMap.get(key)) {
+                    usernames.add(user.getUsername());
+                }
+                json.add("team" + key.toString(), usernames);
+            }
+
+            return json;
+        }
+    };
+
+    private static Gson gson = null;
+
+    static {
+        try {
+            gson = new GsonBuilder()
+                    .addSerializationExclusionStrategy(strategy)
+                    .registerTypeAdapter(Lobby.class.getDeclaredField("teams").getType(), serializer)
+                    .serializeNulls()
+                    .create();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Converts Message of any type to json string

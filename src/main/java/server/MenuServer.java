@@ -100,7 +100,7 @@ public class MenuServer {
 						}
 						case START_GAME_REQUEST: {
 							var lobby = lobbyManager.getLobbyIfReady(sender);
-							if (lobby.isPresent()) {
+							if (lobby.isPresent() && sender == lobby.get().getCreator()) {
 								var players = lobbyManager.getPlayerList(lobby.get().getId());
 								gameManager.runGame(lobby.get(), players);
 								lobbyManager.removeLobby(lobby.get().getId());
@@ -109,7 +109,7 @@ public class MenuServer {
 						}
 						default: {
 							Message<String> msg = new Message<>(MessageType.ERROR, "Header has been read correctly, " +
-									"but server doesn't currently support this kind of message\nYour message was: " + msgReceived);
+									"but server doesn't currently support this kind of message. Your message was: " + msgReceived);
 							sender.sendMessage(MessageParser.toJsonString(msg));
 							break;
 						}
