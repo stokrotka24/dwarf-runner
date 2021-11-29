@@ -97,14 +97,14 @@ public class MenuServer {
 						}
 						case PLAYER_IS_READY: {
 							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							lobbyManager.setPlayerIsReady(sender);
 							sendServerAcknowledge(sender, MessageType.PLAYER_IS_READY);
+							lobbyManager.setPlayerIsReady(sender);
 							break;
 						}
 						case PLAYER_IS_UNREADY: {
 							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							lobbyManager.setPlayerIsUnready(sender);
 							sendServerAcknowledge(sender, MessageType.PLAYER_IS_UNREADY);
+							lobbyManager.setPlayerIsUnready(sender);
 							break;
 						}
 						case START_GAME_REQUEST: {

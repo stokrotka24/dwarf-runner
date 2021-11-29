@@ -260,14 +260,55 @@ class LobbyManagerTest extends AbstractCommunicationTest {
             e.printStackTrace();
         }
     }
-    @Test
-    void setPlayerIsReady() {
 
+    @Test
+    @Order(6)
+    void shouldCreateProperResponseForIsReadyRequest() {
+        String request = "{\n" +
+                "    \"header\": \"PLAYER_IS_READY\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request);
+
+        String expected = "{\"header\":\"ACKNOWLEDGE\",\"content\":\"PLAYER_IS_READY\"}";
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null,\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":1,\"teams\":{\"team1\":[\"Guest\"],\"team2\":[]}}}";
+
+        try {
+            String response = client.queue.take();
+            assertEquals(expected, response);
+            String response2 = client.queue.take();
+            assertEquals(expected2, response2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    void setPlayerIsUnready() {
+    @Order(7)
+    void shouldCreateProperResponseForIsUnReadyRequest() {
+        String request = "{\n" +
+                "    \"header\": \"PLAYER_IS_UNREADY\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "    }\n" +
+                "}";
 
+        client.sendMsg(request);
+
+        String expected1 = "{\"header\":\"ACKNOWLEDGE\",\"content\":\"PLAYER_IS_UNREADY\"}";
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null,\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0,\"teams\":{\"team1\":[\"Guest\"],\"team2\":[]}}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+            String response2 = client.queue.take();
+            assertEquals(expected2, response2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
