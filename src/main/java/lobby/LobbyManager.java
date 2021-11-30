@@ -284,7 +284,7 @@ public class LobbyManager {
             return;
         }
         List<Lobby> lobbyList = new ArrayList<>();
-        List<Lobby> tmp = filterLobbies(request, lobbyList);
+        List<Lobby> tmp = filterLobbies(request, lobbys);
 
         int i = request.getRangeBegin();
         while (i < tmp.size() && i <= request.getRangeEnd()) {
