@@ -16,6 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import dbconn.UserAuthenticator;
 import dbconn.jsonclasses.LoginCredentials;
+import dbconn.jsonclasses.RegisterCredentials;
 
 /**
  * Thread responsible for creating other threads used for communication with clients, controlling games and controlling lobbies.
@@ -55,7 +56,8 @@ public class MenuServer {
 					int clientID = MessageParser.getClientId(msgReceived);
 					sender = users.get(clientID);
 					if (sender == null) {
-						continue;
+//					    System.out.println("continuing");
+//						continue;
 					}
 
 					var header = MessageParser.getMsgHeader(msgReceived);
@@ -88,6 +90,11 @@ public class MenuServer {
 							UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, LoginCredentials.class), 
 									sender);
 							break;
+						}
+						case REGISTER_REQUEST: {
+                            UserAuthenticator.handleRegisterRequest(MessageParser.fromJsonString(msgReceived, 
+                                    RegisterCredentials.class), sender);
+						    break;
 						}
 						case PLAYER_IS_READY: {
 							lobbyManager.setPlayerIsReady(sender);
