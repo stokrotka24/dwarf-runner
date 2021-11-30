@@ -20,6 +20,10 @@ public enum MessageType {
     LOBBY_STATUS_UPDATE,
     JOIN_LOBBY_REQUEST,
     JOIN_LOBBY_RESPONSE,
+    QUIT_LOBBY_REQUEST,
+    QUIT_LOBBY_RESPONSE,
+    CHANGE_TEAM_REQUEST,
+    CHANGE_TEAM_RESPONSE,
     PLAYER_IS_READY,
     PLAYER_IS_UNREADY,
     START_GAME_REQUEST,
@@ -29,6 +33,7 @@ public enum MessageType {
     PICK_DWARF_REQUEST,
     PICK_DWARF_RESPONSE,
     RANKING_DATA,
+    ACKNOWLEDGE,
     ERROR;
 
     private static final MessageType[] msgTypeValues = MessageType.values();

@@ -1,6 +1,7 @@
 package lobby;
 
 import game.GameMap;
+import game.GameType;
 import game.User;
 import messages.Message;
 import messages.MessageParser;
@@ -17,6 +18,34 @@ public class LobbyManager {
     public LobbyManager() {
         lobbys = new ArrayList<>();
         lobbyToPlayers = new HashMap<>();
+        // TODO rm for release
+        generateDummyLobbys(20);
+    }
+
+    // TODO rm for release
+    private void generateDummyLobbys(int n) {
+        Random rnd = new Random();
+        for (int i = 0; i < n; i++) {
+            Lobby lobby = new Lobby();
+            lobby.setDwarfs(rnd.nextInt(15) + 5);
+            lobby.setMap(GameMap.fromInt(rnd.nextInt(8)));
+            lobby.setSpeed(rnd.nextFloat() * 5);
+            lobby.setMaxSpeed(rnd.nextFloat() * 5);
+            lobby.setName("Test lobby " + i);
+            lobby.setType(rnd.nextInt(2) == 1 ? GameType.TEAM_GAME : GameType.SOLO_GAME);
+            lobby.setId(i + 1357);
+            lobbys.add(lobby);
+            lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
+            int players = rnd.nextInt(10);
+            for (int j = 0; j < players; j++) {
+                User user = new User("User" + i + " " + j);
+                int team = lobby.getType() == GameType.SOLO_GAME ? 0
+                        : rnd.nextInt(2) + 1;
+                addPlayerToLobby(user, lobby.getId(), team);
+            }
+            lobby.setReadyPlayers(rnd.nextInt(lobby.getPlayers() + 1));
+            lobby.setMaxPlayers(rnd.nextInt(10) + lobby.getPlayers());
+        }
     }
 
     /**
@@ -32,16 +61,31 @@ public class LobbyManager {
             return;
         }
 
+        setupNewLobby(lobby);
+
+        addPlayerToLobby(creator, lobby.getId(),
+                lobby.getType() == GameType.SOLO_GAME ? 0 : 1);
+    }
+
+    private void setupNewLobby(Lobby lobby) {
         assignId(lobby);
         lobby.setPlayers(0);
         lobby.setReadyPlayers(0);
         lobbys.add(lobby);
+        lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
+        var teams = lobby.getTeams();
 
-        addPlayerToLobby(creator, lobby.getId());
+        if (lobby.getType() == GameType.TEAM_GAME) {
+            teams.put(1, new ArrayList<>());
+            teams.put(2, new ArrayList<>());
+        } else {
+            teams.put(0, new ArrayList<>());
+        }
     }
 
     private boolean validateLobby(Lobby lobby) {
-        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps()) {
+        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps() ||
+                !(lobby.getEnd() == 0 || lobby.getEnd() == 1)) {
             return false;
         }
 
@@ -53,33 +97,16 @@ public class LobbyManager {
         return true;
     }
 
-    /**
-     * Adds player to lobby
-     * Intended for SOLO_GAME
-     * @param player player to add to lobby
-     * @param lobbyId id of lobby
-     * @return result
-     */
-    public boolean addPlayerToLobby(User player, int lobbyId) {
-        return addPlayerToLobby(player, lobbyId, 0);
-    }
-
-    /**
-     * Adds player to lobby
-     * Intended for TEAM_GAME
-     * @param player player to add to lobby
-     * @param lobbyId id of lobby
-     * @param teamId id of chosen team - 0 or 1
-     * @return result
-     */
-    public boolean addPlayerToLobby(User player, int lobbyId, int teamId) {
+    private void addPlayerToLobby(User player, int lobbyId, int teamId) {
         Lobby lobby = getLobbyInfo(lobbyId);
 
-        if (lobby == null || lobby.getPlayers() >= lobby.getMaxPlayers()) {
-            System.out.println("Rejected there");
-
+        if(!checkIfJoinPossible(player, teamId, lobby)) {
             onJoinLobbyRequest(player, false);
-            return false;
+            return;
+        }
+
+        if (lobby.getPlayers() == 0) {
+            lobby.setCreator(player);
         }
 
         lobby.getTeams().computeIfAbsent(teamId, k -> new ArrayList<>());
@@ -87,13 +114,34 @@ public class LobbyManager {
             lobby.getTeams().get(teamId).add(player);
         }
         addToLobby(player, lobbyId, lobby);
+    }
 
-        return true;
+    private boolean checkIfJoinPossible(User player, int teamId, Lobby lobby) {
+        if (lobby == null || lobby.getPlayers() >= lobby.getMaxPlayers()) {
+            return false;
+        }
+
+        if (lobby.getType() == GameType.SOLO_GAME && teamId != 0) {
+            return false;
+        } else {
+            return teamId == 1 || teamId == 2;
+        }
+    }
+
+    /**
+     * Adds player to lobby
+     * Intended for TEAM_GAME
+     * @param player player to add to lobby
+     * @param request consist of:
+     *      id of lobby
+     *      id of chosen team - 0 or 1
+     */
+    public void addPlayerToLobby(JoinLobbyRequest request, User player) {
+        addPlayerToLobby(player, request.getLobbyId(), request.getTeam());
     }
 
     private void addToLobby(User player, int lobbyId, Lobby lobby) {
         lobby.setPlayers(lobby.getPlayers() + 1);
-        lobbyToPlayers.computeIfAbsent(lobbyId, k -> new ArrayList<>());
         lobbyToPlayers.get(lobbyId).add(player);
         onJoinLobbyRequest(player, true);
         notifyLobby(lobby);
@@ -123,39 +171,69 @@ public class LobbyManager {
      * @param teamId team id - 0 or 1
      * @return result
      */
-    public boolean changeTeam(User player, int teamId) {
-        for (Lobby l : lobbys) {
-            if (lobbyToPlayers.get(l.getId()).contains(player)) {
-                var otherTeam = l.getTeams().get(teamId == 1 ? 0 : 1);
-                otherTeam.remove(player);
-                if (!l.getTeams().get(teamId).contains(player)) {
-                    l.getTeams().get(teamId).add(player);
-                }
-
-                return true;
-            }
+    public void changeTeam(User player, int teamId) {
+        Message<Boolean> msg = new Message<>(MessageType.CHANGE_TEAM_RESPONSE);
+        msg.content = false;
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            player.sendMessage(MessageParser.toJsonString(msg));
+            return;
         }
 
-        return false;
+        if (lobby.getType() == GameType.SOLO_GAME ||
+                (teamId != 1 && teamId != 2)) {
+            onJoinLobbyRequest(player, false);
+            player.sendMessage(MessageParser.toJsonString(msg));
+        }
+
+        lobby.removePlayerFromTeam(player);
+        lobby.getTeams().computeIfAbsent(teamId, k -> new ArrayList<>());
+        if (!lobby.getTeams().get(teamId).contains(player)) {
+            lobby.getTeams().get(teamId).add(player);
+        }
+        msg.content = true;
+
+        player.sendMessage(MessageParser.toJsonString(msg));
+        notifyLobby(lobby);
     }
 
     /**
      * removes player from lobby
      * @param player player to remove
-     * @param lobbyId id of lobby
      */
-    public void removePlayerFromLobby(User player, int lobbyId) {
-        Lobby lobby = getLobbyInfo(lobbyId);
+    public void removePlayerFromLobby(User player) {
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(player);
+            removePlayerFromLobby(player, lobby);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void removePlayerFromLobby(User player, Lobby lobby) {
+        Message<Boolean> msg = new Message<>(MessageType.QUIT_LOBBY_RESPONSE, false);
         if (lobby == null) {
+            player.sendMessage(MessageParser.toJsonString(msg));
             return;
         }
 
-        if (lobbyToPlayers.get(lobbyId).remove(player)) {
+        if (lobbyToPlayers.get(lobby.getId()).remove(player)) {
             lobby.setPlayers(lobby.getPlayers() - 1);
-            lobby.getTeams().get(0).remove(player);
-            lobby.getTeams().get(1).remove(player);
+            lobby.removePlayerFromTeam(player);
             lobby.removePlayerFromReadyPlayers(player.getServerId());
+            if (lobby.getPlayers() == 0) {
+                lobby.setCreator(null);
+            } else {
+                lobby.setCreator(lobbyToPlayers.get(lobby.getId()).get(0));
+            }
         }
+        msg.content = true;
+        player.sendMessage(MessageParser.toJsonString(msg));
+        notifyLobby(lobby);
     }
 
     /**
@@ -190,7 +268,7 @@ public class LobbyManager {
         var players = lobbyToPlayers.get(lobbyId);
 
         for (User p: players) {
-            removePlayerFromLobby(p, lobbyId);
+            removePlayerFromLobby(p, lobby);
         }
 
         lobbys.remove(lobby);
@@ -205,23 +283,12 @@ public class LobbyManager {
         if (player == null) {
             return;
         }
-        List<Lobby> lobbyList = new ArrayList<Lobby>();
-        List<Lobby> tmp = new ArrayList<>();
-
-        if (request.getMapId() != -1) {
-            tmp = lobbys.stream()
-                    .filter(x -> x.getMap().ordinal() == request.getMapId())
-                    .collect(Collectors.toList());
-        }
-        if (request.getGameMode() != null) {
-            tmp = tmp.stream()
-                    .filter(x -> x.getType() == request.getGameMode())
-                    .collect(Collectors.toList());
-        }
+        List<Lobby> lobbyList = new ArrayList<>();
+        List<Lobby> tmp = filterLobbies(request, lobbyList);
 
         int i = request.getRangeBegin();
         while (i < tmp.size() && i <= request.getRangeEnd()) {
-            if (request.isIncludeFull() || lobbys.get(i).getPlayers() < lobbys.get(i).getMaxPlayers()) {
+            if (request.isIncludeFull() || tmp.get(i).getPlayers() < tmp.get(i).getMaxPlayers()) {
                 lobbyList.add(tmp.get(i));
             }
             i++;
@@ -231,22 +298,57 @@ public class LobbyManager {
         player.sendMessage(MessageParser.toJsonString(msg));
     }
 
-    private Lobby getLobbyForUser(User user) {
-        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId()).contains(user)).findFirst().get();
+    private List<Lobby> filterLobbies(LobbyListRequest request, List<Lobby> tmp) {
+        if (request.getMapId() != null) {
+            tmp = lobbys.stream()
+                    .filter(x -> x.getMap().ordinal() == request.getMapId())
+                    .collect(Collectors.toList());
+        }
+        if (request.getGameMode() != null) {
+            tmp = tmp.stream()
+                    .filter(x -> x.getType() == request.getGameMode())
+                    .collect(Collectors.toList());
+        }
+        return tmp;
+    }
+
+    private Lobby getLobbyForUser(User user) throws Exception {
+        return lobbys.stream().filter(lobby -> lobbyToPlayers.get(lobby.getId())
+                .contains(user)).findFirst()
+                .orElseThrow(() -> new Exception("User " + user.getServerId() + " with username " + user.getUsername() + " isn't in any lobby"));
     }
 
     public void setPlayerIsReady(User user) {
-        Lobby lobby = getLobbyForUser(user);
-        lobby.addPlayerToReadyPlayers(user.getServerId());
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(user);
+            lobby.addPlayerToReadyPlayers(user.getServerId());
+            notifyLobby(lobby);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setPlayerIsUnready(User user) {
-        Lobby lobby = getLobbyForUser(user);
-        lobby.removePlayerFromReadyPlayers(user.getServerId());
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(user);
+            lobby.removePlayerFromReadyPlayers(user.getServerId());
+            notifyLobby(lobby);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public Optional<Lobby> getLobbyIfReady(User user) {
-        var lobby = getLobbyForUser(user);
+        Lobby lobby;
+        try {
+            lobby = getLobbyForUser(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            onStartGameRequest(user, false);
+            return Optional.empty();
+        }
         boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers() + 1;
         onStartGameRequest(user, playersAreReady);
 

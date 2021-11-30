@@ -90,7 +90,11 @@ public class ClientHandler extends Thread {
         this.clientSocket = clientSocket;
         this.maxJsonLength = maxJsonLength;
         this.output = new LinkedBlockingQueue<String>();
-        initStreams();
+        // TODO because of dummy users
+        // can be rm later but doesn't have to
+        if (clientSocket.isConnected()) {
+            initStreams();
+        }
     }
 
     public ClientHandler(Socket clientSocket, Integer maxJsonLength, LinkedBlockingQueue<String> output) {

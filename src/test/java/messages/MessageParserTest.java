@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MessageParserTest {
     @ParameterizedTest(name = "{index} => type={0}, expected={1}")
     @CsvSource(value = {
-            "SERVER_HELLO; {\"header\":\"SERVER_HELLO\"}",
-            "CLIENT_HELLO; {\"header\":\"CLIENT_HELLO\"}"
+            "SERVER_HELLO; {\"header\":\"SERVER_HELLO\",\"content\":null}",
+            "CLIENT_HELLO; {\"header\":\"CLIENT_HELLO\",\"content\":null}"
     }, delimiter = ';')
     void toJsonString_HeaderOnly(MessageType type, String expected) {
         var msg = new Message<>(type);

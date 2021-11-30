@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import game.GameMap;
 import game.GameType;
 import game.User;
+import messages.JsonRequired;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,9 +52,24 @@ public class Lobby {
     @SerializedName("ready_players")
     private int readyPlayers;
 
-    private transient Map<Integer, List<User>> teams = new HashMap<>();
+    private Map<Integer, List<User>> teams = new HashMap<>();
 
     private transient List<Integer> readyPlayersIds = new ArrayList<>();
+
+    private transient User creator;
+
+    public Lobby() {}
+
+    public Lobby(String type, Integer mapId, Integer maxPlayers, Integer end,
+                 Float speed, Float maxSpeed, Integer dwarfs) {
+        this.type = type;
+        this.mapId = mapId;
+        this.maxPlayers = maxPlayers;
+        this.end = end;
+        this.speed = speed;
+        this.maxSpeed = maxSpeed;
+        this.dwarfs = dwarfs;
+    }
 
     public int getId() {
         return id;
@@ -167,5 +183,22 @@ public class Lobby {
             readyPlayersIds.remove(id);
             this.readyPlayers--;
         }
+    }
+
+    public void removePlayerFromTeam(User player) {
+        for (var list : teams.values()) {
+            if (list.contains(player)) {
+                list.remove(player);
+                return;
+            }
+        }
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
     }
 }
