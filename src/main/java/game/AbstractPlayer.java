@@ -24,7 +24,7 @@ public abstract class AbstractPlayer {
     }
 
     public void setNode(Node node) {
-        this.node = node;
+        this.node = new Node(node);
     }
 
     public Node getNode() {
