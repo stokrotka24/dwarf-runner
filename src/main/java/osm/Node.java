@@ -13,6 +13,12 @@ public class Node {
     private final List<Coordinates> neighbors;
     private final Coordinates coords;
 
+    public Node(Node node) {
+        this.id = node.getId();
+        this.coords = new Coordinates(node.getCoords());
+        this.neighbors = new ArrayList<>(node.getNeighbors());
+    }
+
     public void addNeighbor(Coordinates coords) {
         neighbors.add(coords);
     }

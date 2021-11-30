@@ -10,6 +10,11 @@ public class Coordinates {
         this.x = x;
     }
 
+    public Coordinates(Coordinates coords) {
+        this.x = coords.getX();
+        this.y = coords.getY();
+    }
+
     public Double getY() {
         return y;
     }

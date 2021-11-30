@@ -10,11 +10,6 @@ public class WebPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void setNode(Node node) {
-        this.node = node;
-    }
-
-    @Override
     public GamePlatform getPlatform() {
         return GamePlatform.WEB;
     }
