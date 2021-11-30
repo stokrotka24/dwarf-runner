@@ -58,7 +58,8 @@ public class UserAuthenticator {
     public static void handleLoginRequest(Message<LoginCredentials> msg, User creator) {
         LoginCredentials credentials = msg.content;
 
-        if (credentials.getEmail().isEmpty() || credentials.getPassword().isEmpty()) {
+        if (credentials == null || credentials.getEmail() == null || credentials.getPassword() == null 
+                || credentials.getEmail().isEmpty() || credentials.getPassword().isEmpty()) {
             sendLoginFailureResponse("DATA_LOST", creator);
             return;
         }
