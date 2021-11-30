@@ -33,6 +33,7 @@ public enum MessageType {
     PICK_DWARF_REQUEST,
     PICK_DWARF_RESPONSE,
     RANKING_DATA,
+    ACKNOWLEDGE,
     ERROR;
 
     private static final MessageType[] msgTypeValues = MessageType.values();

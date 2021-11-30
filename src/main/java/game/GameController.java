@@ -20,4 +20,35 @@ public class GameController {
             //TODO: send dwarfs location
         }
     }
+
+    public void runGame() {
+        var timeToEnd =  game.getTimeToEnd();
+        if (timeToEnd > 0) {
+            long timeMillis = timeToEnd * 60 * 1000;
+            new TimerTask(timeMillis);
+        }
+        sendDwarfsInitialLocation();
+        //TODO  send to all players location of other players
+    }
+
+    public void endGame() {
+    }
+
+    class TimerTask extends Thread {
+        private final long time;
+
+        public TimerTask(long time) {
+            this.time = time;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(time);
+                GameController.this.endGame();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
