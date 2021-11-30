@@ -17,7 +17,7 @@ public class WebMoveTest {
     public void test() {
         List<AbstractPlayer> players = new ArrayList<>();
         players.add(new WebPlayer(1));
-        AbstractGame game = new SoloGame(1,GameMap.OLD_TOWN,players,0.0000001,0,null, 0);
+        AbstractGame game = new SoloGame(1,GameMap.OLD_TOWN,players,0.0000001,0,null,0);
 
         OsmService service = new OsmService(0);
 
