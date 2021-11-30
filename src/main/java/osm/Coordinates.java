@@ -5,7 +5,7 @@ public class Coordinates {
     private Double y;
     private Double x;
 
-    public Coordinates(Double y, Double x) {
+    public Coordinates(Double x, Double y) {
         this.y = y;
         this.x = x;
     }
@@ -24,5 +24,11 @@ public class Coordinates {
 
     public void setX(Double x) {
         this.x = x;
+    }
+
+    public double distanceTo(Coordinates to) {
+        double deltaX = x - to.getX();
+        double deltaY = y - to.getY();
+        return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     }
 }

@@ -1,6 +1,7 @@
 package osm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,10 +41,31 @@ public class Node {
         return neighbors;
     }
 
-    public Node(Long id, Double y, Double x) {
-        this.coords = new Coordinates(y, x);
+    public Node(Long id, Double x, Double y) {
+        this.coords = new Coordinates(x, y);
         this.id = id;
         this.neighbors = new ArrayList<>();
+    }
+
+    public int nextNeighbor(Coordinates position) {
+        List<Double> distances = distLinePoints(coords, position, neighbors);
+        return distances.indexOf(Collections.min(distances));
+    }
+
+    private List<Double> distLinePoints(Coordinates A, Coordinates B, List<Coordinates> points) {
+        List<Double> distances = new ArrayList<>();
+        double distAB = A.distanceTo(B);
+        double x1 = A.getX();
+        double y1 = A.getY();
+        double x2 = B.getX();
+        double y2 = B.getY();
+        for (Coordinates C : points) {
+            double x0 = C.getX();
+            double y0 = C.getY();
+            double numerator = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1));
+            distances.add(numerator/distAB);
+        }
+        return distances;
     }
 
 }
