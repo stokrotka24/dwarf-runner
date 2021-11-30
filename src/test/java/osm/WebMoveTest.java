@@ -12,7 +12,7 @@ public class WebMoveTest {
 
     @Test
     public void test() {
-        AbstractGame game = new SoloGame(1,GameMap.OLD_TOWN,null,0.0000001,0,null);
+        AbstractGame game = new SoloGame(1,GameMap.OLD_TOWN,null,0.0000001,0,null, 0);
 
         OsmService service = new OsmService(0);
         Node node = service.getNodes().get(8);
