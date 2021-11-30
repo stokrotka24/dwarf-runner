@@ -40,7 +40,7 @@ public abstract class OsmMap {
                     Long id = (Long) element.get("id");
                     Double lat = (Double) element.get("lat");
                     Double lon = (Double) element.get("lon");
-                    nodes.add(new Node(id, lat, lon));
+                    nodes.add(new Node(id, lon, lat));
                 }
             }
             for (Way way : ways

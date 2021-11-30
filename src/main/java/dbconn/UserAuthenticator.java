@@ -1,12 +1,5 @@
 package dbconn;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.CallableStatement;
-import java.sql.SQLException;
-import java.util.Base64;
-
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.LoginResponseData;
 import dbconn.jsonclasses.RegisterCredentials;
@@ -16,6 +9,13 @@ import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.CallableStatement;
+import java.sql.SQLException;
+import java.util.Base64;
 
 public class UserAuthenticator {
     

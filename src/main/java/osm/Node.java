@@ -1,10 +1,8 @@
 package osm;
 
-import game.WebMove;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Node
@@ -19,20 +17,12 @@ public class Node {
         neighbors.add(coords);
     }
 
-    public Double getLat() {
-        return coords.getLat();
-    }
-
     public Double getY() {
-        return coords.getLat();
-    }
-
-    public Double getLon() {
-        return coords.getLon();
+        return coords.getY();
     }
 
     public Double getX() {
-        return coords.getLon();
+        return coords.getX();
     }
 
     public Coordinates getCoords() {
@@ -51,10 +41,31 @@ public class Node {
         return neighbors;
     }
 
-    public Node(Long id, Double lat, Double lon) {
-        this.coords = new Coordinates(lat, lon);
+    public Node(Long id, Double x, Double y) {
+        this.coords = new Coordinates(x, y);
         this.id = id;
         this.neighbors = new ArrayList<>();
+    }
+
+    public int nextNeighbor(Coordinates position) {
+        List<Double> distances = distLinePoints(coords, position, neighbors);
+        return distances.indexOf(Collections.min(distances));
+    }
+
+    private List<Double> distLinePoints(Coordinates A, Coordinates B, List<Coordinates> points) {
+        List<Double> distances = new ArrayList<>();
+        double distAB = A.distanceTo(B);
+        double x1 = A.getX();
+        double y1 = A.getY();
+        double x2 = B.getX();
+        double y2 = B.getY();
+        for (Coordinates C : points) {
+            double x0 = C.getX();
+            double y0 = C.getY();
+            double numerator = Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1));
+            distances.add(numerator/distAB);
+        }
+        return distances;
     }
 
 }

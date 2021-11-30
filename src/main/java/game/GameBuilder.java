@@ -13,6 +13,7 @@ public final class GameBuilder {
     private float mobileMaxSpeed;
     private List<Dwarf> dwarfs;
     private GameType gameType;
+    private Integer timeToEnd;
     private Map<Integer, List<AbstractPlayer>> teams;
 
     private GameBuilder() {}
@@ -58,6 +59,11 @@ public final class GameBuilder {
         return this;
     }
 
+    public GameBuilder withEndCondition(Integer end) {
+        this.timeToEnd = end;
+        return this;
+    }
+
     public GameBuilder withTeams(Map<Integer, List<User>> teams) {
         Map<Integer, List<AbstractPlayer>> mappedTeams = new HashMap<>();
         for (var teamEntry : teams.entrySet()) {
@@ -73,9 +79,9 @@ public final class GameBuilder {
         AbstractGame game = null;
 
         if (gameType.equals(GameType.SOLO_GAME)) {
-            game = new SoloGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs);
+            game = new SoloGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs, timeToEnd);
         } else if (gameType.equals(GameType.TEAM_GAME)) {
-            game = new TeamGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs, teams);
+            game = new TeamGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs, timeToEnd, teams);
         }
 
         return game;
