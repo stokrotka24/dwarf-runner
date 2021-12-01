@@ -2,6 +2,8 @@ package dbconn;
 
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.LoginResponseData;
+import dbconn.jsonclasses.RegisterCredentials;
+import dbconn.jsonclasses.RegisterResponseData;
 import game.GamePlatform;
 import game.User;
 import messages.Message;
@@ -18,6 +20,35 @@ import java.util.Base64;
 public class UserAuthenticator {
     
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
+    private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
+    private static final int USER_ALREADY_EXISTS_CODE = 15600;
+    
+    public static void handleRegisterRequest(Message<RegisterCredentials> msg, User creator) {
+        RegisterCredentials credentials = msg.content;
+        if (credentials == null || credentials.getEmail() == null || credentials.getNickname() == null ||
+                credentials.getPassword() == null) {
+            sendRegisterFailureResponse("DATA_LOST", creator);
+        }
+        
+        try {
+            CallableStatement cStatement = DBConnection.getConnection().prepareCall(registerQuery);
+            cStatement.setString(1, credentials.getEmail());
+            cStatement.setString(2, credentials.getNickname());
+            cStatement.setString(3, hash256(credentials.getPassword()));
+            cStatement.registerOutParameter(4, java.sql.Types.VARCHAR);
+            cStatement.execute();
+            sendRegisterSuccessResponse(creator);
+        }
+        catch (SQLException ex) {
+            if (ex.getErrorCode() == USER_ALREADY_EXISTS_CODE) {
+                sendRegisterFailureResponse("EMAIL_TAKEN", creator);
+            }
+            else {
+                System.out.println(ex.getMessage());
+                sendRegisterFailureResponse("UNKNOWN", creator);
+            }
+        }
+    }
     
     /**
      * function to handle JSON login request from client
@@ -27,8 +58,9 @@ public class UserAuthenticator {
     public static void handleLoginRequest(Message<LoginCredentials> msg, User creator) {
         LoginCredentials credentials = msg.content;
 
-        if (credentials.getEmail().isEmpty() || credentials.getPassword().isEmpty()) {
-            sendFailureResponse("DATA_LOST", creator);
+        if (credentials == null || credentials.getEmail() == null || credentials.getPassword() == null 
+                || credentials.getEmail().isEmpty() || credentials.getPassword().isEmpty()) {
+            sendLoginFailureResponse("DATA_LOST", creator);
             return;
         }
 
@@ -41,18 +73,18 @@ public class UserAuthenticator {
             String userNickname = cStatement.getString(3);
             if (userNickname != null && !userNickname.isEmpty()) {
                 creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
-                sendSuccessResponse(userNickname, creator);
+                sendLoginSuccessResponse(userNickname, creator);
                 return;
             }
             else {
-                sendFailureResponse("WRONG_CREDENTIALS", creator);
+                sendLoginFailureResponse("WRONG_CREDENTIALS", creator);
                 return;
             }
         }
         catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
-        sendFailureResponse("UNKNOWN", creator);
+        sendLoginFailureResponse("UNKNOWN", creator);
         return;
     }
     
@@ -70,13 +102,25 @@ public class UserAuthenticator {
         }
     }
 
-    private static void sendFailureResponse(String failureReason, User creator) {
+    private static void sendRegisterFailureResponse(String failureReason, User creator) {
+        RegisterResponseData responseData = RegisterResponseData.failedRegisterData(failureReason);
+        Message<RegisterResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
+        creator.sendMessage(MessageParser.toJsonString(respMsg));
+    }
+
+    private static void sendRegisterSuccessResponse(User creator) {
+        RegisterResponseData responseData = RegisterResponseData.successRegisterData();
+        Message<RegisterResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
+        creator.sendMessage(MessageParser.toJsonString(respMsg));
+    }
+
+    private static void sendLoginFailureResponse(String failureReason, User creator) {
         LoginResponseData responseData = LoginResponseData.failedLoginData(failureReason);
         Message<LoginResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
-    private static void sendSuccessResponse(String nickname, User creator) {
+    private static void sendLoginSuccessResponse(String nickname, User creator) {
         LoginResponseData responseData = LoginResponseData.successLoginData(nickname);
         Message<LoginResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
         System.out.println(MessageParser.toJsonString(respMsg));

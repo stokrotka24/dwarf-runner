@@ -2,6 +2,7 @@ package server;
 
 import dbconn.UserAuthenticator;
 import dbconn.jsonclasses.LoginCredentials;
+import dbconn.jsonclasses.RegisterCredentials;
 import game.GameManager;
 import game.User;
 import lobby.JoinLobbyRequest;
@@ -58,8 +59,8 @@ public class MenuServer {
 						continue;
 					}
 
-					var header = MessageParser.getMsgHeader(msgReceived);
-
+ 					var header = MessageParser.getMsgHeader(msgReceived);
+                    
 					switch(header) {
 						case LOBBY_LIST_REQUEST: {
 							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
@@ -94,6 +95,12 @@ public class MenuServer {
 							UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, LoginCredentials.class),
 									sender);
 							break;
+						}
+						case REGISTER_REQUEST: {
+                            System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
+                            UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, RegisterCredentials.class),
+                                    sender);
+                            break;
 						}
 						case PLAYER_IS_READY: {
 							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
@@ -147,7 +154,7 @@ public class MenuServer {
 		clientAccepter.start();
 	}
 
-	/**
+    /**
      * Stores handler into map of clients, allowing for further communication with client corresponding to handler
      * @param handler corresponding to client connected to server
      * @return unique ID of client
