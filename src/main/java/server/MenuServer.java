@@ -96,6 +96,12 @@ public class MenuServer {
 									sender);
 							break;
 						}
+						case REGISTER_REQUEST: {
+                            System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
+                            UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, RegisterCredentials.class),
+                                    sender);
+                            break;
+						}
 						case PLAYER_IS_READY: {
 							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
 							sendServerAcknowledge(sender, MessageType.PLAYER_IS_READY);
