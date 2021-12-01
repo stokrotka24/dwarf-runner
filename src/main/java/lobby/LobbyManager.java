@@ -1,12 +1,15 @@
 package lobby;
 
 import game.GameMap;
+import game.GamePlatform;
 import game.GameType;
 import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+import osm.OsmService;
 
+import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,6 +17,7 @@ public class LobbyManager {
     private final List<Lobby> lobbys;
     private final Map<Integer, List<User>> lobbyToPlayers;
     private static int idCounter = 0;
+    private final Double INCORRECT_COORDS = 100.0;
 
     public LobbyManager() {
         lobbys = new ArrayList<>();
@@ -57,20 +61,20 @@ public class LobbyManager {
     public void createLobby(Message<Lobby> msg, User creator) {
         Lobby lobby = msg.content;
         if (!validateLobby(lobby)) {
-            onJoinLobbyRequest(creator, false);
+            onCreateLobbyRequest(creator, -1);
             return;
         }
 
         setupNewLobby(lobby);
-
-        addPlayerToLobby(creator, lobby.getId(),
-                lobby.getType() == GameType.SOLO_GAME ? 0 : 1);
+        lobby.setCreator(creator);
+        onCreateLobbyRequest(creator, lobby.getId());
     }
 
     private void setupNewLobby(Lobby lobby) {
         assignId(lobby);
         lobby.setPlayers(0);
         lobby.setReadyPlayers(0);
+        lobby.setOsmService(new OsmService(lobby.getMapId()));
         lobbys.add(lobby);
         lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
         var teams = lobby.getTeams();
@@ -101,7 +105,7 @@ public class LobbyManager {
         Lobby lobby = getLobbyInfo(lobbyId);
 
         if(!checkIfJoinPossible(player, teamId, lobby)) {
-            onJoinLobbyRequest(player, false);
+            onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
             return;
         }
 
@@ -113,6 +117,23 @@ public class LobbyManager {
         if (!lobby.getTeams().get(teamId).contains(player)) {
             lobby.getTeams().get(teamId).add(player);
         }
+
+        var platform = player.getPlatform();
+        if (platform.isEmpty()) {
+            //TODO add this LOG to logger
+            System.out.println("LOG: user with id="+player.getServerId()+" doesn't have platform!");
+            onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
+        } else if (platform.get() == GamePlatform.MOBILE) {
+            //TODO find the nearest node and send to mobile player
+        } else {
+            try {
+                var node = lobby.getOsmService().getRandomNode();
+            } catch (InvalidTargetObjectTypeException e) {
+                e.printStackTrace();
+                onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
+            }
+        }
+
         addToLobby(player, lobbyId, lobby);
     }
 
@@ -143,7 +164,8 @@ public class LobbyManager {
     private void addToLobby(User player, int lobbyId, Lobby lobby) {
         lobby.setPlayers(lobby.getPlayers() + 1);
         lobbyToPlayers.get(lobbyId).add(player);
-        onJoinLobbyRequest(player, true);
+        var coords = lobby.getCoordsForPlayer(player.getServerId());
+        onJoinLobbyRequest(player, true, coords.getX(), coords.getY());
         notifyLobby(lobby);
     }
 
@@ -156,8 +178,22 @@ public class LobbyManager {
         }
     }
 
-    private void onJoinLobbyRequest(User player, boolean status) {
-        Message<Boolean> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, status);
+    /**
+     * Send response for create lobby request
+     * @param creator lobby's creator
+     * @param lobbyId created lobby id, -1 otherwise
+     */
+    private void onCreateLobbyRequest(User creator, int lobbyId) {
+        Message<Integer> lobbyMsg = new Message<>(MessageType.CREATE_LOBBY_RESPONSE, lobbyId);
+        var stringMsg = MessageParser.toJsonString(lobbyMsg);
+
+        if (creator != null) {
+            creator.sendMessage(stringMsg);
+        }
+    }
+
+    private void onJoinLobbyRequest(User player, boolean response, Double x, Double y) {
+        Message<Boolean> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, response);
         var stringMsg = MessageParser.toJsonString(lobbyMsg);
 
         if (player != null) {
@@ -185,7 +221,7 @@ public class LobbyManager {
 
         if (lobby.getType() == GameType.SOLO_GAME ||
                 (teamId != 1 && teamId != 2)) {
-            onJoinLobbyRequest(player, false);
+            onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
             player.sendMessage(MessageParser.toJsonString(msg));
         }
 

@@ -65,6 +65,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
     @Test
     @Order(1)
     void createLobby_ShouldSucceed() {
+        System.out.println("hejcia!");
         String request = "{\n" +
                 "    \"header\": \"CREATE_LOBBY_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -80,17 +81,11 @@ class LobbyManagerTest extends AbstractCommunicationTest {
                 "}";
         client.sendMsg(request);
 
-        String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":true}";
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
-                "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1," +
-                "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
-                "\"teams\":{\"team1\":[\"Guest\"],\"team2\":[]}}}";
+        String expected = "{\"header\":\"CREATE_LOBBY_RESPONSE\",\"content\":0}";
 
         try {
             String response1 = client.queue.take();
-            assertEquals(expected1, response1);
-            String response2 = client.queue.take();
-            assertEquals(expected2, response2);
+            assertEquals(expected, response1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -112,7 +107,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         msg.clientId = client.id;
         client.sendMsg(gson.toJson(msg));
 
-        String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":false}";
+        String expected1 = "{\"header\":\"CREATE_LOBBY_RESPONSE\",\"content\":-1}";
         try {
             String response1 = client.queue.take();
             assertEquals(expected1, response1);
@@ -130,9 +125,9 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         client2.sendMsg(gson.toJson(msg));
         String expected1 = "{\"header\":\"JOIN_LOBBY_RESPONSE\",\"content\":true}";
         String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
-                "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
+                "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
-                "\"teams\":{\"team1\":[\"Guest\",\"Guest\"],\"team2\":[]}}}";
+                "\"teams\":{\"team1\":[\"Guest\"],\"team2\":[]}}}";
         try {
             String response1 = client2.queue.take();
             assertEquals(expected1, response1);
