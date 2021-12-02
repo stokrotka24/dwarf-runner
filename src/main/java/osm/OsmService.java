@@ -1,28 +1,21 @@
 package osm;
 
 import game.GameMap;
+import osm.maps.*;
+
+import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import javax.management.modelmbean.InvalidTargetObjectTypeException;
-import osm.maps.CathedralIsland;
-import osm.maps.CentennialHall;
-import osm.maps.MainStation;
-import osm.maps.OldTown;
-import osm.maps.PwrArchitectureCampus;
-import osm.maps.OsmMap;
-import osm.maps.PwrMainCampus;
-import osm.maps.SzczytnickiPark;
-import osm.maps.WesternPark;
-
 /**
  * OsmService
  */
 public class OsmService {
-
+    // one degree is about 11 kilometers
+    public static final double METRE = 1.0 / 11000.0;
     private OsmMap map;
 
     /*public ArrayList<Way> getWays() {

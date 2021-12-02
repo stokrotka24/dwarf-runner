@@ -2,6 +2,7 @@ package game;
 
 import osm.Coordinates;
 import osm.Node;
+import osm.OsmService;
 
 public abstract class AbstractPlayer {
 
@@ -36,8 +37,8 @@ public abstract class AbstractPlayer {
     public abstract boolean pickUpDwarf(Dwarf dwarf);
 
     public boolean isNearToDwarf(Dwarf dwarf) {
-        //TODO: when OSM will be implemented
-        return false;
+        return Math.abs(this.coords.getX() - dwarf.getX()) <= 5 * OsmService.METRE
+                && Math.abs(this.coords.getY() - dwarf.getY()) <= 5 * OsmService.METRE;
     }
 
     public void setX(Double x) {

@@ -1,5 +1,9 @@
 package game;
 
+import game.json.DwarfsLocationListDelivery;
+import messages.Message;
+import messages.MessageParser;
+import messages.MessageType;
 import osm.OsmService;
 
 import java.util.Map;
@@ -15,10 +19,16 @@ public class GameController {
         this.playerToUser = playerToUser;
     }
 
-    private void sendDwarfsInitialLocation() {
+    private void sendDwarfsLocation() {
         for (AbstractPlayer player: game.getPlayers()) {
-            //TODO: send dwarfs location
+            playerToUser.get(player.getId()).sendMessage(createdDwarfsLocationDelivery());
         }
+    }
+
+    protected String createdDwarfsLocationDelivery() {
+        var dwarfsListDelivery = new DwarfsLocationListDelivery(game.getDwarfs());
+        var msg = new Message<>(MessageType.DWARF_LIST_DELIVERY, dwarfsListDelivery);
+        return MessageParser.toJsonString(msg);
     }
 
     public void runGame() {
@@ -27,7 +37,7 @@ public class GameController {
             long timeMillis = timeToEnd * 60 * 1000;
             new TimerTask(timeMillis);
         }
-        sendDwarfsInitialLocation();
+        sendDwarfsLocation();
         //TODO  send to all players location of other players
     }
 
