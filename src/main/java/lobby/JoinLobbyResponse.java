@@ -21,4 +21,16 @@ public class JoinLobbyResponse {
         this.x = x;
         this.y = y;
     }
+
+    public boolean getResponse() {
+        return response;
+    }
+
+    public Double getX() {
+        return x;
+    }
+
+    public Double getY() {
+        return y;
+    }
 }

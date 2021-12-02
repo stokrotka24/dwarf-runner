@@ -5,7 +5,7 @@ import game.GameMap;
 import game.GameType;
 import game.User;
 import messages.JsonRequired;
-import osm.Coordinates;
+import osm.Node;
 import osm.OsmService;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class Lobby {
 
     private transient User creator;
 
-    private transient Map<Integer, Coordinates> playerToInitialCoords = new HashMap<>();
+    private transient Map<Integer, Node> playerToInitialNode = new HashMap<>();
 
     private transient OsmService osmService;
 
@@ -216,7 +216,11 @@ public class Lobby {
         this.osmService = osmService;
     }
 
-    public Coordinates getCoordsForPlayer(int playerId) {
-        return playerToInitialCoords.get(playerId);
+    public Node getNodeForPlayer(int playerId) {
+        return playerToInitialNode.get(playerId);
+    }
+
+    public void setNodeForPlayer(int playerId, Node node) {
+        playerToInitialNode.put(playerId, node);
     }
 }

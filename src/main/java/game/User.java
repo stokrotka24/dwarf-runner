@@ -27,6 +27,9 @@ public class User {
     }
 
     public Optional<GamePlatform> getPlatform() {
+        if (platform == null) {
+            return Optional.empty();
+        }
         return Optional.of(platform);
     }
 

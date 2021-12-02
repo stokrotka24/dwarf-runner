@@ -7,6 +7,7 @@ import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+import osm.Coordinates;
 import osm.OsmService;
 
 import javax.management.modelmbean.InvalidTargetObjectTypeException;
@@ -17,7 +18,6 @@ public class LobbyManager {
     private final List<Lobby> lobbys;
     private final Map<Integer, List<User>> lobbyToPlayers;
     private static int idCounter = 0;
-    private final Double INCORRECT_COORDS = 100.0;
 
     public LobbyManager() {
         lobbys = new ArrayList<>();
@@ -32,7 +32,9 @@ public class LobbyManager {
         for (int i = 0; i < n; i++) {
             Lobby lobby = new Lobby();
             lobby.setDwarfs(rnd.nextInt(15) + 5);
-            lobby.setMap(GameMap.fromInt(rnd.nextInt(8)));
+            int mapId = rnd.nextInt(8);
+            lobby.setMap(GameMap.fromInt(mapId));
+            lobby.setOsmService(new OsmService(mapId));
             lobby.setSpeed(rnd.nextFloat() * 5);
             lobby.setMaxSpeed(rnd.nextFloat() * 5);
             lobby.setName("Test lobby " + i);
@@ -43,9 +45,10 @@ public class LobbyManager {
             int players = rnd.nextInt(10);
             for (int j = 0; j < players; j++) {
                 User user = new User("User" + i + " " + j);
+                user.setPlatform(GamePlatform.WEB);
                 int team = lobby.getType() == GameType.SOLO_GAME ? 0
                         : rnd.nextInt(2) + 1;
-                addPlayerToLobby(user, lobby.getId(), team);
+                addPlayerToLobby(user, lobby.getId(), team, 100.0, 100.0);
             }
             lobby.setReadyPlayers(rnd.nextInt(lobby.getPlayers() + 1));
             lobby.setMaxPlayers(rnd.nextInt(10) + lobby.getPlayers());
@@ -101,11 +104,11 @@ public class LobbyManager {
         return true;
     }
 
-    private void addPlayerToLobby(User player, int lobbyId, int teamId) {
+    private void addPlayerToLobby(User player, int lobbyId, int teamId, Double x, Double y) {
         Lobby lobby = getLobbyInfo(lobbyId);
 
         if(!checkIfJoinPossible(player, teamId, lobby)) {
-            onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
+            sendJoinLobbyFailed(player);
             return;
         }
 
@@ -122,15 +125,21 @@ public class LobbyManager {
         if (platform.isEmpty()) {
             //TODO add this LOG to logger
             System.out.println("LOG: user with id="+player.getServerId()+" doesn't have platform!");
-            onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
+            sendJoinLobbyFailed(player);
         } else if (platform.get() == GamePlatform.MOBILE) {
-            //TODO find the nearest node and send to mobile player
-        } else {
             try {
-                var node = lobby.getOsmService().getRandomNode();
+                var theNearestNode = lobby.getOsmService().getTheNearestNode(new Coordinates(x, y));
+                lobby.setNodeForPlayer(player.getServerId(), theNearestNode);
             } catch (InvalidTargetObjectTypeException e) {
                 e.printStackTrace();
-                onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
+                sendJoinLobbyFailed(player);
+            }
+        } else {
+            try {
+                lobby.setNodeForPlayer(player.getServerId(), lobby.getOsmService().getRandomNode());
+            } catch (InvalidTargetObjectTypeException e) {
+                e.printStackTrace();
+                sendJoinLobbyFailed(player);
             }
         }
 
@@ -158,14 +167,20 @@ public class LobbyManager {
      *      id of chosen team - 0 or 1
      */
     public void addPlayerToLobby(JoinLobbyRequest request, User player) {
-        addPlayerToLobby(player, request.getLobbyId(), request.getTeam());
+        addPlayerToLobby(player, request.getLobbyId(), request.getTeam(), request.getX(), request.getY());
     }
 
     private void addToLobby(User player, int lobbyId, Lobby lobby) {
         lobby.setPlayers(lobby.getPlayers() + 1);
         lobbyToPlayers.get(lobbyId).add(player);
-        var coords = lobby.getCoordsForPlayer(player.getServerId());
-        onJoinLobbyRequest(player, true, coords.getX(), coords.getY());
+
+        var node = lobby.getNodeForPlayer(player.getServerId());
+        if (node == null) {
+            sendJoinLobbyFailed(player);
+        } else {
+            sendJoinLobbySucceed(player, node.getX(), node.getY());
+        }
+
         notifyLobby(lobby);
     }
 
@@ -192,8 +207,19 @@ public class LobbyManager {
         }
     }
 
-    private void onJoinLobbyRequest(User player, boolean response, Double x, Double y) {
-        Message<Boolean> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, response);
+    private void sendJoinLobbyFailed(User player) {
+        JoinLobbyResponse responseData = new JoinLobbyResponse(false, null, null);
+        Message<JoinLobbyResponse> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, responseData);
+        var stringMsg = MessageParser.toJsonString(lobbyMsg);
+
+        if (player != null) {
+            player.sendMessage(stringMsg);
+        }
+    }
+
+    private void sendJoinLobbySucceed(User player, Double x, Double y) {
+        JoinLobbyResponse responseData = new JoinLobbyResponse(true, x, y);
+        Message<JoinLobbyResponse> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, responseData);
         var stringMsg = MessageParser.toJsonString(lobbyMsg);
 
         if (player != null) {
@@ -221,7 +247,7 @@ public class LobbyManager {
 
         if (lobby.getType() == GameType.SOLO_GAME ||
                 (teamId != 1 && teamId != 2)) {
-            onJoinLobbyRequest(player, false, INCORRECT_COORDS, INCORRECT_COORDS);
+            sendJoinLobbyFailed(player);
             player.sendMessage(MessageParser.toJsonString(msg));
         }
 
