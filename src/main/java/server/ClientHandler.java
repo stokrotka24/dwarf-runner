@@ -18,8 +18,10 @@ public class ClientHandler extends Thread {
     private AtomicBoolean isRunning = new AtomicBoolean(true);
     private Integer maxJsonLength;
     public LinkedBlockingQueue<String> output;
+    private static final Logger logger = Logger.getInstance();
 
     public void sendMessage(String message) {
+        logger.info("sending message: " + message);
         if (clientInput != null) {
             clientInput.print(message + '\n');
         }
@@ -58,13 +60,16 @@ public class ClientHandler extends Thread {
                 } while (bracketCount > 0);
                 output.put(builder.toString());
             } catch (IOException e) {
+                logger.error(e.getMessage());
                 clientInput.close();
                 try {
                     clientOutput.close();
                 } catch (IOException e1) {
+                    logger.error(e1.getMessage());
                 }
                 return;
             } catch (InterruptedException e) {
+                logger.error(e.getMessage());
                 continue mainLoop;
             }
         }
@@ -73,6 +78,7 @@ public class ClientHandler extends Thread {
             clientOutput.close();
             clientSocket.close();
         } catch (IOException e) {
+            logger.error(e.getMessage());
         }
 
     }
@@ -82,7 +88,7 @@ public class ClientHandler extends Thread {
             clientInput = new PrintStream(clientSocket.getOutputStream(), true);
             clientOutput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 

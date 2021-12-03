@@ -24,135 +24,138 @@ import java.util.concurrent.LinkedBlockingQueue;
  *
  */
 public class MenuServer {
-	
-	/**
-	 * Upper limit for messages number on inMsgQueue
-	 */
-	static final int QUEUE_SIZE = 100000;
-	/**
-	 * Upper limit for clients count
-	 */
-	static final int MAX_CLIENTS_COUNT = 100000;
-	/**
-	 * Queue used for receiving input from clients. All messages from ClientHandlers should go there.
-	 */
-	public LinkedBlockingQueue<String> inMsgQueue;
-	private LobbyManager lobbyManager;
-	private GameManager gameManager;
-	private HashMap<Integer, User> users;
-	private int currID = 1;
-	
-	public void go() {
-		initComponents();
+    
+    /**
+     * Upper limit for messages number on inMsgQueue
+     */
+    static final int QUEUE_SIZE = 100000;
+    /**
+     * Upper limit for clients count
+     */
+    static final int MAX_CLIENTS_COUNT = 100000;
+    /**
+     * Queue used for receiving input from clients. All messages from ClientHandlers should go there.
+     */
+    public LinkedBlockingQueue<String> inMsgQueue;
+    private LobbyManager lobbyManager;
+    private GameManager gameManager;
+    private HashMap<Integer, User> users;
+    private final Logger logger = Logger.getInstance();
+    private int currID = 1;
 
-		while(true) {
-			try {
-				String msgReceived = inMsgQueue.take();
-				System.out.println("LOG: Got msg" + msgReceived);
+    public void go() {
+        initComponents();
 
-				User sender = null;
-				try {
-					int clientID = MessageParser.getClientId(msgReceived);
-					sender = users.get(clientID);
-					if (sender == null) {
-						System.out.println("LOG: Server didn't recognize user with id: " + clientID);
-						continue;
-					}
+        while(true) {
+            try {
+                String msgReceived = inMsgQueue.take();
+                logger.info("Got msg" + msgReceived);
 
- 					var header = MessageParser.getMsgHeader(msgReceived);
-                    
-					switch(header) {
-						case LOBBY_LIST_REQUEST: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
-									sender);
-							break;
-						}
-						case CREATE_LOBBY_REQUEST: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
-									sender);
-							break;
-						}
-						case JOIN_LOBBY_REQUEST: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							lobbyManager.addPlayerToLobby(MessageParser.getMsgContent(msgReceived, JoinLobbyRequest.class),
-									sender);
-							break;
-						}
-						case CHANGE_TEAM_REQUEST: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							lobbyManager.changeTeam(sender, MessageParser.getMsgContent(msgReceived, Integer.class));
-							break;
-						}
-						case QUIT_LOBBY_REQUEST: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							lobbyManager.removePlayerFromLobby(sender);
-							break;
-						}
-						case LOG_IN_REQUEST: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, LoginCredentials.class),
-									sender);
-							break;
-						}
-						case REGISTER_REQUEST: {
-                            System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-                            UserAuthenticator.handleRegisterRequest(MessageParser.fromJsonString(msgReceived, RegisterCredentials.class),
+                User sender = null;
+                try {
+                    int clientID = MessageParser.getClientId(msgReceived);
+                    sender = users.get(clientID);
+                    if (sender == null) {
+                        logger.info("Server didn't recognize user with id: " + clientID);
+                        continue;
+                    }
+
+                    var header = MessageParser.getMsgHeader(msgReceived);
+
+                    switch(header) {
+                        case LOBBY_LIST_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
                                     sender);
                             break;
-						}
-						case PLAYER_IS_READY: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							sendServerAcknowledge(sender, MessageType.PLAYER_IS_READY);
-							lobbyManager.setPlayerIsReady(sender);
-							break;
-						}
-						case PLAYER_IS_UNREADY: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							sendServerAcknowledge(sender, MessageType.PLAYER_IS_UNREADY);
-							lobbyManager.setPlayerIsUnready(sender);
-							break;
-						}
-						case START_GAME_REQUEST: {
-							System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-							var lobby = lobbyManager.getLobbyIfReady(sender);
-							if (lobby.isPresent() && sender == lobby.get().getCreator()) {
-								var players = lobbyManager.getPlayerList(lobby.get().getId());
-								gameManager.runGame(lobby.get(), players);
-								lobbyManager.removeLobby(lobby.get().getId());
-							}
-							break;
-						}
-						default: {
-							System.out.println("LOG: Handling error for user with id: " + clientID);
-							Message<String> msg = new Message<>(MessageType.ERROR, "Header has been read correctly, " +
-									"but server doesn't currently support this kind of message. Your message was: " + msgReceived);
-							sender.sendMessage(MessageParser.toJsonString(msg));
-							break;
-						}
-					}
-				} catch (MessageException e) {
-					if (sender != null) {
-						Message<String> msg = new Message<>(MessageType.ERROR, e.getMessage() + " Your message was: " + msgReceived);
-						sender.sendMessage(MessageParser.toJsonString(msg));
-					}
-				}
-			} catch (InterruptedException e) {
-				//TODO: add some handling?
-				e.printStackTrace();
-			}
-		}
-	}
+                        }
+                        case CREATE_LOBBY_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
+                                    sender);
+                            break;
+                        }
+                        case JOIN_LOBBY_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            lobbyManager.addPlayerToLobby(MessageParser.getMsgContent(msgReceived, JoinLobbyRequest.class),
+                                    sender);
+                            break;
+                        }
+                        case CHANGE_TEAM_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            lobbyManager.changeTeam(sender, MessageParser.getMsgContent(msgReceived, Integer.class));
+                            break;
+                        }
+                        case QUIT_LOBBY_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            lobbyManager.removePlayerFromLobby(sender);
+                            break;
+                        }
+                        case LOG_IN_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, LoginCredentials.class),
+                                    sender);
+                            break;
+                        }
+                        case REGISTER_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            UserAuthenticator.handleRegisterRequest(MessageParser.fromJsonString(msgReceived, 
+                                    RegisterCredentials.class), sender);
+                            break;
+                        }
+                        case PLAYER_IS_READY: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            sendServerAcknowledge(sender, MessageType.PLAYER_IS_READY);
+                            lobbyManager.setPlayerIsReady(sender);
+                            break;
+                        }
+                        case PLAYER_IS_UNREADY: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            sendServerAcknowledge(sender, MessageType.PLAYER_IS_UNREADY);
+                            lobbyManager.setPlayerIsUnready(sender);
+                            break;
+                        }
+                        case START_GAME_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            var lobby = lobbyManager.getLobbyIfReady(sender);
+                            if (lobby.isPresent() && sender == lobby.get().getCreator()) {
+                                var players = lobbyManager.getPlayerList(lobby.get().getId());
+                                gameManager.runGame(lobby.get(), players);
+                                lobbyManager.removeLobby(lobby.get().getId());
+                            }
+                            break;
+                        }
+                        default: {
+                            logger.warning("Handling error for user with id: " + clientID);
+                            Message<String> msg = new Message<>(MessageType.ERROR, "Header has been read correctly, " +
+                                    "but server doesn't currently support this kind of message. Your message was: " + msgReceived);
+                            sender.sendMessage(MessageParser.toJsonString(msg));
+                            break;
+                        }
+                    }
+                } catch (MessageException e) {
+                    logger.warning(e.getMessage());
+                    if (sender != null) {
+                        Message<String> msg = new Message<>(MessageType.ERROR, e.getMessage() + " Your message was: " + msgReceived);
+                        sender.sendMessage(MessageParser.toJsonString(msg));
+                    }
+                }
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
+        }
+    }
 
-	private void initComponents() {
-		inMsgQueue = new LinkedBlockingQueue<>(QUEUE_SIZE);
-		lobbyManager = new LobbyManager();
-		gameManager = new GameManager();
-		users = new HashMap<>();
-		ClientAccepter clientAccepter = new ClientAccepter(this);
-		clientAccepter.start();
-	}
+    private void initComponents() {
+        inMsgQueue = new LinkedBlockingQueue<>(QUEUE_SIZE);
+        lobbyManager = new LobbyManager();
+        gameManager = new GameManager();
+        users = new HashMap<>();
+        ClientAccepter clientAccepter = new ClientAccepter(this);
+        clientAccepter.start();
+        logger.setLoggingLevel(LogLevel.ALL);
+        logger.setOption(LoggerOption.LOG_TO_FILE);
+    }
 
     /**
      * Stores handler into map of clients, allowing for further communication with client corresponding to handler
