@@ -40,7 +40,7 @@ public class Logger {
     }
 
     public void warning(String msg) {
-        if (level.isGreaterOrEqual(LogLevel.ERROR)) {
+        if (level.isGreaterOrEqual(LogLevel.WARNING)) {
             log("Warning:", msg);
         }
     }
