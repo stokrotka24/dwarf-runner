@@ -1,5 +1,6 @@
 package server;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Instant;
@@ -68,6 +69,8 @@ public class Logger {
 
     private void prepareFile() {
         try {
+            File dir = new File(dirName);
+            dir.mkdir();
             writer = new FileWriter(dirName + filename, true);
         } catch (IOException e) {
             e.printStackTrace();
