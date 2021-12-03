@@ -78,10 +78,12 @@ public class OsmService {
             throw new InvalidTargetObjectTypeException(
                     "node list empty, cannot access random node");
         }
-        double min = -1.0;
-        Node theNearestNode = null;
 
-        for (Node node: map.nodes) {
+        Node theNearestNode = map.nodes.get(0);
+        double min = theNearestNode.getCoords().distanceTo(coordinates);
+        List<Node> nodes = map.nodes.subList(1, map.nodes.size());
+
+        for (Node node: nodes) {
             double distance = node.getCoords().distanceTo(coordinates);
             if (distance < min) {
                 min = distance;

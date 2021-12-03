@@ -60,7 +60,7 @@ public class Lobby {
 
     private transient User creator;
 
-    private transient Map<Integer, Node> playerToInitialNode = new HashMap<>();
+    private transient Map<Integer, Node> playersToInitialNode = new HashMap<>();
 
     private transient OsmService osmService;
 
@@ -217,10 +217,14 @@ public class Lobby {
     }
 
     public Node getNodeForPlayer(int playerId) {
-        return playerToInitialNode.get(playerId);
+        return playersToInitialNode.get(playerId);
     }
 
     public void setNodeForPlayer(int playerId, Node node) {
-        playerToInitialNode.put(playerId, node);
+        playersToInitialNode.put(playerId, node);
+    }
+
+    public Map<Integer, Node> getPlayersToInitialNode() {
+        return playersToInitialNode;
     }
 }

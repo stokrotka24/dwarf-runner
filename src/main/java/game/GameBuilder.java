@@ -1,13 +1,18 @@
 package game;
 
 import osm.Node;
+import osm.OsmService;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class GameBuilder {
     private int id;
     private GameMap gameMap;
+    private OsmService osmService;
     private List<AbstractPlayer> players;
     private float webSpeed;
     private float mobileMaxSpeed;
@@ -32,9 +37,14 @@ public final class GameBuilder {
         return this;
     }
 
-    public GameBuilder withPlayers(List<User> users) {
+    public GameBuilder withOsmService(OsmService osmService) {
+        this.osmService = osmService;
+        return this;
+    }
+
+    public GameBuilder withPlayers(List<User> users, Map<Integer, Node> playerToInitialNode) {
         this.players = users.stream()
-                .map(this::mapUserToPlayer)
+                .map(u -> mapUserToPlayer(u, playerToInitialNode.get(u.getServerId())))
                 .collect(Collectors.toList());
         return this;
     }
@@ -49,7 +59,8 @@ public final class GameBuilder {
         return this;
     }
 
-    public GameBuilder withDwarfs(List<Node> nodes) {
+    public GameBuilder withDwarfs(int numDwarfs, OsmService osmService) {
+        List<Node> nodes = osmService.getUniqueRandomNodes(numDwarfs);
         this.dwarfs = nodes.stream().map(Dwarf::new).collect(Collectors.toList());
         return this;
     }
@@ -64,11 +75,11 @@ public final class GameBuilder {
         return this;
     }
 
-    public GameBuilder withTeams(Map<Integer, List<User>> teams) {
+    public GameBuilder withTeams(Map<Integer, List<User>> teams, Map<Integer, Node> playerToInitialNode) {
         Map<Integer, List<AbstractPlayer>> mappedTeams = new HashMap<>();
         for (var teamEntry : teams.entrySet()) {
             mappedTeams.put(teamEntry.getKey(), teamEntry.getValue().stream()
-                            .map(this::mapUserToPlayer)
+                            .map(u -> mapUserToPlayer(u, playerToInitialNode.get(u.getServerId())))
                             .collect(Collectors.toList()));
         }
         this.teams = mappedTeams;
@@ -87,15 +98,15 @@ public final class GameBuilder {
         return game;
     }
 
-    private AbstractPlayer mapUserToPlayer(User user) {
+    private AbstractPlayer mapUserToPlayer(User user, Node node) {
         AbstractPlayer player = null;
         Optional<GamePlatform> gamePlatform = user.getPlatform();
 
         if (gamePlatform.isPresent()) {
             if (gamePlatform.get().equals(GamePlatform.MOBILE)) {
-                player = new MobilePlayer(user.getServerId());
+                player = new MobilePlayer(user.getServerId(), node);
             } else if (gamePlatform.get().equals(GamePlatform.WEB)) {
-                player = new WebPlayer(user.getServerId());
+                player = new WebPlayer(user.getServerId(), node);
             }
         }
 
