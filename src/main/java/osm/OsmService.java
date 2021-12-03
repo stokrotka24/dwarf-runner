@@ -1,22 +1,14 @@
 package osm;
 
 import game.GameMap;
+import osm.maps.*;
+
+import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-
-import javax.management.modelmbean.InvalidTargetObjectTypeException;
-import osm.maps.CathedralIsland;
-import osm.maps.CentennialHall;
-import osm.maps.MainStation;
-import osm.maps.OldTown;
-import osm.maps.PwrArchitectureCampus;
-import osm.maps.OsmMap;
-import osm.maps.PwrMainCampus;
-import osm.maps.SzczytnickiPark;
-import osm.maps.WesternPark;
 
 /**
  * OsmService
@@ -79,6 +71,26 @@ public class OsmService {
         }
         Random r = new Random();
         return map.nodes.get(r.nextInt(map.nodes.size()));
+    }
+
+    public Node getTheNearestNode(Coordinates coordinates) throws InvalidTargetObjectTypeException {
+        if (map.nodes.size() == 0) {
+            throw new InvalidTargetObjectTypeException(
+                    "node list empty, cannot access random node");
+        }
+
+        Node theNearestNode = map.nodes.get(0);
+        double min = theNearestNode.getCoords().distanceTo(coordinates);
+        List<Node> nodes = map.nodes.subList(1, map.nodes.size());
+
+        for (Node node: nodes) {
+            double distance = node.getCoords().distanceTo(coordinates);
+            if (distance < min) {
+                min = distance;
+                theNearestNode = node;
+            }
+        }
+        return theNearestNode;
     }
 
 }

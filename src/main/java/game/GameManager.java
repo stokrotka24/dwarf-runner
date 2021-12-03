@@ -1,7 +1,6 @@
 package game;
 
 import lobby.Lobby;
-import osm.OsmService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,30 +19,30 @@ public class GameManager {
     }
 
     private GameController createGameController(Lobby lobby, List<User> users) {
-        var osmService = new OsmService(lobby.getMapId());
-        var game = buildGame(lobby, users, osmService);
+        var game = buildGame(lobby, users);
 
         Map<Integer, User> playerToUser = new HashMap<>();
         for (User user : users) {
             playerToUser.put(user.getServerId(), user);
         }
 
-        var gameController = new GameController(game, osmService, playerToUser);
+        var gameController = new GameController(game, playerToUser);
         for (User user : users) {
             userToGameController.put(user.getServerId(), gameController);
         }
         return gameController;
     }
 
-    private AbstractGame buildGame(Lobby lobby, List<User> users, OsmService osmService) {
+    private AbstractGame buildGame(Lobby lobby, List<User> users) {
         return GameBuilder.aGame()
                 .withId(lobby.getId())
                 .withGameMap(lobby.getMap())
-                .withPlayers(users)
-                .withDwarfs(osmService.getUniqueRandomNodes(lobby.getDwarfs()))
+                .withOsmService(lobby.getOsmService())
+                .withPlayers(users, lobby.getPlayersToInitialNode())
+                .withDwarfs(lobby.getDwarfs(), lobby.getOsmService())
                 .withMobileMaxSpeed(lobby.getMaxSpeed())
                 .withWebSpeed(lobby.getSpeed())
-                .withTeams(lobby.getTeams())
+                .withTeams(lobby.getTeams(), lobby.getPlayersToInitialNode())
                 .withGameType(lobby.getType())
                 .withEndCondition(lobby.getEnd())
                 .build();
