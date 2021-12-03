@@ -1,6 +1,8 @@
 package dbconn;
 
-import java.sql.Connection; 
+import server.Logger;
+
+import java.sql.Connection;
 import java.sql.DriverManager;
 
 public class DBConnection {
@@ -9,6 +11,7 @@ public class DBConnection {
             + "user=db_a7d05b_dwarfrunnerdb_admin;password=Dwarf1Runner";
     private static String username = "db_a7d05b_dwarfrunnerdb_admin";
     private static String password = "Dwarf1Runner";
+    private static final Logger logger = Logger.getInstance();
 
     /**
      * called to receive connection object to database 
@@ -20,10 +23,10 @@ public class DBConnection {
         try { 
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             connection = DriverManager.getConnection(url);
-            System.out.println("Connection is successful to the database " + url);
+            logger.info("Connection is successful to the database " + url);
         }
         catch (Exception e) { 
-            System.out.println("Cannot create database connection");
+            logger.warning("Cannot create database connection");
             e.printStackTrace();
         } 
         return connection;

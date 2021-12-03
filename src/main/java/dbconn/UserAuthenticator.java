@@ -9,6 +9,7 @@ import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+import server.Logger;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -22,7 +23,8 @@ public class UserAuthenticator {
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
     private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
     private static final int USER_ALREADY_EXISTS_CODE = 15600;
-    
+    private static final Logger logger = Logger.getInstance();
+
     public static void handleRegisterRequest(Message<RegisterCredentials> msg, User creator) {
         RegisterCredentials credentials = msg.content;
         if (credentials == null || credentials.getEmail() == null || credentials.getNickname() == null ||
@@ -44,7 +46,7 @@ public class UserAuthenticator {
                 sendRegisterFailureResponse("EMAIL_TAKEN", creator);
             }
             else {
-                System.out.println(ex.getMessage());
+                logger.warning(ex.getMessage());
                 sendRegisterFailureResponse("UNKNOWN", creator);
             }
         }
@@ -82,7 +84,7 @@ public class UserAuthenticator {
             }
         }
         catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            logger.warning(ex.getMessage());
         }
         sendLoginFailureResponse("UNKNOWN", creator);
         return;
@@ -123,7 +125,6 @@ public class UserAuthenticator {
     private static void sendLoginSuccessResponse(String nickname, User creator) {
         LoginResponseData responseData = LoginResponseData.successLoginData(nickname);
         Message<LoginResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
-        System.out.println(MessageParser.toJsonString(respMsg));
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
     

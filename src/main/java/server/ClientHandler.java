@@ -18,8 +18,10 @@ public class ClientHandler extends Thread {
     private AtomicBoolean isRunning = new AtomicBoolean(true);
     private Integer maxJsonLength;
     public LinkedBlockingQueue<String> output;
+    private static final Logger logger = Logger.getInstance();
 
     public void sendMessage(String message) {
+        logger.info("sending message: " + message);
         if (clientInput != null) {
             clientInput.print(message + '\n');
         }
