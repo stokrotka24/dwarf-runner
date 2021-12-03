@@ -1,6 +1,5 @@
 package server;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Instant;
@@ -18,7 +17,7 @@ public class Logger {
             DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
             .withZone(ZoneId.systemDefault());
     private String filename = "log_" + Instant.now().getEpochSecond() + ".txt";
-    private String dirName = "logs/";
+    private final String dirName = "logs/";
     private FileWriter writer;
     
     public static Logger getInstance() {

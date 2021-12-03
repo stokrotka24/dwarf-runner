@@ -6,6 +6,7 @@ import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+import server.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 public class LobbyManager {
     private final List<Lobby> lobbys;
     private final Map<Integer, List<User>> lobbyToPlayers;
+    private static final Logger logger = Logger.getInstance();
     private static int idCounter = 0;
 
     public LobbyManager() {
@@ -37,6 +39,8 @@ public class LobbyManager {
             lobbys.add(lobby);
             lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
             int players = rnd.nextInt(10);
+            lobby.setMaxPlayers(rnd.nextInt(10) + players);
+
             for (int j = 0; j < players; j++) {
                 User user = new User("User" + i + " " + j);
                 int team = lobby.getType() == GameType.SOLO_GAME ? 0
@@ -44,7 +48,6 @@ public class LobbyManager {
                 addPlayerToLobby(user, lobby.getId(), team);
             }
             lobby.setReadyPlayers(rnd.nextInt(lobby.getPlayers() + 1));
-            lobby.setMaxPlayers(rnd.nextInt(10) + lobby.getPlayers());
         }
     }
 
@@ -178,7 +181,7 @@ public class LobbyManager {
         try {
             lobby = getLobbyForUser(player);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
             player.sendMessage(MessageParser.toJsonString(msg));
             return;
         }
@@ -210,7 +213,7 @@ public class LobbyManager {
             lobby = getLobbyForUser(player);
             removePlayerFromLobby(player, lobby);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
     }
 
@@ -325,7 +328,7 @@ public class LobbyManager {
             lobby.addPlayerToReadyPlayers(user.getServerId());
             notifyLobby(lobby);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
     }
 
@@ -336,7 +339,7 @@ public class LobbyManager {
             lobby.removePlayerFromReadyPlayers(user.getServerId());
             notifyLobby(lobby);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
     }
 
@@ -345,7 +348,7 @@ public class LobbyManager {
         try {
             lobby = getLobbyForUser(user);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
             onStartGameRequest(user, false);
             return Optional.empty();
         }

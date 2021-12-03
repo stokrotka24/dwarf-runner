@@ -134,13 +134,14 @@ public class MenuServer {
                         }
                     }
                 } catch (MessageException e) {
+                    logger.warning(e.getMessage());
                     if (sender != null) {
                         Message<String> msg = new Message<>(MessageType.ERROR, e.getMessage() + " Your message was: " + msgReceived);
                         sender.sendMessage(MessageParser.toJsonString(msg));
                     }
                 }
             } catch (InterruptedException e) {
-                //TODO: add some handling?
+                logger.error(e.getMessage());
                 e.printStackTrace();
             }
         }
