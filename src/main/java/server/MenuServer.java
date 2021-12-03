@@ -98,7 +98,7 @@ public class MenuServer {
 						}
 						case REGISTER_REQUEST: {
                             System.out.println("LOG: Handling:" + header + " for user with id: " + clientID);
-                            UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, RegisterCredentials.class),
+                            UserAuthenticator.handleRegisterRequest(MessageParser.fromJsonString(msgReceived, RegisterCredentials.class),
                                     sender);
                             break;
 						}
