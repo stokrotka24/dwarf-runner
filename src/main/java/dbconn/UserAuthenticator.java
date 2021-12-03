@@ -99,7 +99,7 @@ public class UserAuthenticator {
             return Base64.getEncoder().encodeToString(hash);
         } 
         catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
             return toHash;
         }
     }

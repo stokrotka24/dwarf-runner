@@ -142,7 +142,6 @@ public class MenuServer {
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
-                e.printStackTrace();
             }
         }
     }

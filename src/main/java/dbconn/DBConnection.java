@@ -27,8 +27,7 @@ public class DBConnection {
         }
         catch (Exception e) { 
             logger.warning("Cannot create database connection");
-            e.printStackTrace();
-        } 
+        }
         return connection;
     }
 }

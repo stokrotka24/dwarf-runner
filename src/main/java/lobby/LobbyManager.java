@@ -126,22 +126,21 @@ public class LobbyManager {
 
         var platform = player.getPlatform();
         if (platform.isEmpty()) {
-            //TODO add this LOG to logger
-            System.out.println("LOG: user with id="+player.getServerId()+" doesn't have platform!");
+            logger.info("user with id="+player.getServerId()+" doesn't have platform!");
             sendJoinLobbyFailed(player);
         } else if (platform.get() == GamePlatform.MOBILE) {
             try {
                 var theNearestNode = lobby.getOsmService().getTheNearestNode(new Coordinates(x, y));
                 lobby.setNodeForPlayer(player.getServerId(), theNearestNode);
             } catch (InvalidTargetObjectTypeException e) {
-                e.printStackTrace();
+                logger.warning(e.getMessage());
                 sendJoinLobbyFailed(player);
             }
         } else {
             try {
                 lobby.setNodeForPlayer(player.getServerId(), lobby.getOsmService().getRandomNode());
             } catch (InvalidTargetObjectTypeException e) {
-                e.printStackTrace();
+                logger.warning(e.getMessage());
                 sendJoinLobbyFailed(player);
             }
         }
