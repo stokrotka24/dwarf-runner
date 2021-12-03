@@ -1,30 +1,23 @@
 package osm;
 
-import game.AbstractGame;
-import game.AbstractPlayer;
-import game.GameMap;
-import game.SoloGame;
-import game.WebMove;
-import game.WebPlayer;
+import game.*;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WebMoveTest {
 
     @Test
     public void test() {
         List<AbstractPlayer> players = new ArrayList<>();
-        players.add(new WebPlayer(1));
+        OsmService service = new OsmService(0);
+        players.add(new WebPlayer(1, new Node(service.getNodes().get(8))));
         AbstractGame game = new SoloGame(1,GameMap.OLD_TOWN,players,0.0000001,0,null,0);
 
-        OsmService service = new OsmService(0);
-
-        game.getPlayers().get(0).setNode(new Node(service.getNodes().get(8)));
-        long a = game.getPlayers().get(0).getNode().getId();
         game.getPlayers().get(0).setCoords(new Coordinates(0.0,0.0));
-
         Coordinates coords1 = new Coordinates(17.029637492, 51.108117836);
         Coordinates coords2 = new Coordinates(17.02966586, 51.10811158);
 

@@ -41,4 +41,12 @@ public class JoinLobbyRequest {
     public void setTeam(int team) {
         this.team = team;
     }
+
+    public Double getX() {
+        return x;
+    }
+
+    public Double getY() {
+        return y;
+    }
 }

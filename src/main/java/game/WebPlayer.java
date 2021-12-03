@@ -5,8 +5,8 @@ import osm.Node;
 public class WebPlayer extends AbstractPlayer {
     private Node node = null;
 
-    public WebPlayer(int id) {
-        super(id);
+    public WebPlayer(int id, Node node) {
+        super(id, node);
     }
 
     @Override
