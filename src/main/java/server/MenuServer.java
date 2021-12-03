@@ -163,12 +163,12 @@ public class MenuServer {
      * @return unique ID of client
      */
     public int addInput(ClientHandler handler) {
-        while (users.containsKey(currID)) {
-            currID = currID % MAX_CLIENTS_COUNT + 1;
-        }
-        users.put(currID, new User(currID, handler));
-        int toReturn = currID;
-        currID = currID % MAX_CLIENTS_COUNT + 1;
+    	while (users.containsKey(currID)) {
+    		currID = currID % MAX_CLIENTS_COUNT + 1;
+    	}
+    	users.put(currID, new User(currID, handler));
+    	int toReturn = currID;
+    	currID = currID % MAX_CLIENTS_COUNT + 1;
         return toReturn;
     }
     
@@ -177,15 +177,15 @@ public class MenuServer {
      * @param clientID of client that handler ought to be removed
      */
     public void deleteInput(int clientID) {
-        users.remove(clientID);
+    	users.remove(clientID);
     }
 
-    private void sendServerAcknowledge(User user, MessageType type) {
-        Message<MessageType> acknowledgeMsg = new Message<>(MessageType.ACKNOWLEDGE, type);
-        var stringMsg = MessageParser.toJsonString(acknowledgeMsg);
+	private void sendServerAcknowledge(User user, MessageType type) {
+		Message<MessageType> acknowledgeMsg = new Message<>(MessageType.ACKNOWLEDGE, type);
+		var stringMsg = MessageParser.toJsonString(acknowledgeMsg);
 
-        if (user != null) {
-            user.sendMessage(stringMsg);
-        }
-    }
+		if (user != null) {
+			user.sendMessage(stringMsg);
+		}
+	}
 }
