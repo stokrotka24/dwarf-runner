@@ -4,18 +4,15 @@ import game.json.DwarfsLocationListDelivery;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
-import osm.OsmService;
 
 import java.util.Map;
 
 public class GameController {
     private final Map<Integer, User> playerToUser;
     private AbstractGame game;
-    private final OsmService osmService;
 
-    public GameController(AbstractGame game, OsmService osmService, Map<Integer, User> playerToUser) {
+    public GameController(AbstractGame game, Map<Integer, User> playerToUser) {
         this.game = game;
-        this.osmService = osmService;
         this.playerToUser = playerToUser;
     }
 

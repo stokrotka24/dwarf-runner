@@ -10,6 +10,7 @@ import java.net.Socket;
 
 public class ClientAccepter extends Thread {
     public MenuServer server;
+    private static final Logger logger = Logger.getInstance();
 
     @Override
     public void run() {
@@ -17,6 +18,7 @@ public class ClientAccepter extends Thread {
         try {
             socket = new ServerSocket(2137);
         } catch (IOException e) {
+            logger.error(e.getMessage());
             return;
         }
         while (true) {
@@ -28,14 +30,17 @@ public class ClientAccepter extends Thread {
                 int id = server.addInput(newHandler);
                 sendServerHello(newHandler, id);
             } catch (IOException e) {
+                logger.warning(e.getMessage());
                 continue;
             } catch (Exception e) {
+                logger.error(e.getMessage());
                 break;
             }
         }
         try {
             socket.close();
         } catch (IOException e) {
+            logger.error(e.getMessage());
         }
 
     }

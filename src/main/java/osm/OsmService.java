@@ -74,4 +74,24 @@ public class OsmService {
         return map.nodes.get(r.nextInt(map.nodes.size()));
     }
 
+    public Node getTheNearestNode(Coordinates coordinates) throws InvalidTargetObjectTypeException {
+        if (map.nodes.size() == 0) {
+            throw new InvalidTargetObjectTypeException(
+                    "node list empty, cannot access random node");
+        }
+
+        Node theNearestNode = map.nodes.get(0);
+        double min = theNearestNode.getCoords().distanceTo(coordinates);
+        List<Node> nodes = map.nodes.subList(1, map.nodes.size());
+
+        for (Node node: nodes) {
+            double distance = node.getCoords().distanceTo(coordinates);
+            if (distance < min) {
+                min = distance;
+                theNearestNode = node;
+            }
+        }
+        return theNearestNode;
+    }
+
 }
