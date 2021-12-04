@@ -6,13 +6,14 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
+import osm.Node;
 import osm.OsmService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GameControllerTest {
     @Test
@@ -21,7 +22,7 @@ class GameControllerTest {
         int nofPlayers = 2;
 
         var users = prepareUsersMock(nofPlayers);
-        var lobby = prepareSLobbyMock(users, expectedNumberOfDwarfsLocations);
+        var lobby = prepareLobbyMock(users, expectedNumberOfDwarfsLocations);
         var osmService = new OsmService(lobby.getMapId());
         var gameController = prepareGameControllerMock(lobby, osmService, users);
 
@@ -44,18 +45,19 @@ class GameControllerTest {
     private GameController prepareGameControllerMock(Lobby lobby, OsmService osmService, List<User> users) {
         var game = prepareGameMock(lobby, osmService, users);
         var playerToUser = users.stream().collect(Collectors.toMap(User::getServerId, item -> item));
-        return new GameController(game, osmService, playerToUser);
+        return new GameController(game, playerToUser);
     }
 
     private AbstractGame prepareGameMock(Lobby lobby, OsmService osmService, List<User> users) {
         return GameBuilder.aGame()
                 .withId(1)
                 .withGameMap(lobby.getMap())
-                .withPlayers(users)
-                .withDwarfs(osmService.getUniqueRandomNodes(lobby.getDwarfs()))
+                .withOsmService(lobby.getOsmService())
+                .withPlayers(users, lobby.getPlayersToInitialNode())
+                .withDwarfs(lobby.getDwarfs(), lobby.getOsmService())
                 .withMobileMaxSpeed(lobby.getMaxSpeed())
                 .withWebSpeed(lobby.getSpeed())
-                .withTeams(lobby.getTeams())
+                .withTeams(lobby.getTeams(), lobby.getPlayersToInitialNode())
                 .withGameType(lobby.getType())
                 .withEndCondition(lobby.getEnd())
                 .build();
@@ -72,9 +74,14 @@ class GameControllerTest {
         return users;
     }
 
-    private Lobby prepareSLobbyMock(List<User> users, int dwarfs) {
+    private Lobby prepareLobbyMock(List<User> users, int dwarfs) {
         var lobbyMock = new Lobby("SOLO", 1, users.size(), 0, (float) 5.0, (float) 5.0, dwarfs);
         lobbyMock.setCreator(users.get(0));
+        lobbyMock.setOsmService(new OsmService(lobbyMock.getMapId()));
+
+        for (int i = 0; i < users.size(); i++) {
+            lobbyMock.setNodeForPlayer(users.get(i).getServerId(), new Node((long) i, 0.5435 * i, 0.534534 * i));
+        }
 
         return lobbyMock;
     }

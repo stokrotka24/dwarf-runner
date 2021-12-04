@@ -14,6 +14,7 @@ public class User {
     // TODO - rm for release
     public User(String username) {
         this.username = username;
+        this.serverId = 1357;
         this.handler = new ClientHandler(new Socket(), 1);
     }
 
@@ -32,6 +33,9 @@ public class User {
     }
 
     public Optional<GamePlatform> getPlatform() {
+        if (platform == null) {
+            return Optional.empty();
+        }
         return Optional.of(platform);
     }
 

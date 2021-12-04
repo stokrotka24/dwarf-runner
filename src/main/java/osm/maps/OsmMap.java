@@ -13,6 +13,7 @@ import org.json.simple.parser.ParseException;
 import osm.Coordinates;
 import osm.Node;
 import osm.Way;
+import server.Logger;
 
 public abstract class OsmMap {
 
@@ -64,7 +65,7 @@ public abstract class OsmMap {
                     .forEach(node -> node.addNeighbor(temp.get(temp.size() - 2)));
             }
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            Logger.getInstance().error(e.getMessage());
         }
     }
 

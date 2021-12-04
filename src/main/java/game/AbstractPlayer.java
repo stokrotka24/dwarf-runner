@@ -5,15 +5,15 @@ import osm.Node;
 import osm.OsmService;
 
 public abstract class AbstractPlayer {
-
     private final int id;
     protected int points = 0;
     private Node node;
     private Coordinates coords;
 
-    public AbstractPlayer(int id) {
+    public AbstractPlayer(int id, Node node) {
         this.id = id;
-        coords = new Coordinates(0.0,0.0);
+        this.node = new Node(node);
+        this.coords = node.getCoords();
     }
 
     public int getId() {

@@ -1,18 +1,24 @@
 package lobby;
 
 import game.GameMap;
+import game.GamePlatform;
 import game.GameType;
 import game.User;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+import server.Logger;
+import osm.Coordinates;
+import osm.OsmService;
 
+import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class LobbyManager {
     private final List<Lobby> lobbys;
     private final Map<Integer, List<User>> lobbyToPlayers;
+    private static final Logger logger = Logger.getInstance();
     private static int idCounter = 0;
 
     public LobbyManager() {
@@ -28,7 +34,9 @@ public class LobbyManager {
         for (int i = 0; i < n; i++) {
             Lobby lobby = new Lobby();
             lobby.setDwarfs(rnd.nextInt(15) + 5);
-            lobby.setMap(GameMap.fromInt(rnd.nextInt(8)));
+            int mapId = rnd.nextInt(8);
+            lobby.setMap(GameMap.fromInt(mapId));
+            lobby.setOsmService(new OsmService(mapId));
             lobby.setSpeed(rnd.nextFloat() * 5);
             lobby.setMaxSpeed(rnd.nextFloat() * 5);
             lobby.setName("Test lobby " + i);
@@ -37,14 +45,16 @@ public class LobbyManager {
             lobbys.add(lobby);
             lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
             int players = rnd.nextInt(10);
+            lobby.setMaxPlayers(rnd.nextInt(10) + players);
+
             for (int j = 0; j < players; j++) {
                 User user = new User("User" + i + " " + j);
+                user.setPlatform(GamePlatform.WEB);
                 int team = lobby.getType() == GameType.SOLO_GAME ? 0
                         : rnd.nextInt(2) + 1;
-                addPlayerToLobby(user, lobby.getId(), team);
+                addPlayerToLobby(user, lobby.getId(), team, 100.0, 100.0);
             }
             lobby.setReadyPlayers(rnd.nextInt(lobby.getPlayers() + 1));
-            lobby.setMaxPlayers(rnd.nextInt(10) + lobby.getPlayers());
         }
     }
 
@@ -57,20 +67,20 @@ public class LobbyManager {
     public void createLobby(Message<Lobby> msg, User creator) {
         Lobby lobby = msg.content;
         if (!validateLobby(lobby)) {
-            onJoinLobbyRequest(creator, false);
+            onCreateLobbyRequest(creator, -1);
             return;
         }
 
         setupNewLobby(lobby);
-
-        addPlayerToLobby(creator, lobby.getId(),
-                lobby.getType() == GameType.SOLO_GAME ? 0 : 1);
+        lobby.setCreator(creator);
+        onCreateLobbyRequest(creator, lobby.getId());
     }
 
     private void setupNewLobby(Lobby lobby) {
         assignId(lobby);
         lobby.setPlayers(0);
         lobby.setReadyPlayers(0);
+        lobby.setOsmService(new OsmService(lobby.getMapId()));
         lobbys.add(lobby);
         lobbyToPlayers.computeIfAbsent(lobby.getId(), k -> new ArrayList<>());
         var teams = lobby.getTeams();
@@ -84,8 +94,7 @@ public class LobbyManager {
     }
 
     private boolean validateLobby(Lobby lobby) {
-        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps() ||
-                !(lobby.getEnd() == 0 || lobby.getEnd() == 1)) {
+        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps() || lobby.getEnd() < 0) {
             return false;
         }
 
@@ -97,11 +106,11 @@ public class LobbyManager {
         return true;
     }
 
-    private void addPlayerToLobby(User player, int lobbyId, int teamId) {
+    private void addPlayerToLobby(User player, int lobbyId, int teamId, Double x, Double y) {
         Lobby lobby = getLobbyInfo(lobbyId);
 
         if(!checkIfJoinPossible(player, teamId, lobby)) {
-            onJoinLobbyRequest(player, false);
+            sendJoinLobbyFailed(player);
             return;
         }
 
@@ -113,6 +122,28 @@ public class LobbyManager {
         if (!lobby.getTeams().get(teamId).contains(player)) {
             lobby.getTeams().get(teamId).add(player);
         }
+
+        var platform = player.getPlatform();
+        if (platform.isEmpty()) {
+            logger.info("user with id="+player.getServerId()+" doesn't have platform!");
+            sendJoinLobbyFailed(player);
+        } else if (platform.get() == GamePlatform.MOBILE) {
+            try {
+                var theNearestNode = lobby.getOsmService().getTheNearestNode(new Coordinates(x, y));
+                lobby.setNodeForPlayer(player.getServerId(), theNearestNode);
+            } catch (InvalidTargetObjectTypeException e) {
+                logger.warning(e.getMessage());
+                sendJoinLobbyFailed(player);
+            }
+        } else {
+            try {
+                lobby.setNodeForPlayer(player.getServerId(), lobby.getOsmService().getRandomNode());
+            } catch (InvalidTargetObjectTypeException e) {
+                logger.warning(e.getMessage());
+                sendJoinLobbyFailed(player);
+            }
+        }
+
         addToLobby(player, lobbyId, lobby);
     }
 
@@ -121,8 +152,8 @@ public class LobbyManager {
             return false;
         }
 
-        if (lobby.getType() == GameType.SOLO_GAME && teamId != 0) {
-            return false;
+        if (lobby.getType() == GameType.SOLO_GAME) {
+            return teamId == 0;
         } else {
             return teamId == 1 || teamId == 2;
         }
@@ -137,13 +168,20 @@ public class LobbyManager {
      *      id of chosen team - 0 or 1
      */
     public void addPlayerToLobby(JoinLobbyRequest request, User player) {
-        addPlayerToLobby(player, request.getLobbyId(), request.getTeam());
+        addPlayerToLobby(player, request.getLobbyId(), request.getTeam(), request.getX(), request.getY());
     }
 
     private void addToLobby(User player, int lobbyId, Lobby lobby) {
         lobby.setPlayers(lobby.getPlayers() + 1);
         lobbyToPlayers.get(lobbyId).add(player);
-        onJoinLobbyRequest(player, true);
+
+        var node = lobby.getNodeForPlayer(player.getServerId());
+        if (node == null) {
+            sendJoinLobbyFailed(player);
+        } else {
+            sendJoinLobbySucceed(player, node.getX(), node.getY());
+        }
+
         notifyLobby(lobby);
     }
 
@@ -156,8 +194,33 @@ public class LobbyManager {
         }
     }
 
-    private void onJoinLobbyRequest(User player, boolean status) {
-        Message<Boolean> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, status);
+    /**
+     * Send response for create lobby request
+     * @param creator lobby's creator
+     * @param lobbyId created lobby id, -1 otherwise
+     */
+    private void onCreateLobbyRequest(User creator, int lobbyId) {
+        Message<Integer> lobbyMsg = new Message<>(MessageType.CREATE_LOBBY_RESPONSE, lobbyId);
+        var stringMsg = MessageParser.toJsonString(lobbyMsg);
+
+        if (creator != null) {
+            creator.sendMessage(stringMsg);
+        }
+    }
+
+    private void sendJoinLobbyFailed(User player) {
+        JoinLobbyResponse responseData = new JoinLobbyResponse(false, null, null);
+        Message<JoinLobbyResponse> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, responseData);
+        var stringMsg = MessageParser.toJsonString(lobbyMsg);
+
+        if (player != null) {
+            player.sendMessage(stringMsg);
+        }
+    }
+
+    private void sendJoinLobbySucceed(User player, Double x, Double y) {
+        JoinLobbyResponse responseData = new JoinLobbyResponse(true, x, y);
+        Message<JoinLobbyResponse> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, responseData);
         var stringMsg = MessageParser.toJsonString(lobbyMsg);
 
         if (player != null) {
@@ -169,7 +232,6 @@ public class LobbyManager {
      * moves player to chosen team
      * @param player player to move
      * @param teamId team id - 0 or 1
-     * @return result
      */
     public void changeTeam(User player, int teamId) {
         Message<Boolean> msg = new Message<>(MessageType.CHANGE_TEAM_RESPONSE);
@@ -178,14 +240,14 @@ public class LobbyManager {
         try {
             lobby = getLobbyForUser(player);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
             player.sendMessage(MessageParser.toJsonString(msg));
             return;
         }
 
         if (lobby.getType() == GameType.SOLO_GAME ||
                 (teamId != 1 && teamId != 2)) {
-            onJoinLobbyRequest(player, false);
+            sendJoinLobbyFailed(player);
             player.sendMessage(MessageParser.toJsonString(msg));
         }
 
@@ -210,7 +272,7 @@ public class LobbyManager {
             lobby = getLobbyForUser(player);
             removePlayerFromLobby(player, lobby);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
     }
 
@@ -325,7 +387,7 @@ public class LobbyManager {
             lobby.addPlayerToReadyPlayers(user.getServerId());
             notifyLobby(lobby);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
     }
 
@@ -336,7 +398,7 @@ public class LobbyManager {
             lobby.removePlayerFromReadyPlayers(user.getServerId());
             notifyLobby(lobby);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
         }
     }
 
@@ -345,7 +407,7 @@ public class LobbyManager {
         try {
             lobby = getLobbyForUser(user);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning(e.getMessage());
             onStartGameRequest(user, false);
             return Optional.empty();
         }
