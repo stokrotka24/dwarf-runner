@@ -14,7 +14,8 @@ import java.util.Random;
  * OsmService
  */
 public class OsmService {
-
+    // one degree is about 111 kilometers
+    public static final double METRE = 1.0 / 111000.0;
     private OsmMap map;
 
     /*public ArrayList<Way> getWays() {

@@ -23,6 +23,11 @@ public class User {
         this.handler = handler;
     }
 
+    // constructor used for tests
+    public User(Integer serverId) {
+        this.serverId = serverId;
+    }
+
     public void setPlatform(GamePlatform platform) {
         this.platform = platform;
     }

@@ -122,4 +122,12 @@ public abstract class AbstractGame {
             player.setY(newY);
         }
     }
+
+    public List<Dwarf> getDwarfs() {
+        return dwarfs;
+    }
+
+    public void setDwarfs(List<Dwarf> dwarfs) {
+        this.dwarfs = dwarfs;
+    }
 }
