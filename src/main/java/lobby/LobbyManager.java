@@ -94,8 +94,7 @@ public class LobbyManager {
     }
 
     private boolean validateLobby(Lobby lobby) {
-        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps() ||
-                !(lobby.getEnd() == 0 || lobby.getEnd() == 1)) {
+        if (lobby.getMapId() < 0 || lobby.getMapId() >= GameMap.nofMaps() || lobby.getEnd() < 0) {
             return false;
         }
 
