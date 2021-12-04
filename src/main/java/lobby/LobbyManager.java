@@ -153,8 +153,8 @@ public class LobbyManager {
             return false;
         }
 
-        if (lobby.getType() == GameType.SOLO_GAME && teamId != 0) {
-            return false;
+        if (lobby.getType() == GameType.SOLO_GAME) {
+            return teamId == 0;
         } else {
             return teamId == 1 || teamId == 2;
         }
@@ -233,7 +233,6 @@ public class LobbyManager {
      * moves player to chosen team
      * @param player player to move
      * @param teamId team id - 0 or 1
-     * @return result
      */
     public void changeTeam(User player, int teamId) {
         Message<Boolean> msg = new Message<>(MessageType.CHANGE_TEAM_RESPONSE);
