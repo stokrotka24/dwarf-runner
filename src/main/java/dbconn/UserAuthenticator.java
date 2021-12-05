@@ -125,6 +125,7 @@ public class UserAuthenticator {
     private static void sendLoginSuccessResponse(String nickname, User creator) {
         LoginResponseData responseData = LoginResponseData.successLoginData(nickname);
         Message<LoginResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
+        creator.setUsername(nickname);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
     
