@@ -247,8 +247,8 @@ public class LobbyManager {
 
         if (lobby.getType() == GameType.SOLO_GAME ||
                 (teamId != 1 && teamId != 2)) {
-            sendJoinLobbyFailed(player);
             player.sendMessage(MessageParser.toJsonString(msg));
+            return;
         }
 
         lobby.removePlayerFromTeam(player);
@@ -329,8 +329,8 @@ public class LobbyManager {
         Lobby lobby = getLobbyInfo(lobbyId);
         var players = lobbyToPlayers.get(lobbyId);
 
-        for (User p: players) {
-            removePlayerFromLobby(p, lobby);
+        while (!players.isEmpty()) {
+            removePlayerFromLobby(players.get(0), lobby);
         }
 
         lobbys.remove(lobby);
@@ -349,7 +349,7 @@ public class LobbyManager {
         List<Lobby> tmp = filterLobbies(request, lobbys);
 
         int i = request.getRangeBegin();
-        while (i < tmp.size() && i <= request.getRangeEnd()) {
+        while (i < tmp.size() && lobbyList.size() <= (request.getRangeEnd() - request.getRangeBegin())) {
             if (request.isIncludeFull() || tmp.get(i).getPlayers() < tmp.get(i).getMaxPlayers()) {
                 lobbyList.add(tmp.get(i));
             }

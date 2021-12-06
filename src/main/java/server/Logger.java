@@ -13,7 +13,7 @@ public class Logger {
     private static final Object mutex = new Object();
     private Logger () {}
     private LogLevel level = LogLevel.ERROR;
-    private LoggerOption option = LoggerOption.LOG_TO_CONSOLE;
+    private LoggerOption option = LoggerOption.LOG_TO_FILE;
     private final DateTimeFormatter formatter =
             DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
             .withZone(ZoneId.systemDefault());
@@ -94,6 +94,4 @@ public class Logger {
             e.printStackTrace();
         }
     }
-
-
 }
