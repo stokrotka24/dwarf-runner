@@ -350,9 +350,7 @@ public class LobbyManager {
 
         int i = request.getRangeBegin();
         while (i < tmp.size() && lobbyList.size() <= (request.getRangeEnd() - request.getRangeBegin())) {
-            if (request.isIncludeFull() || tmp.get(i).getPlayers() < tmp.get(i).getMaxPlayers()) {
-                lobbyList.add(tmp.get(i));
-            }
+            lobbyList.add(tmp.get(i));
             i++;
         }
         LobbyListDelivery delivery = new LobbyListDelivery(lobbyList, tmp.size());
@@ -369,6 +367,11 @@ public class LobbyManager {
         if (request.getGameMode() != null) {
             tmp = tmp.stream()
                     .filter(x -> x.getType() == request.getGameMode())
+                    .collect(Collectors.toList());
+        }
+        if (!request.isIncludeFull()) {
+            tmp = tmp.stream()
+                    .filter(x -> x.getPlayers() < x.getMaxPlayers())
                     .collect(Collectors.toList());
         }
         return tmp;
