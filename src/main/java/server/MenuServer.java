@@ -4,7 +4,10 @@ import dbconn.UserAuthenticator;
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.RegisterCredentials;
 import game.GameManager;
+import game.Move;
 import game.User;
+import game.json.MobileMove;
+import game.json.WebMove;
 import lobby.JoinLobbyRequest;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
@@ -123,6 +126,16 @@ public class MenuServer {
                                 gameManager.runGame(lobby.get(), players);
                                 lobbyManager.removeLobby(lobby.get().getId());
                             }
+                            break;
+                        }
+                        case WEB_MOVE_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            MessageParser.getMsgContent(msgReceived, WebMove.class);
+                            break;
+                        }
+                        case MOBILE_MOVE_REQUEST: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            new Move(MessageParser.getMsgContent(msgReceived, MobileMove.class));
                             break;
                         }
                         default: {

@@ -36,6 +36,8 @@ public abstract class AbstractPlayer {
 
     public abstract boolean pickUpDwarf(Dwarf dwarf);
 
+    public abstract void makeMove();
+
     public boolean isNearToDwarf(Dwarf dwarf) {
         return Math.abs(this.coords.getX() - dwarf.getX()) <= 5 * OsmService.METRE
                 && Math.abs(this.coords.getY() - dwarf.getY()) <= 5 * OsmService.METRE;

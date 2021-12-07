@@ -22,4 +22,9 @@ public class WebPlayer extends AbstractPlayer {
         }
         return false;
     }
+
+    @Override
+    public void makeMove() {
+
+    }
 }
