@@ -87,6 +87,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
         
         client.sendMsg(request3);
 
+        //TODO: commented test for already logged in user
         /*String request4 = "{\n" +
                 "    \"header\": \"LOG_IN_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
