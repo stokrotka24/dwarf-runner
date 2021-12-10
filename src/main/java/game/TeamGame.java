@@ -11,4 +11,14 @@ public class TeamGame extends AbstractGame {
         super(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs, timeToEnd);
         this.teams = teams;
     }
+
+    @Override
+    public GameType getType() {
+        return GameType.TEAM_GAME;
+    }
+
+    @Override
+    public Map<Integer, List<AbstractPlayer>> getTeams() {
+        return teams;
+    }
 }

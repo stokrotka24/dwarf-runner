@@ -3,6 +3,7 @@ package game;
 import osm.Coordinates;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractGame {
 
@@ -26,6 +27,10 @@ public abstract class AbstractGame {
         this.dwarfs = dwarfs;
         this.timeToEnd = timeToEnd;
     }
+
+    public abstract GameType getType();
+
+    public abstract Map<Integer, List<AbstractPlayer>> getTeams();
   
     public void setOnlyBackOrForward(double onlyBackOrForward) {
         this.onlyBackOrForward = onlyBackOrForward;

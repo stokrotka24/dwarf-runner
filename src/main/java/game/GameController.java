@@ -1,11 +1,14 @@
 package game;
 
 import game.json.DwarfsLocationListDelivery;
+import game.json.PositionData;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class GameController {
     private final Map<Integer, User> playerToUser;
@@ -17,8 +20,9 @@ public class GameController {
     }
 
     private void sendDwarfsLocation() {
+        var delivery = createdDwarfsLocationDelivery();
         for (AbstractPlayer player: game.getPlayers()) {
-            playerToUser.get(player.getId()).sendMessage(createdDwarfsLocationDelivery());
+            playerToUser.get(player.getId()).sendMessage(delivery);
         }
     }
 
@@ -28,6 +32,33 @@ public class GameController {
         return MessageParser.toJsonString(msg);
     }
 
+    private void sendPositionDataUpdate() {
+        var update = createdPositionDataUpdate();
+        for (AbstractPlayer player: game.getPlayers()) {
+            playerToUser.get(player.getId()).sendMessage(update);
+        }
+    }
+
+    protected String createdPositionDataUpdate() {
+        Map<String, List<PositionData>> positionData =
+                game.getTeams()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(entry -> "team" + entry.getKey(), entry -> mapPlayersToPositionData(entry.getValue())));
+        var msg = new Message<>(MessageType.POSITION_DATA_UPDATE, positionData);
+        return MessageParser.toJsonString(msg);
+    }
+
+    private List<PositionData> mapPlayersToPositionData(List<AbstractPlayer> players) {
+        return players
+                .stream()
+                .map(player -> new PositionData(
+                        playerToUser.get(player.getId()).getUsername(),
+                        player.getCoords().getX(),
+                        player.getCoords().getY()))
+                .collect(Collectors.toList());
+    }
+
     public void runGame() {
         var timeToEnd =  game.getTimeToEnd();
         if (timeToEnd > 0) {
@@ -35,7 +66,7 @@ public class GameController {
             new TimerTask(timeMillis);
         }
         sendDwarfsLocation();
-        //TODO  send to all players location of other players
+        sendPositionDataUpdate();
     }
 
     public void endGame() {
