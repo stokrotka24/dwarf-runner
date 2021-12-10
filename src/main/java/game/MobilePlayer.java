@@ -40,4 +40,9 @@ public class MobilePlayer extends AbstractPlayer {
         }
         return true;
     }
+
+    @Override
+    public void makeMove(Move move, AbstractGame game) {
+        //TODO
+    }
 }

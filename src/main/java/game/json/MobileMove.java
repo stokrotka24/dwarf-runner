@@ -31,4 +31,12 @@ public class MobileMove {
     public void setLon(Double lon) {
         this.lon = lon;
     }
+
+    public Double getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Double timestamp) {
+        this.timestamp = timestamp;
+    }
 }

@@ -3,11 +3,11 @@ package server;
 import dbconn.UserAuthenticator;
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.RegisterCredentials;
+import game.WebMove;
 import game.GameManager;
 import game.Move;
 import game.User;
 import game.json.MobileMove;
-import game.json.WebMove;
 import lobby.JoinLobbyRequest;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
@@ -128,14 +128,18 @@ public class MenuServer {
                             }
                             break;
                         }
-                        case WEB_MOVE_REQUEST: {
+                        case WEB_MOVE: {
                             logger.info("Handling:" + header + " for user with id: " + clientID);
-                            MessageParser.getMsgContent(msgReceived, WebMove.class);
+                            var move = new Move(MessageParser.getMsgContent(msgReceived, WebMove.class));
+                            gameManager.userToGameController.get(sender.getServerId())
+                                    .performMove(sender.getServerId(), move);
                             break;
                         }
-                        case MOBILE_MOVE_REQUEST: {
+                        case MOBILE_MOVE: {
                             logger.info("Handling:" + header + " for user with id: " + clientID);
-                            new Move(MessageParser.getMsgContent(msgReceived, MobileMove.class));
+                            var move = new Move(MessageParser.getMsgContent(msgReceived, MobileMove.class));
+                            gameManager.userToGameController.get(sender.getServerId())
+                                    .performMove(sender.getServerId(), move);
                             break;
                         }
                         default: {

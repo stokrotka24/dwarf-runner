@@ -16,6 +16,8 @@ import java.util.Random;
 public class OsmService {
     // one degree is about 111 kilometers
     public static final double METRE = 1.0 / 111000.0;
+    /* if player is farther than this from the node, don't allow stepping off the current way */
+    public static double ONLY_BACK_OR_FORWARD = 0.000004;
     private OsmMap map;
 
     /*public ArrayList<Way> getWays() {
@@ -94,4 +96,7 @@ public class OsmService {
         return theNearestNode;
     }
 
+    public static void setOnlyBackOrForward(double onlyBackOrForward) {
+        ONLY_BACK_OR_FORWARD = onlyBackOrForward;
+    }
 }

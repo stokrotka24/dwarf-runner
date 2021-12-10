@@ -72,6 +72,12 @@ public class GameController {
     public void endGame() {
     }
 
+    public void performMove(Integer playerId, Move move) {
+        var player = game.getPlayer(playerId);
+        player.makeMove(move, game);
+        sendPositionDataUpdate();
+    }
+
     class TimerTask extends Thread {
         private final long time;
 

@@ -1,17 +1,21 @@
 package game;
 
 import game.json.MobileMove;
-import game.json.WebMove;
 
 public class Move {
     private Double x;
     private Double y;
-    private String arrow;
-
-    public Move(WebMove webMove) {
-    }
+    private WebMove webMove;
+    private Double timestamp;
 
     public Move(MobileMove mobileMove) {
+        this.x = mobileMove.getLon();
+        this.y = mobileMove.getLat();
+        this.timestamp = mobileMove.getTimestamp();
+    }
+
+    public Move(WebMove webWebMove) {
+        this.webMove = webWebMove;
     }
 
     public Double getX() {
@@ -22,9 +26,11 @@ public class Move {
         return y;
     }
 
-
-    public String getArrow() {
-        return arrow;
+    public WebMove getWebMove() {
+        return webMove;
     }
 
+    public Double getTimestamp() {
+        return timestamp;
+    }
 }
