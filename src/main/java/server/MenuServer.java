@@ -91,7 +91,7 @@ public class MenuServer {
                         }
                         case QUIT_LOBBY_REQUEST: {
                             logger.info("Handling:" + header + " for user with id: " + clientID);
-                            lobbyManager.removePlayerFromLobby(sender);
+                            lobbyManager.removePlayerFromLobby(sender, true);
                             break;
                         }
                         case LOG_IN_REQUEST: {
@@ -124,7 +124,7 @@ public class MenuServer {
                             if (lobby.isPresent() && sender == lobby.get().getCreator()) {
                                 var players = lobbyManager.getPlayerList(lobby.get().getId());
                                 gameManager.runGame(lobby.get(), players);
-                                lobbyManager.removeLobby(lobby.get().getId());
+                                lobbyManager.removeLobby(lobby.get().getId(), false);
                             }
                             break;
                         }

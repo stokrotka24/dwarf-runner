@@ -1,7 +1,5 @@
 package game;
 
-import messages.MessageType;
-
 public enum GameMap {
     OLD_TOWN,
     CENTENNIAL_HALL,
