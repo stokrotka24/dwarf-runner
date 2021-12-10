@@ -266,20 +266,22 @@ public class LobbyManager {
      * removes player from lobby
      * @param player player to remove
      */
-    public void removePlayerFromLobby(User player) {
+    public void removePlayerFromLobby(User player, boolean sendMessage) {
         Lobby lobby;
         try {
             lobby = getLobbyForUser(player);
-            removePlayerFromLobby(player, lobby);
+            removePlayerFromLobby(player, lobby, sendMessage);
         } catch (Exception e) {
             logger.warning(e.getMessage());
         }
     }
 
-    private void removePlayerFromLobby(User player, Lobby lobby) {
+    private void removePlayerFromLobby(User player, Lobby lobby, boolean sendMessage) {
         Message<Boolean> msg = new Message<>(MessageType.QUIT_LOBBY_RESPONSE, false);
         if (lobby == null) {
-            player.sendMessage(MessageParser.toJsonString(msg));
+            if (sendMessage) {
+                player.sendMessage(MessageParser.toJsonString(msg));
+            }
             return;
         }
 
@@ -294,8 +296,10 @@ public class LobbyManager {
             }
         }
         msg.content = true;
-        player.sendMessage(MessageParser.toJsonString(msg));
-        notifyLobby(lobby);
+        if (sendMessage) {
+            player.sendMessage(MessageParser.toJsonString(msg));
+            notifyLobby(lobby);
+        }
     }
 
     /**
@@ -325,12 +329,12 @@ public class LobbyManager {
      * lobby browsing view
      * @param lobbyId id of lobby to remove
      */
-    public void removeLobby(int lobbyId) {
+    public void removeLobby(int lobbyId, boolean sendMessage) {
         Lobby lobby = getLobbyInfo(lobbyId);
         var players = lobbyToPlayers.get(lobbyId);
 
         while (!players.isEmpty()) {
-            removePlayerFromLobby(players.get(0), lobby);
+            removePlayerFromLobby(players.get(0), lobby, sendMessage);
         }
 
         lobbys.remove(lobby);
