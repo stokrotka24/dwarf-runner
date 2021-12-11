@@ -36,7 +36,7 @@ public abstract class AbstractPlayer {
 
     public abstract boolean pickUpDwarf(Dwarf dwarf);
 
-    public abstract void makeMove(Move move, AbstractGame game);
+    public abstract int makeMove(Move move, AbstractGame game);
 
     public boolean isNearToDwarf(Dwarf dwarf) {
         return Math.abs(this.coords.getX() - dwarf.getX()) <= 5 * OsmService.METRE

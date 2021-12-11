@@ -26,7 +26,7 @@ public class MoveTest {
         double maxDistFromNode2 = 0.000004;
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode1);
+        OsmService.setNodeRadius(maxDistFromNode1);
         
         player.setCoords(coords1);
         player.makeMove(new Move(WebMove.UP), game);
@@ -49,7 +49,7 @@ public class MoveTest {
         assertEquals(51.10811781446444, player.getCoords().getY());
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode2);
+        OsmService.setNodeRadius(maxDistFromNode2);
 
         player.setCoords(coords1);
         player.makeMove(new Move(WebMove.UP), game);
@@ -72,7 +72,7 @@ public class MoveTest {
         assertEquals(51.10811781446444, player.getCoords().getY());
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode1);
+        OsmService.setNodeRadius(maxDistFromNode1);
 
         player.setCoords(coords2);
         player.makeMove(new Move(WebMove.UP), game);
@@ -95,7 +95,7 @@ public class MoveTest {
         assertEquals(51.108111558464444, player.getCoords().getY());
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode2);
+        OsmService.setNodeRadius(maxDistFromNode2);
 
         player.setCoords(coords2);
         player.makeMove(new Move(WebMove.UP), game);
