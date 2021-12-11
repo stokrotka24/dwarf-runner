@@ -17,4 +17,16 @@ public class PositionData {
         this.x = x;
         this.y = y;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public Double getX() {
+        return x;
+    }
+
+    public Double getY() {
+        return y;
+    }
 }
