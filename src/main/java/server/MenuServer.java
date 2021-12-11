@@ -64,62 +64,53 @@ public class MenuServer {
                     }
 
                     var header = MessageParser.getMsgHeader(msgReceived);
+                    logger.info("Handling:" + header + " for user with id: " + clientID);
 
                     switch(header) {
                         case LOBBY_LIST_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             lobbyManager.sendLobbyList(MessageParser.getMsgContent(msgReceived, LobbyListRequest.class),
                                     sender);
                             break;
                         }
                         case CREATE_LOBBY_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             lobbyManager.createLobby(MessageParser.fromJsonString(msgReceived, Lobby.class),
                                     sender);
                             break;
                         }
                         case JOIN_LOBBY_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             lobbyManager.addPlayerToLobby(MessageParser.getMsgContent(msgReceived, JoinLobbyRequest.class),
                                     sender);
                             break;
                         }
                         case CHANGE_TEAM_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             lobbyManager.changeTeam(sender, MessageParser.getMsgContent(msgReceived, Integer.class));
                             break;
                         }
                         case QUIT_LOBBY_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             lobbyManager.removePlayerFromLobby(sender, true);
                             break;
                         }
                         case LOG_IN_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             UserAuthenticator.handleLoginRequest(MessageParser.fromJsonString(msgReceived, LoginCredentials.class),
                                     sender);
                             break;
                         }
                         case REGISTER_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
-                            UserAuthenticator.handleRegisterRequest(MessageParser.fromJsonString(msgReceived, 
+                            UserAuthenticator.handleRegisterRequest(MessageParser.fromJsonString(msgReceived,
                                     RegisterCredentials.class), sender);
                             break;
                         }
                         case PLAYER_IS_READY: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             sendServerAcknowledge(sender, MessageType.PLAYER_IS_READY);
                             lobbyManager.setPlayerIsReady(sender);
                             break;
                         }
                         case PLAYER_IS_UNREADY: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             sendServerAcknowledge(sender, MessageType.PLAYER_IS_UNREADY);
                             lobbyManager.setPlayerIsUnready(sender);
                             break;
                         }
                         case START_GAME_REQUEST: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             var lobby = lobbyManager.getLobbyIfReady(sender);
                             if (lobby.isPresent() && sender == lobby.get().getCreator()) {
                                 var players = lobbyManager.getPlayerList(lobby.get().getId());
@@ -129,17 +120,21 @@ public class MenuServer {
                             break;
                         }
                         case WEB_MOVE: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
                             var move = new Move(MessageParser.getMsgContent(msgReceived, WebMove.class));
+                            gameManager.userToGameController.get(sender.getServerId())
+                                    .performMove(sender.getServerId(), move);
+                            sendServerAcknowledge(sender, MessageType.WEB_MOVE);
+                            break;
+                        }
+                        case MOBILE_MOVE: {
+                            var move = new Move(MessageParser.getMsgContent(msgReceived, MobileMove.class));
                             gameManager.userToGameController.get(sender.getServerId())
                                     .performMove(sender.getServerId(), move);
                             break;
                         }
-                        case MOBILE_MOVE: {
-                            logger.info("Handling:" + header + " for user with id: " + clientID);
-                            var move = new Move(MessageParser.getMsgContent(msgReceived, MobileMove.class));
+                        case PICK_DWARF_REQUEST: {
                             gameManager.userToGameController.get(sender.getServerId())
-                                    .performMove(sender.getServerId(), move);
+                                    .performDwarfPickUp(sender.getServerId(), MessageParser.getMsgContent(msgReceived, Integer.class));
                             break;
                         }
                         default: {

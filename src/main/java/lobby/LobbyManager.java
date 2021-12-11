@@ -435,8 +435,8 @@ public class LobbyManager {
             int mapId = rnd.nextInt(8);
             lobby.setMap(GameMap.fromInt(mapId));
             lobby.setOsmService(new OsmService(mapId));
-            lobby.setSpeed(rnd.nextFloat() * 5);
-            lobby.setMaxSpeed(rnd.nextFloat() * 5);
+            lobby.setSpeed(rnd.nextDouble() * 5);
+            lobby.setMaxSpeed(rnd.nextDouble() * 5);
             lobby.setName("Test lobby " + i);
             lobby.setType(rnd.nextInt(2) == 1 ? GameType.TEAM_GAME : GameType.SOLO_GAME);
             lobby.setId(i + 1357);

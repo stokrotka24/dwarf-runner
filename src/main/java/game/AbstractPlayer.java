@@ -13,7 +13,6 @@ public abstract class AbstractPlayer {
     public AbstractPlayer(int id, Node node) {
         this.id = id;
         this.node = new Node(node);
-        this.coords = node.getCoords();
     }
 
     public int getId() {
@@ -34,7 +33,7 @@ public abstract class AbstractPlayer {
 
     public abstract GamePlatform getPlatform();
 
-    public abstract boolean pickUpDwarf(Dwarf dwarf);
+    public abstract int pickUpDwarf(Dwarf dwarf);
 
     public abstract void makeMove(Move move, AbstractGame game);
 

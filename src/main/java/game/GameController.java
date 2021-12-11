@@ -1,10 +1,12 @@
 package game;
 
 import game.json.DwarfsLocationListDelivery;
+import game.json.PickDwarfResponse;
 import game.json.PositionData;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
+import server.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 public class GameController {
     private final Map<Integer, User> playerToUser;
     private AbstractGame game;
+    private static final Logger logger = Logger.getInstance();
 
     public GameController(AbstractGame game, Map<Integer, User> playerToUser) {
         this.game = game;
@@ -78,6 +81,34 @@ public class GameController {
         sendPositionDataUpdate();
     }
 
+    public void performDwarfPickUp(Integer playerId, Integer dwarfId) {
+        //TODO end game check - maybe there's no more dwarfs
+        var player = game.getPlayer(playerId);
+        var resultMsg = pickUpDwarf(player, dwarfId);
+
+        playerToUser.get(player.getId()).sendMessage(resultMsg);
+        sendDwarfsLocation();
+    }
+
+    protected String pickUpDwarf(AbstractPlayer player, Integer dwarfId) {
+        var dwarf = game.getDwarfById(dwarfId);
+        var response = new PickDwarfResponse();
+
+        if (dwarf == null)  {
+            response.setStatus(0);
+        } else {
+            var success = player.pickUpDwarf(dwarf);
+            response.setStatus(success);
+
+            if (success == 1) {
+                response.setPoints(dwarf.getPoints());
+                game.removeDwarf(dwarf);
+            }
+        }
+
+        return MessageParser.toJsonString(new Message<>(MessageType.PICK_DWARF_RESPONSE, response));
+    }
+
     class TimerTask extends Thread {
         private final long time;
 
@@ -91,7 +122,7 @@ public class GameController {
                 Thread.sleep(time);
                 GameController.this.endGame();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.warning(e.getMessage());
             }
         }
     }
