@@ -1,9 +1,10 @@
 package dbconn;
 
 import dbconn.jsonclasses.LoginCredentials;
-import dbconn.jsonclasses.LoginResponseData;
+import dbconn.jsonclasses.AuthenticationResponseData;
+import dbconn.jsonclasses.ChangePasswordRequest;
+import dbconn.jsonclasses.ChangeUsernameRequest;
 import dbconn.jsonclasses.RegisterCredentials;
-import dbconn.jsonclasses.RegisterResponseData;
 import game.GamePlatform;
 import game.User;
 import messages.Message;
@@ -22,8 +23,97 @@ public class UserAuthenticator {
     
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
     private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
+    private static final String changePasswordQuery = "{call Change_Pass(?, ?, ?, ?)}";
+    private static final String changeUsernameQuery = "{call Change_Nick(?, ?, ?, ?)}";
     private static final int USER_ALREADY_EXISTS_CODE = 15600;
+    private static final int CHANGE_PASSWORD_OK = 0;
+    private static final int CHANGE_PASSWORD_WRONG_CREDENTIALS = 100;
+    private static final int CHANGE_USERNAME_OK = 0;
+    private static final int CHANGE_USERNAME_NULL = 10;
+    private static final int CHANGE_USERNAME_WRONG_CREDENTIALS = 100;
+    private static final int CHANGE_USERNAME_TAKEN = 1000;
     private static final Logger logger = Logger.getInstance();
+
+    public static void handleChangeUsernameRequest(Message<ChangeUsernameRequest> msg, User creator) {
+        ChangeUsernameRequest request = msg.content;
+        if (request == null || request.getEmail() == null || request.getNewUsername() == null) {
+            sendChangePasswordFailureResponse("DATA_LOST", creator);
+        }
+        
+        try {
+            CallableStatement cStatement = DBConnection.getConnection().prepareCall(changeUsernameQuery);
+            cStatement.setString(1, request.getEmail());
+            cStatement.setString(2, "user2");
+            cStatement.setString(2, creator.getUsername());
+            cStatement.registerOutParameter(4, java.sql.Types.INTEGER);
+            cStatement.execute();
+
+            int errorCode = cStatement.getInt(4);
+            logger.info("Change username result: " + errorCode);
+            
+            if (errorCode == CHANGE_USERNAME_OK) {
+                sendChangePasswordSuccessResponse(creator);
+            }
+            else if (errorCode == CHANGE_USERNAME_NULL) {
+                sendChangePasswordFailureResponse("GOT_NULL", creator);
+            }
+            else if (errorCode == CHANGE_USERNAME_WRONG_CREDENTIALS) {
+                sendChangePasswordFailureResponse("WRONG_CREDENTIALS", creator);
+            }
+            else if (errorCode == CHANGE_USERNAME_TAKEN) {
+                sendChangePasswordFailureResponse("NICKNAME_TAKEN", creator);
+            }
+            else {
+                sendChangePasswordFailureResponse("UNKNOWN", creator);
+            }
+        }
+        catch (SQLException ex) {
+            logger.error("Exception caught. Change username procedure error - reason UNKNOWN");
+            logger.error(ex.getMessage());
+            sendChangePasswordFailureResponse("UNKNOWN", creator);
+        }
+    }
+
+    public static void handleChangePasswordRequest(Message<ChangePasswordRequest> msg, User creator) {
+        ChangePasswordRequest request = msg.content;
+        if (request == null || request.getEmail() == null || request.getCurrentPassword() == null ||
+                request.getNewPassword() == null || request.getNewPasswordConfirm() == null) {
+            sendChangePasswordFailureResponse("DATA_LOST", creator);
+        }
+        
+        try {
+            if (request.getNewPassword().equals(request.getNewPasswordConfirm())) {
+                CallableStatement cStatement = DBConnection.getConnection().prepareCall(changePasswordQuery);
+                cStatement.setString(1, request.getEmail());
+                cStatement.setString(2, hash256(request.getCurrentPassword()));
+                cStatement.setString(3, hash256(request.getNewPassword()));
+                cStatement.registerOutParameter(4, java.sql.Types.INTEGER);
+                cStatement.execute();
+                int errorCode = cStatement.getInt(4);
+                logger.info("Change password result: " + errorCode);
+                
+                if (errorCode == CHANGE_PASSWORD_OK)
+                {
+                    logger.info("Change password procedure was successful");
+                    sendChangePasswordSuccessResponse(creator);
+                }
+                else if (errorCode == CHANGE_PASSWORD_WRONG_CREDENTIALS) {
+                    sendChangePasswordFailureResponse("WRONG_CREDENTIALS", creator);
+                }
+                else {
+                    sendChangePasswordFailureResponse("UNKNOWN", creator);
+                }
+            }
+            else {
+                sendChangePasswordFailureResponse("DIFFERENT_NEW_PASSWORDS", creator);
+            }
+        }
+        catch (SQLException ex) {
+            logger.error("Exception caught. Change password procedure error - reason UNKNOWN");
+            logger.error(ex.getMessage());
+            sendChangePasswordFailureResponse("UNKNOWN", creator);
+        }
+    }
 
     public static void handleRegisterRequest(Message<RegisterCredentials> msg, User creator) {
         RegisterCredentials credentials = msg.content;
@@ -73,8 +163,9 @@ public class UserAuthenticator {
             cStatement.registerOutParameter(3, java.sql.Types.VARCHAR);
             cStatement.execute();
             String userNickname = cStatement.getString(3);
+            logger.info("username: " + userNickname);
             if (userNickname != null && !userNickname.isEmpty()) {
-                creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
+//                creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
                 sendLoginSuccessResponse(userNickname, creator);
                 return;
             }
@@ -105,27 +196,45 @@ public class UserAuthenticator {
     }
 
     private static void sendRegisterFailureResponse(String failureReason, User creator) {
-        RegisterResponseData responseData = RegisterResponseData.failedRegisterData(failureReason);
-        Message<RegisterResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
+        AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
     private static void sendRegisterSuccessResponse(User creator) {
-        RegisterResponseData responseData = RegisterResponseData.successRegisterData();
-        Message<RegisterResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
+        AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData();
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
     private static void sendLoginFailureResponse(String failureReason, User creator) {
-        LoginResponseData responseData = LoginResponseData.failedLoginData(failureReason);
-        Message<LoginResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
+        AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
+        logger.error("login failure");
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
     private static void sendLoginSuccessResponse(String nickname, User creator) {
-        LoginResponseData responseData = LoginResponseData.successLoginData(nickname);
-        Message<LoginResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
+        AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData(nickname);
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
+        logger.info("login success");
         creator.setUsername(nickname);
+        creator.sendMessage(MessageParser.toJsonString(respMsg));
+    }
+
+    private static void sendChangePasswordFailureResponse(String failureReason, User creator)
+    {
+        AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
+        logger.error("password change failure " + failureReason);
+        creator.sendMessage(MessageParser.toJsonString(respMsg));
+    }
+
+    private static void sendChangePasswordSuccessResponse(User creator)
+    {
+        AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData();
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
+        logger.info("password change success");
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
     
