@@ -90,9 +90,9 @@ public final class GameBuilder {
         AbstractGame game = null;
 
         if (gameType.equals(GameType.SOLO_GAME)) {
-            game = new SoloGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs, timeToEnd);
+            game = new SoloGame(id, gameMap, osmService, players, webSpeed, mobileMaxSpeed, dwarfs, timeToEnd);
         } else if (gameType.equals(GameType.TEAM_GAME)) {
-            game = new TeamGame(id, gameMap, players, webSpeed, mobileMaxSpeed, dwarfs, timeToEnd, teams);
+            game = new TeamGame(id, gameMap, osmService, players, webSpeed, mobileMaxSpeed, dwarfs, timeToEnd, teams);
         }
 
         return game;
