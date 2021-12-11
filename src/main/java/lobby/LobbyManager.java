@@ -351,13 +351,16 @@ public class LobbyManager {
 
     private void removePlayerFromLobby(User player, Lobby lobby, boolean sendMessage) {
         Message<Boolean> msg = new Message<>(MessageType.QUIT_LOBBY_RESPONSE, false);
+        mutex.lock();
         if (lobby == null) {
+            mutex.unlock();
             if (sendMessage) {
                 player.sendMessage(MessageParser.toJsonString(msg));
             }
             return;
         }
         synchronized (lobby) {
+            mutex.unlock();
             if (lobbyToPlayers.get(lobby.getId()).remove(player)) {
                 lobby.setPlayers(lobby.getPlayers() - 1);
                 lobby.removePlayerFromTeam(player);
