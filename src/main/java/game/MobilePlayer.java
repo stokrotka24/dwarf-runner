@@ -23,12 +23,12 @@ public class MobilePlayer extends AbstractPlayer {
     }
 
     @Override
-    public boolean pickUpDwarf(Dwarf dwarf) {
+    public int pickUpDwarf(Dwarf dwarf) {
         if (isNearToDwarf(dwarf) && !isBanned()) {
             this.points += dwarf.getPoints();
-            return true;
+            return 1;
         }
-        return false;
+        return 0;
     }
 
     private boolean isBanned() {

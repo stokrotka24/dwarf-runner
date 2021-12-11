@@ -6,7 +6,7 @@ import osm.Node;
 //TODO set points
 public class Dwarf {
     private transient Node node;
-    private transient int points = 100;
+    private transient Integer points = 100;
 
     @SerializedName("lon")
     private Double x;
@@ -14,7 +14,7 @@ public class Dwarf {
     @SerializedName("lat")
     private Double y;
 
-    @SerializedName("dwarf_id")
+    @SerializedName("id")
     private final int id;
 
     public Dwarf(Node node, int id) {
@@ -32,11 +32,11 @@ public class Dwarf {
         this.node = node;
     }
 
-    public int getPoints() {
+    public Integer getPoints() {
         return points;
     }
 
-    public void setPoints(int points) {
+    public void setPoints(Integer points) {
         this.points = points;
     }
 
@@ -54,5 +54,9 @@ public class Dwarf {
 
     public void setY(Double y) {
         this.y = y;
+    }
+
+    public int getId() {
+        return id;
     }
 }

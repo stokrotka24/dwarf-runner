@@ -44,6 +44,14 @@ public abstract class AbstractGame {
         return dwarfs;
     }
 
+    public Dwarf getDwarfById(int dwarfId) {
+        return dwarfs.stream().filter(d -> d.getId() == dwarfId).findFirst().orElse(null);
+    }
+
+    public void removeDwarf(Dwarf dwarf) {
+        dwarfs.remove(dwarf);
+    }
+
     public void setDwarfs(List<Dwarf> dwarfs) {
         this.dwarfs = dwarfs;
     }
