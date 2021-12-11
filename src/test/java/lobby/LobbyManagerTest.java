@@ -180,11 +180,6 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         JoinLobbyRequest request = new JoinLobbyRequest(0, 1, 100.0, 100.0);
         Message<JoinLobbyRequest> msg = new Message<>(MessageType.JOIN_LOBBY_REQUEST, request);
         msg.clientId = client.id;
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         client.sendMsg(gson.toJson(msg));
 
         String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1\u0027s lobby\"," +
