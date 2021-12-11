@@ -8,6 +8,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
+import osm.Coordinates;
 import osm.Node;
 import osm.OsmService;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class GameControllerTest {
     @Test
@@ -109,11 +111,69 @@ class GameControllerTest {
     }
 
     @Test
+    void shouldCreateProperMsgAfterUnsuccessfulAttemptToDwarfPickUp() throws ParseException {
+        var numberOfDwarfsLocations = 2;
+        int nofPlayers = 2;
+        int expectedStatus = 0;
+
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(0, users);
+        var lobby = prepareLobbyMock("SOLO", users, teams, 0, numberOfDwarfsLocations);
+        var game = prepareGameMock(lobby, users);
+        var gameController = prepareGameControllerMock(lobby, users, game);
+        var player = game.getPlayer(1);
+        var resultMsg = gameController.pickUpDwarf(player, 0);
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(resultMsg);
+        var content = (JSONObject) response.get("content");
+        var status = (Long) content.get("status");
+        var points = content.get("points");
+
+
+        assertEquals(expectedStatus, status);
+        assertNull(points);
+    }
+    @Test
+    void shouldCreateProperMsgAfterSuccessfulAttemptToDwarfPickUp() throws ParseException {
+        var numberOfDwarfsLocations = 2;
+        int nofPlayers = 2;
+        int expectedStatus = 1;
+
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(0, users);
+        var lobby = prepareLobbyMock("SOLO", users, teams, 0, numberOfDwarfsLocations);
+        var game = prepareGameMock(lobby, users);
+        var gameController = prepareGameControllerMock(lobby, users, game);
+        var player = game.getPlayer(1);
+        var dwarf = game.getDwarfById(0);
+        player.setCoords(new Coordinates(dwarf.getX(), dwarf.getY()));
+        var resultMsg = gameController.pickUpDwarf(player, 0);
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(resultMsg);
+        var content = (JSONObject) response.get("content");
+        var status = (Long) content.get("status");
+        var points = (Long) content.get("points");
+
+
+        assertEquals(expectedStatus, status);
+        assertEquals(dwarf.getPoints(), points.intValue());
+    }
+
+    @Test
     void runGame() {
     }
 
     @Test
     void endGame() {
+    }
+
+    private GameController prepareGameControllerMock(Lobby lobby, List<User> users, AbstractGame game) {
+        var playerToUser = users.stream().collect(Collectors.toMap(User::getServerId, item -> item));
+        return new GameController(game, playerToUser);
     }
 
     private GameController prepareGameControllerMock(Lobby lobby, List<User> users) {
