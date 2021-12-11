@@ -235,7 +235,10 @@ public class LobbyManager {
             addPlayerToTeam(player, teamId, lobby);
         }
 
-        initPlayerLocalization(player, x, y, lobby);
+        if (!initPlayerLocalization(player, x, y, lobby)) {
+            sendJoinLobbyFailed(player);
+            return;
+        }
         addToLobby(player, lobbyId, lobby);
     }
 
@@ -256,27 +259,28 @@ public class LobbyManager {
         }
     }
 
-    private void initPlayerLocalization(User player, Double x, Double y, Lobby lobby) {
+    private boolean initPlayerLocalization(User player, Double x, Double y, Lobby lobby) {
         var platform = player.getPlatform();
         if (platform.isEmpty()) {
             logger.info("user with id="+ player.getServerId()+" doesn't have platform!");
-            sendJoinLobbyFailed(player);
+            return false;
         } else if (platform.get() == GamePlatform.MOBILE) {
             try {
                 var theNearestNode = lobby.getOsmService().getTheNearestNode(new Coordinates(x, y));
                 lobby.setNodeForPlayer(player.getServerId(), theNearestNode);
             } catch (InvalidTargetObjectTypeException e) {
                 logger.warning(e.getMessage());
-                sendJoinLobbyFailed(player);
+                return false;
             }
         } else {
             try {
                 lobby.setNodeForPlayer(player.getServerId(), lobby.getOsmService().getRandomNode());
             } catch (InvalidTargetObjectTypeException e) {
                 logger.warning(e.getMessage());
-                sendJoinLobbyFailed(player);
+                return false;
             }
         }
+        return true;
     }
 
     private void addToLobby(User player, int lobbyId, Lobby lobby) {
