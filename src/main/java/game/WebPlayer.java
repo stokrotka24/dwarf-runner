@@ -27,7 +27,7 @@ public class WebPlayer extends AbstractPlayer {
     }
 
     @Override
-    public void makeMove(Move move, AbstractGame game) {
+    public int makeMove(Move move, AbstractGame game) {
         Coordinates from = coords;
         Coordinates to = null;
 
@@ -35,11 +35,12 @@ public class WebPlayer extends AbstractPlayer {
         Double y = from.getY();
 
         // to far from node so only move back to node or to next node on this road
-        if (from.distanceTo(node.getCoords()) > OsmService.ONLY_BACK_OR_FORWARD) {
+        if (from.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
             for (int i = 0; i < 4; i++) {
                 if (move.getWebMove() == WebMove.fromInt(i)) {
-                    int next = node.nextNeighbor(from);
-                    Coordinates nextNode = node.getNeighbors().get(next);
+                    // int next = node.nextNeighbor(from);
+                    // was changed, if doesn't work revert (should be fine tho)
+                    Coordinates nextNode = node.nextNeighbor(from);
                     Double next_x = nextNode.getX();
                     Double next_y = nextNode.getY();
 
@@ -107,6 +108,8 @@ public class WebPlayer extends AbstractPlayer {
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
             this.setY(newY);
+            return 0;
         }
+        return 1;
     }
 }
