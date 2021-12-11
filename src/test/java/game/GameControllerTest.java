@@ -1,5 +1,7 @@
 package game;
 
+import com.google.gson.Gson;
+import game.json.PositionData;
 import lobby.Lobby;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -10,7 +12,9 @@ import osm.Node;
 import osm.OsmService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,9 +26,10 @@ class GameControllerTest {
         int nofPlayers = 2;
 
         var users = prepareUsersMock(nofPlayers);
-        var lobby = prepareLobbyMock(users, expectedNumberOfDwarfsLocations);
-        var osmService = new OsmService(lobby.getMapId());
-        var gameController = prepareGameControllerMock(lobby, osmService, users);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(0, users);
+        var lobby = prepareLobbyMock("SOLO", users, teams, 0, expectedNumberOfDwarfsLocations);
+        var gameController = prepareGameControllerMock(lobby, users);
 
         var parser = new JSONParser();
         var response = (JSONObject) parser.parse(gameController.createdDwarfsLocationDelivery());
@@ -35,6 +40,75 @@ class GameControllerTest {
     }
 
     @Test
+    void shouldCreatePositionDataUpdateForSoloGame() throws ParseException {
+        int nofPlayers = 3;
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(0, users);
+        var lobby = prepareLobbyMock("SOLO", users, teams, 0,2);
+        var gameController = prepareGameControllerMock(lobby, users);
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(gameController.createdPositionDataUpdate());
+        var content = (JSONObject) response.get("content");
+        var team0 = (JSONArray) content.get("team0");
+
+        System.out.println(response);
+
+        assertEquals(nofPlayers, team0.size());
+
+        Gson gson = new Gson();
+        Map<Integer, Node> playerToNode = lobby.getPlayersToInitialNode();
+        for (int i = 0; i < team0.size(); i++) {
+            User user = users.get(i);
+            PositionData positionData = gson.fromJson(team0.get(i).toString(), PositionData.class);
+            assertEquals(user.getUsername(), positionData.getUsername());
+            assertEquals(playerToNode.get(user.getServerId()).getX(), positionData.getX());
+            assertEquals(playerToNode.get(user.getServerId()).getY(), positionData.getY());
+        }
+    }
+
+    @Test
+    void shouldCreatePositionDataUpdateForTeamGame() throws ParseException {
+        int nofPlayers = 7;
+        int sizeTeam1 = 4;
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(1, users.subList(0, sizeTeam1));
+        teams.put(2, users.subList(sizeTeam1, 7));
+        var lobby = prepareLobbyMock("TEAM", users, teams, 0,2);
+        var gameController = prepareGameControllerMock(lobby, users);
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(gameController.createdPositionDataUpdate());
+        var content = (JSONObject) response.get("content");
+        var team1 = (JSONArray) content.get("team1");
+        var team2 = (JSONArray) content.get("team2");
+
+        System.out.println(response);
+
+        assertEquals(sizeTeam1, team1.size());
+        assertEquals(nofPlayers - sizeTeam1, team2.size());
+
+        Gson gson = new Gson();
+        Map<Integer, Node> playerToNode = lobby.getPlayersToInitialNode();
+        for (int i = 0; i < team1.size(); i++) {
+            User user = users.get(i);
+            PositionData positionData = gson.fromJson(team1.get(i).toString(), PositionData.class);
+            assertEquals(user.getUsername(), positionData.getUsername());
+            assertEquals(playerToNode.get(user.getServerId()).getX(), positionData.getX());
+            assertEquals(playerToNode.get(user.getServerId()).getY(), positionData.getY());
+        }
+        for (int i = 0; i < team2.size(); i++) {
+            User user = users.get(sizeTeam1 + i);
+            PositionData positionData = gson.fromJson(team2.get(i).toString(), PositionData.class);
+            assertEquals(user.getUsername(), positionData.getUsername());
+            assertEquals(playerToNode.get(user.getServerId()).getX(), positionData.getX());
+            assertEquals(playerToNode.get(user.getServerId()).getY(), positionData.getY());
+        }
+    }
+
+    @Test
     void runGame() {
     }
 
@@ -42,13 +116,13 @@ class GameControllerTest {
     void endGame() {
     }
 
-    private GameController prepareGameControllerMock(Lobby lobby, OsmService osmService, List<User> users) {
-        var game = prepareGameMock(lobby, osmService, users);
+    private GameController prepareGameControllerMock(Lobby lobby, List<User> users) {
+        var game = prepareGameMock(lobby, users);
         var playerToUser = users.stream().collect(Collectors.toMap(User::getServerId, item -> item));
         return new GameController(game, playerToUser);
     }
 
-    private AbstractGame prepareGameMock(Lobby lobby, OsmService osmService, List<User> users) {
+    private AbstractGame prepareGameMock(Lobby lobby, List<User> users) {
         return GameBuilder.aGame()
                 .withId(1)
                 .withGameMap(lobby.getMap())
@@ -68,15 +142,17 @@ class GameControllerTest {
         for (int i = 1; i <= nofPlayers; i++) {
             var user = new User(i);
             user.setPlatform(GamePlatform.WEB);
+            user.setUsername("User"+i);
             users.add(user);
         }
 
         return users;
     }
 
-    private Lobby prepareLobbyMock(List<User> users, int dwarfs) {
-        var lobbyMock = new Lobby("SOLO", 1, users.size(), 0, (float) 5.0, (float) 5.0, dwarfs);
+    private Lobby prepareLobbyMock(String type, List<User> users, Map<Integer, List<User>> teams, int end, int dwarfs) {
+        var lobbyMock = new Lobby(type, 1, users.size(), end, 5.0, 5.0, dwarfs);
         lobbyMock.setCreator(users.get(0));
+        lobbyMock.setTeams(teams);
         lobbyMock.setOsmService(new OsmService(lobbyMock.getMapId()));
 
         for (int i = 0; i < users.size(); i++) {

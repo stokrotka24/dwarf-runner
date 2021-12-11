@@ -41,11 +41,11 @@ public class Lobby {
 
     @JsonRequired
     @SerializedName("web_speed")
-    private float speed;
+    private double speed;
 
     @JsonRequired
     @SerializedName("mobile_max_speed")
-    private float maxSpeed;
+    private double maxSpeed;
 
     @JsonRequired
     @SerializedName("dwarves_amount")
@@ -67,7 +67,7 @@ public class Lobby {
     public Lobby() {}
 
     public Lobby(String type, Integer mapId, Integer maxPlayers, Integer end,
-                 Float speed, Float maxSpeed, Integer dwarfs) {
+                 Double speed, Double maxSpeed, Integer dwarfs) {
         this.type = type;
         this.mapId = mapId;
         this.maxPlayers = maxPlayers;
@@ -137,19 +137,19 @@ public class Lobby {
         this.end = end;
     }
 
-    public float getSpeed() {
+    public double getSpeed() {
         return speed;
     }
 
-    public void setSpeed(float speed) {
+    public void setSpeed(double speed) {
         this.speed = speed;
     }
 
-    public float getMaxSpeed() {
+    public double getMaxSpeed() {
         return maxSpeed;
     }
 
-    public void setMaxSpeed(float maxSpeed) {
+    public void setMaxSpeed(double maxSpeed) {
         this.maxSpeed = maxSpeed;
     }
 

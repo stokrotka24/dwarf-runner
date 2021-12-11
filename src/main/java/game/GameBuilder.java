@@ -14,8 +14,8 @@ public final class GameBuilder {
     private GameMap gameMap;
     private OsmService osmService;
     private List<AbstractPlayer> players;
-    private float webSpeed;
-    private float mobileMaxSpeed;
+    private double webSpeed;
+    private double mobileMaxSpeed;
     private List<Dwarf> dwarfs;
     private GameType gameType;
     private Integer timeToEnd;
@@ -49,12 +49,12 @@ public final class GameBuilder {
         return this;
     }
 
-    public GameBuilder withWebSpeed(float webSpeed) {
+    public GameBuilder withWebSpeed(double webSpeed) {
         this.webSpeed = webSpeed;
         return this;
     }
 
-    public GameBuilder withMobileMaxSpeed(float mobileMaxSpeed) {
+    public GameBuilder withMobileMaxSpeed(double mobileMaxSpeed) {
         this.mobileMaxSpeed = mobileMaxSpeed;
         return this;
     }
