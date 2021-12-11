@@ -13,12 +13,14 @@ import osm.OsmService;
 
 import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class LobbyManager {
     private final List<Lobby> lobbys;
     private final Map<Integer, List<User>> lobbyToPlayers;
     private static final Logger logger = Logger.getInstance();
+    private final ReentrantLock mutex = new ReentrantLock();
     private static int idCounter = 0;
 
     public LobbyManager() {
@@ -221,16 +223,23 @@ public class LobbyManager {
 
     private void createWatcher(Lobby lobby) {
         Timer timer = new Timer();
-        timer.schedule(new LobbyWatcher(this, lobby), 120000);
+        timer.schedule(new LobbyWatcher(this, lobby, mutex), 120000);
     }
 
     private void addPlayerToLobby(User player, int lobbyId, int teamId, Double x, Double y) {
         Lobby lobby = getLobbyInfo(lobbyId);
-        if(!LobbyValidator.isJoinPossible(teamId, lobby)) {
+        mutex.lock();
+        if (lobby == null) {
+            mutex.unlock();
             sendJoinLobbyFailed(player);
             return;
         }
         synchronized (lobby) {
+            mutex.unlock();
+            if(!LobbyValidator.isJoinPossible(teamId, lobby)) {
+                sendJoinLobbyFailed(player);
+                return;
+            }
             checkCreator(player, lobby);
             addPlayerToTeam(player, teamId, lobby);
         }
