@@ -14,10 +14,14 @@ public class Dwarf {
     @SerializedName("lat")
     private Double y;
 
-    public Dwarf(Node node) {
+    @SerializedName("dwarf_id")
+    private final int id;
+
+    public Dwarf(Node node, int id) {
         this.node = node;
         this.x = node.getX();
         this.y = node.getY();
+        this.id = id;
     }
 
     public Node getNode() {

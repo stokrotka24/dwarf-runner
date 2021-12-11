@@ -61,7 +61,7 @@ public final class GameBuilder {
 
     public GameBuilder withDwarfs(int numDwarfs, OsmService osmService) {
         List<Node> nodes = osmService.getUniqueRandomNodes(numDwarfs);
-        this.dwarfs = nodes.stream().map(Dwarf::new).collect(Collectors.toList());
+        this.dwarfs = nodes.stream().map(node -> new Dwarf(node, nodes.indexOf(node))).collect(Collectors.toList());
         return this;
     }
 
