@@ -8,6 +8,7 @@ public class WebPlayer extends AbstractPlayer {
 
     public WebPlayer(int id, Node node) {
         super(id, node);
+        this.coords = node.getCoords();
     }
 
     @Override
