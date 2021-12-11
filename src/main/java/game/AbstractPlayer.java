@@ -13,7 +13,6 @@ public abstract class AbstractPlayer {
     public AbstractPlayer(int id, Node node) {
         this.id = id;
         this.node = new Node(node);
-        this.coords = node.getCoords();
     }
 
     public int getId() {
