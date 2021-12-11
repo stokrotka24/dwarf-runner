@@ -369,7 +369,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         var manager = new LobbyManager();
         var lobby = manager.getLobbyInfo(1357);
         if (lobby != null) {
-            manager.removeLobby(1357);
+            manager.removeLobby(1357, true);
             assertNull(manager.getLobbyInfo(1357));
         }
     }

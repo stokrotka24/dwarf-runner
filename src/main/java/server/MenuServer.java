@@ -3,8 +3,11 @@ package server;
 import dbconn.UserAuthenticator;
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.RegisterCredentials;
+import game.WebMove;
 import game.GameManager;
+import game.Move;
 import game.User;
+import game.json.MobileMove;
 import lobby.JoinLobbyRequest;
 import lobby.Lobby;
 import lobby.LobbyListRequest;
@@ -88,7 +91,7 @@ public class MenuServer {
                         }
                         case QUIT_LOBBY_REQUEST: {
                             logger.info("Handling:" + header + " for user with id: " + clientID);
-                            lobbyManager.removePlayerFromLobby(sender);
+                            lobbyManager.removePlayerFromLobby(sender, true);
                             break;
                         }
                         case LOG_IN_REQUEST: {
@@ -121,8 +124,22 @@ public class MenuServer {
                             if (lobby.isPresent() && sender == lobby.get().getCreator()) {
                                 var players = lobbyManager.getPlayerList(lobby.get().getId());
                                 gameManager.runGame(lobby.get(), players);
-                                lobbyManager.removeLobby(lobby.get().getId());
+                                lobbyManager.removeLobby(lobby.get().getId(), false);
                             }
+                            break;
+                        }
+                        case WEB_MOVE: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            var move = new Move(MessageParser.getMsgContent(msgReceived, WebMove.class));
+                            gameManager.userToGameController.get(sender.getServerId())
+                                    .performMove(sender.getServerId(), move);
+                            break;
+                        }
+                        case MOBILE_MOVE: {
+                            logger.info("Handling:" + header + " for user with id: " + clientID);
+                            var move = new Move(MessageParser.getMsgContent(msgReceived, MobileMove.class));
+                            gameManager.userToGameController.get(sender.getServerId())
+                                    .performMove(sender.getServerId(), move);
                             break;
                         }
                         default: {

@@ -336,10 +336,12 @@ public class LobbyManager {
         }
     }
 
-    private void removePlayerFromLobby(User player, Lobby lobby) {
+    private void removePlayerFromLobby(User player, Lobby lobby, boolean sendMessage) {
         Message<Boolean> msg = new Message<>(MessageType.QUIT_LOBBY_RESPONSE, false);
         if (lobby == null) {
-            player.sendMessage(MessageParser.toJsonString(msg));
+            if (sendMessage) {
+                player.sendMessage(MessageParser.toJsonString(msg));
+            }
             return;
         }
         synchronized (lobby) {
@@ -363,8 +365,10 @@ public class LobbyManager {
         }
 
         msg.content = true;
-        player.sendMessage(MessageParser.toJsonString(msg));
-        notifyLobby(lobby);
+        if (sendMessage) {
+            player.sendMessage(MessageParser.toJsonString(msg));
+            notifyLobby(lobby);
+        }
     }
 
     private static synchronized void assignId(Lobby lobby) {
