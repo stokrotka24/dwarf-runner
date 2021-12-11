@@ -15,7 +15,7 @@ public class LobbyWatcher extends TimerTask {
     public void run() {
         synchronized (lobby) {
             if (lobby.getPlayers() <= 0) {
-                manager.removeLobby(lobby.getId());
+                manager.removeLobby(lobby.getId(), true);
             }
         }
     }

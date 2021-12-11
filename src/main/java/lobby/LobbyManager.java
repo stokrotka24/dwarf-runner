@@ -96,11 +96,11 @@ public class LobbyManager {
      * removes player from lobby
      * @param player player to remove
      */
-    public void removePlayerFromLobby(User player) {
+    public void removePlayerFromLobby(User player, boolean sendMessage) {
         Lobby lobby;
         try {
             lobby = getLobbyForUser(player);
-            removePlayerFromLobby(player, lobby);
+            removePlayerFromLobby(player, lobby, sendMessage);
         } catch (Exception e) {
             logger.warning(e.getMessage());
         }
@@ -133,12 +133,12 @@ public class LobbyManager {
      * lobby browsing view
      * @param lobbyId id of lobby to remove
      */
-    public void removeLobby(int lobbyId) {
+    public void removeLobby(int lobbyId, boolean sendMessage) {
         Lobby lobby = getLobbyInfo(lobbyId);
         var players = lobbyToPlayers.get(lobbyId);
 
         while (!players.isEmpty()) {
-            removePlayerFromLobby(players.get(0), lobby);
+            removePlayerFromLobby(players.get(0), lobby, sendMessage);
         }
 
         lobbys.remove(lobby);
