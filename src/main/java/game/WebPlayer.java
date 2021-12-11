@@ -17,12 +17,13 @@ public class WebPlayer extends AbstractPlayer {
     }
 
     @Override
-    public boolean pickUpDwarf(Dwarf dwarf) {
+    public int pickUpDwarf(Dwarf dwarf) {
         if (isNearToDwarf(dwarf)) {
             this.points += dwarf.getPoints();
-            return true;
+            return 1;
         }
-        return false;
+
+        return 0;
     }
 
     @Override
