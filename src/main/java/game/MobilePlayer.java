@@ -1,5 +1,6 @@
 package game;
 
+import osm.Coordinates;
 import osm.Node;
 
 import java.sql.Timestamp;
@@ -9,6 +10,7 @@ public class MobilePlayer extends AbstractPlayer {
   
     public MobilePlayer(int id, Node node) {
         super(id, node);
+        this.coords = new Coordinates(0.0, 0.0);
     }
 
     public void setBanTimestamp(Timestamp banTimestamp) {
