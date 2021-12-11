@@ -159,7 +159,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
             "solo; 6; 1; 0; 3; -5; 4",
             "solo; 6; 1; 1; 3; 5; 0",
     }, delimiter = ';', nullValues = {"null"})
-    void createLobby_ShouldFail(String type, Integer playersAmount, Integer mapId, Integer end, Float webSpeed, Float mobileSpeed, Integer dwarves) {
+    void createLobby_ShouldFail(String type, Integer playersAmount, Integer mapId, Integer end, Double webSpeed, Double mobileSpeed, Integer dwarves) {
         Lobby lobby = new Lobby(type, mapId, playersAmount, end, webSpeed, mobileSpeed, dwarves);
         Message<Lobby> msg = new Message<>(MessageType.CREATE_LOBBY_REQUEST, lobby);
         msg.clientId = client.id;
