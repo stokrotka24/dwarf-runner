@@ -182,16 +182,19 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         msg.clientId = client.id;
         client.sendMsg(gson.toJson(msg));
 
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1\u0027s lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
         try {
             String response1 = client.queue.take();
-            Assertions.assertTrue(response1.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
-            Assertions.assertTrue(response1.contains("\"response\":true"));
+            Assertions.assertTrue(response1.contains("\"header\":\"LOBBY_CREATOR_RIGHTS\""));
+            Assertions.assertTrue(response1.contains("\"lobby_id\":0"));
             String response2 = client.queue.take();
-            assertEquals(expected2, response2);
+            Assertions.assertTrue(response2.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
+            Assertions.assertTrue(response2.contains("\"response\":true"));
+            String response3 = client.queue.take();
+            assertEquals(expected2, response3);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -205,16 +208,19 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         msg.clientId = client2.id;
         client2.sendMsg(gson.toJson(msg));
 
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":1,\"lobby_name\":null," +
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":1,\"lobby_name\":\"user2's lobby\"," +
                 "\"gametype\":\"solo\",\"map\":4,\"curr_players\":1,\"players_amount\":3,\"endgame_cond\":10," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team0\":[\"user2\"]}}}";
         try {
             String response1 = client2.queue.take();
-            Assertions.assertTrue(response1.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
-            Assertions.assertTrue(response1.contains("\"response\":true"));
+            Assertions.assertTrue(response1.contains("\"header\":\"LOBBY_CREATOR_RIGHTS\""));
+            Assertions.assertTrue(response1.contains("\"lobby_id\":1"));
             String response2 = client2.queue.take();
-            assertEquals(expected2, response2);
+            Assertions.assertTrue(response2.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
+            Assertions.assertTrue(response2.contains("\"response\":true"));
+            String response3 = client2.queue.take();
+            assertEquals(expected2, response3);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -240,7 +246,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         client2.sendMsg(gson.toJson(msg));
 
         String expected1 = "{\"header\":\"LOG_IN_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":\"user2\",\"failure_reason\":null}}";
-        String expected3 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
+        String expected3 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team1\":[\"user1\",\"user2\"],\"team2\":[]}}}";
@@ -299,7 +305,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         client2.sendMsg(gson.toJson(msg));
 
         String expected1 = "{\"header\":\"CHANGE_TEAM_RESPONSE\",\"content\":true}";
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team1\":[\"user1\"],\"team2\":[\"user2\"]}}}";
@@ -340,7 +346,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         client2.sendMsg(gson.toJson(msg));
 
         String expected1 = "{\"header\":\"QUIT_LOBBY_RESPONSE\",\"content\":true}";
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null," +
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0," +
                 "\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0,\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
         try {
@@ -367,8 +373,10 @@ class LobbyManagerTest extends AbstractCommunicationTest {
     @CsvSource(value = {
             "null; null; true; 0; 100",
             "null; null; false; 0; 100",
-            "null; null; true; 0; 10",
-            "null; null; true; 11; 20",
+            "null; null; true; 0; 5",
+            "null; null; true; 6; 20",
+            "null; null; false; 0; 5",
+            "null; null; false; 6; 20",
             "null; 7; true; 11; 20",
             "SOLO_GAME; null; true; 0; 100",
             "TEAM_GAME; 3; false; 0; 100",
@@ -425,7 +433,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         client.sendMsg(request);
 
         String expected = "{\"header\":\"ACKNOWLEDGE\",\"content\":\"PLAYER_IS_READY\"}";
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null,\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":1,\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\",\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":1,\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
 
         try {
             String response = client.queue.take();
@@ -450,7 +458,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         client.sendMsg(request);
 
         String expected1 = "{\"header\":\"ACKNOWLEDGE\",\"content\":\"PLAYER_IS_UNREADY\"}";
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":null,\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0,\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
+        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\",\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1,\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0,\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
 
         try {
             String response1 = client.queue.take();

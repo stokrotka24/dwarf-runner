@@ -28,7 +28,7 @@ public class ClientMock implements Runnable {
 
     public void sendMsg(String msg) {
         System.out.println("Sending msg: " + msg);
-        out.print(msg);
+        out.print(msg + '\n');
     }
 
     public void close() {

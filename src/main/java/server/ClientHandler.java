@@ -12,11 +12,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * ClientHandler
  */
 public class ClientHandler extends Thread {
-    private Socket clientSocket;
+    private final Socket clientSocket;
     private PrintStream clientInput;
     private BufferedReader clientOutput;
-    private AtomicBoolean isRunning = new AtomicBoolean(true);
-    private Integer maxJsonLength;
+    private final AtomicBoolean isRunning = new AtomicBoolean(true);
+    private final Integer maxJsonLength;
     public LinkedBlockingQueue<String> output;
     private static final Logger logger = Logger.getInstance();
 
@@ -40,13 +40,16 @@ public class ClientHandler extends Thread {
         mainLoop: while (isRunning.get()) {
             try {
                 StringBuilder builder = new StringBuilder();
-                Integer bracketCount = 0;
+                int bracketCount = 0;
+                int nextCh;
                 do {
-                    int nextCh = clientOutput.read();
+                    nextCh = clientOutput.read();
                     if (nextCh == -1) {
                         isRunning.set(false);
-                        break mainLoop;
+                        break;
                     }
+                } while (nextCh != '{');
+                do {
                     String nextChar = Character.toString((char) nextCh);
                     if (nextChar.equals("{")) {
                         bracketCount += 1;
@@ -56,6 +59,11 @@ public class ClientHandler extends Thread {
                     builder.append(nextChar);
                     if (builder.length() > this.maxJsonLength) {
                         continue mainLoop;
+                    }
+                    nextCh = clientOutput.read();
+                    if (nextCh == -1) {
+                        isRunning.set(false);
+                        break mainLoop;
                     }
                 } while (bracketCount > 0);
                 output.put(builder.toString());

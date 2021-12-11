@@ -38,6 +38,7 @@ public enum MessageType {
     PICK_DWARF_RESPONSE,
     RANKING_DATA,
     ACKNOWLEDGE,
+    LOBBY_CREATOR_RIGHTS,
     ERROR;
 
     private static final MessageType[] msgTypeValues = MessageType.values();
