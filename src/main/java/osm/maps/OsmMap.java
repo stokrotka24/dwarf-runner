@@ -70,8 +70,4 @@ public abstract class OsmMap {
     public Coordinates getCoordsById(Long id) {
         return nodes.stream().filter(node -> node.getId().equals(id)).findFirst().get().getCoords();
     }
-
-    public Node getNodeByCoords(Coordinates coords) {
-        return nodes.stream().filter(node -> node.getCoords().equals(coords)).findFirst().get();
-    }
 }

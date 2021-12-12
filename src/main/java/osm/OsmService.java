@@ -17,12 +17,9 @@ public class OsmService {
     // one degree is about 111 kilometers
     public static final double METRE = 1.0 / 111000.0;
     /* if player is farther than this from the node, don't allow stepping off the current way */
-    public static double ONLY_BACK_OR_FORWARD = 0.000004;
+    public static double NODE_RADIUS = 0.000004; // value TBD
+    public static double MAX_DIST_FROM_ROAD = 0.000002; // value TBD
     private OsmMap map;
-
-    /*public ArrayList<Way> getWays() {
-        return map.ways;
-    }*/
 
     public ArrayList<Node> getNodes() {
         return map.nodes;
@@ -96,7 +93,11 @@ public class OsmService {
         return theNearestNode;
     }
 
-    public static void setOnlyBackOrForward(double onlyBackOrForward) {
-        ONLY_BACK_OR_FORWARD = onlyBackOrForward;
+    public static void setNodeRadius(double nodeRadius) {
+        NODE_RADIUS = nodeRadius;
+    }
+
+    public Node getNodeByCoords(Coordinates coords) {
+        return map.nodes.stream().filter(node -> node.getCoords().equals(coords)).findFirst().get();
     }
 }
