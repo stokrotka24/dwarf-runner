@@ -26,6 +26,79 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
         }
     }
 
+    /**
+     * DO TO SAVING OF EMAIL AND NICKNAME
+     * REMEMBER TO CHANGE
+     * EMAIL AND NICKNAME
+     */
+    @Test
+    void testHandleRegisterRequest_ShouldSucceed(){
+        String request1 = "{\n" +
+                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user12336631230@wp.pl\",\n" +
+                "        \"password\": \"user2\",\n" +
+                "        \"nickname\": \"juserekss366333\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":1,\"failure_reason\":null}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    @Test
+    void testHandleRegisterRequest_ShouldFailed(){
+        String request1 = "{\n" +
+                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"USER123330@wp.pl\",\n" +
+                "        \"password\": \"user2\",\n" +
+                "        \"nickname\": \"juserekss36333\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"EMAIL_TAKEN\"}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHandleRegisterRequest_ShouldFailed2(){
+        String request1 = "{\n" +
+                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"\",\n" +
+                "        \"password\": \"\",\n" +
+                "        \"nickname\":\"\"" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"UNKNOWN\"}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test
     void testHandleLoginRequest_ShouldSucceed() {
         String request1 = "{\n" +
