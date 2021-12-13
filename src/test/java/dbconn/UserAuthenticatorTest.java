@@ -27,12 +27,12 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     /**
-     * DO TO SAVING OF EMAIL AND NICKNAME
+     * DUE TO SAVING OF EMAIL AND NICKNAME in DB
      * REMEMBER TO CHANGE
-     * EMAIL AND NICKNAME
+     * EMAIL AND NICKNAME BEFORE USING
      */
     @Test
-    void testHandleRegisterRequest_ShouldSucceed(){
+    void testHandleRegisterRequestShouldSucceed(){
         String request1 = "{\n" +
                 "    \"header\": \"REGISTER_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -54,7 +54,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
         }
     }
     @Test
-    void testHandleRegisterRequest_ShouldFailed(){
+    void testHandleRegisterRequestShouldFailed(){
         String request1 = "{\n" +
                 "    \"header\": \"REGISTER_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -77,7 +77,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void testHandleRegisterRequest_ShouldFailed2(){
+    void testHandleRegisterRequestShouldFailed2(){
         String request1 = "{\n" +
                 "    \"header\": \"REGISTER_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -100,7 +100,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void testHandleLoginRequest_ShouldSucceed() {
+    void testHandleLoginRequestShouldSucceed() {
         String request1 = "{\n" +
                 "    \"header\": \"LOG_IN_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -123,7 +123,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void testHandleLoginRequest_ShouldFail() {
+    void testHandleLoginRequestShouldFail() {
         String request1 = "{\n" +
                 "    \"header\": \"LOG_IN_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -192,7 +192,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void hash512_ShouldSucceed() {
+    void hash512ShouldSucceed() {
         String toHash = "user123";
         String afterHash;
         MessageDigest digest;
@@ -210,7 +210,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void hash256_ShouldFail() {
+    void hash256ShouldFail() {
         String toHash = "user123";
         String toHash2 = "user1234";
         String afterHash;
