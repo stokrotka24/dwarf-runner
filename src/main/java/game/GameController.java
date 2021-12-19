@@ -1,9 +1,6 @@
 package game;
 
-import game.json.DwarfsLocationListDelivery;
-import game.json.MobileMoveResponse;
-import game.json.PickDwarfResponse;
-import game.json.PositionData;
+import game.json.*;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
@@ -63,6 +60,32 @@ public class GameController {
                 .collect(Collectors.toList());
     }
 
+    private void sendPlayersPointsUpdate() {
+        var update = createdPlayersPointsUpdate();
+        for (AbstractPlayer player: game.getPlayers()) {
+            playerToUser.get(player.getId()).sendMessage(update);
+        }
+    }
+
+    protected String createdPlayersPointsUpdate() {
+        Map<String, List<PlayerPoints>> playersPointsUpdate =
+                game.getTeams()
+                        .entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(entry -> "team" + entry.getKey(), entry -> mapUsernamesToPoints(entry.getValue())));
+        var msg = new Message<>(MessageType.PLAYERS_POINTS_UPDATE, playersPointsUpdate);
+        return MessageParser.toJsonString(msg);
+    }
+
+    private List<PlayerPoints> mapUsernamesToPoints(List<AbstractPlayer> players) {
+        return players
+                .stream()
+                .map(player -> new PlayerPoints(
+                        playerToUser.get(player.getId()).getUsername(),
+                        player.points))
+                .collect(Collectors.toList());
+    }
+
     public void runGame() {
         var timeToEnd =  game.getTimeToEnd();
         if (timeToEnd > 0) {
@@ -117,6 +140,7 @@ public class GameController {
         var resultMsg = pickUpDwarf(player, dwarfId);
 
         playerToUser.get(player.getId()).sendMessage(resultMsg);
+        sendPlayersPointsUpdate();
         sendDwarfsLocation();
         if (game.getDwarfs().isEmpty()) {
             endGame();

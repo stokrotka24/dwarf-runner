@@ -40,6 +40,7 @@ public enum MessageType {
     RANKING_DATA,
     ACKNOWLEDGE,
     LOBBY_CREATOR_RIGHTS,
+    PLAYERS_POINTS_UPDATE,
     ERROR;
 
     private static final MessageType[] msgTypeValues = MessageType.values();
