@@ -94,7 +94,7 @@ public class Lobby {
     }
 
     public GameType getType() {
-        return type.equals("solo") ? GameType.SOLO_GAME : GameType.TEAM_GAME;
+        return type.equalsIgnoreCase("solo") ? GameType.SOLO_GAME : GameType.TEAM_GAME;
     }
 
     public void setType(GameType type) {

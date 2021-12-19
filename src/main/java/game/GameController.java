@@ -166,6 +166,14 @@ public class GameController {
         return MessageParser.toJsonString(new Message<>(MessageType.PICK_DWARF_RESPONSE, response));
     }
 
+    public void removePlayer(Integer playerId) {
+        game.removePlayer(playerId);
+        playerToUser.remove(playerId);
+        if (game.getPlayers().isEmpty()) {
+            endGame();
+        }
+    }
+
     class TimerTask extends Thread {
         private final long time;
 

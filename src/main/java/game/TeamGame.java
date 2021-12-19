@@ -23,4 +23,12 @@ public class TeamGame extends AbstractGame {
     public Map<Integer, List<AbstractPlayer>> getTeams() {
         return teams;
     }
+
+    @Override
+    public void removePlayer(Integer playerId) {
+        super.removePlayer(playerId);
+        for (var kv : teams.entrySet()) {
+            kv.getValue().removeIf(p -> p.getId() == playerId);
+        }
+    }
 }

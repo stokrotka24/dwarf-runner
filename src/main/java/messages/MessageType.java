@@ -41,6 +41,7 @@ public enum MessageType {
     ACKNOWLEDGE,
     LOBBY_CREATOR_RIGHTS,
     PLAYERS_POINTS_UPDATE,
+    DISCONNECT,
     ERROR;
 
     private static final MessageType[] msgTypeValues = MessageType.values();
