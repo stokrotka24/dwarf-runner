@@ -1,6 +1,7 @@
 package game;
 
 import game.json.DwarfsLocationListDelivery;
+import game.json.MobileMoveResponse;
 import game.json.PickDwarfResponse;
 import game.json.PositionData;
 import messages.Message;
@@ -77,17 +78,49 @@ public class GameController {
 
     public void performMove(Integer playerId, Move move) {
         var player = game.getPlayer(playerId);
-        player.makeMove(move, game);
+        MoveValidation validation = player.makeMove(move, game);
+        switch(validation) {
+            case WEB_VALID_MOVE:
+            case WEB_INVALID_MOVE: {
+                break;
+            }
+            case MOBILE_VALID_MOVE: {
+                sendMoveResult(player, MoveValidation.MOBILE_VALID_MOVE, null, null, null);
+                break;
+            }
+            case SPEED_BAN:
+            case SPEED_BAN_CONTINUE: {
+                sendMoveResult(player, MoveValidation.SPEED_BAN, player.getNode().getX(), player.getNode().getY(), player.getBanTimeLeft());
+                break;
+            }
+            case POSITION_BAN:
+            case POSITION_BAN_CONTINUE: {
+                sendMoveResult(player, MoveValidation.POSITION_BAN, player.getNode().getX(), player.getNode().getY(), null);
+                break;
+            }
+            default: {
+                logger.warning("Unexpected move validation!");
+                break;
+            }
+        }
         sendPositionDataUpdate();
     }
 
+    private void sendMoveResult(AbstractPlayer player, MoveValidation moveValidation,  Double x, Double y, Double punishmentTime) {
+        var response = new MobileMoveResponse(moveValidation, x, y, punishmentTime);
+        var msg = new Message<>(MessageType.MOBILE_MOVE_RESPONSE, response);
+        playerToUser.get(player.getId()).sendMessage(MessageParser.toJsonString(msg));
+    }
+
     public void performDwarfPickUp(Integer playerId, Integer dwarfId) {
-        //TODO end game check - maybe there's no more dwarfs
         var player = game.getPlayer(playerId);
         var resultMsg = pickUpDwarf(player, dwarfId);
 
         playerToUser.get(player.getId()).sendMessage(resultMsg);
         sendDwarfsLocation();
+        if (game.getDwarfs().isEmpty()) {
+            endGame();
+        }
     }
 
     protected String pickUpDwarf(AbstractPlayer player, Integer dwarfId) {
