@@ -20,7 +20,6 @@ public class OsmService {
     public static double NODE_RADIUS = 0.000004; // value TBD
     public static double BAN_RADIUS = 0.000002; // value TBD
     public static double MAX_DIST_FROM_ROAD = 0.000002; // value TBD
-    public static double BAN_DURATION = 15000.0; // 15 seconds
     private OsmMap map;
 
     public ArrayList<Node> getNodes() {

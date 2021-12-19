@@ -11,6 +11,7 @@ import osm.OsmService;
 public class MobilePlayer extends AbstractPlayer {
 
     private Double banTimestamp = null;
+    private Double banDuration = null;
     private boolean positionBan = false;
     private boolean speedBan = false;
     private Coordinates speedBanCoords;
@@ -68,7 +69,7 @@ public class MobilePlayer extends AbstractPlayer {
         if (banTimestamp == null) {
             return false;
         }
-        if (new Timestamp(System.currentTimeMillis()).getTime() - banTimestamp >= OsmService.BAN_DURATION) {
+        if (new Timestamp(System.currentTimeMillis()).getTime() - banTimestamp >= banDuration) {
             //TODO: change 100L to real ban time
             banTimestamp = null;
             return false;
@@ -76,7 +77,14 @@ public class MobilePlayer extends AbstractPlayer {
         return true;
     }
 
-    private void beginSpeedBan(Double timestamp, Coordinates coords) {
+    private void beginSpeedBan(Double timestamp, Coordinates coords, double speed, double maxSpeed) {
+        if (speed < 2 * maxSpeed) {
+            banDuration = 20000.0;
+        } else if (speed < 3 * maxSpeed) {
+            banDuration = 40000.0;
+        } else {
+            banDuration = 90000.0;
+        }
         speedBan = true;
         setBanTimestamp(timestamp);
         speedBanCoords = coords;
@@ -101,10 +109,11 @@ public class MobilePlayer extends AbstractPlayer {
         }
         updateDistances(position, move.getTimestamp());
         // TODO check units for that if condition below (should be m/s for now)
-        if (game.getMobileMaxSpeed() * 3.6 <
-            distances.stream().mapToDouble(Double::doubleValue).sum() /
-                ((timestamps.get(4) - timestamps.get(0)) / 2)) {
-            beginSpeedBan(move.getTimestamp(), position);
+        double speed = distances.stream().mapToDouble(Double::doubleValue).sum() /
+            ((timestamps.get(4) - timestamps.get(0)) / 1000) / 3.6;
+        double maxSpeed = game.getMobileMaxSpeed();
+        if (maxSpeed < speed) {
+            beginSpeedBan(move.getTimestamp(), position, speed, maxSpeed);
             return 1; // max speed exceeded
         }
         // not in node radius so check if on the road
