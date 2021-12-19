@@ -1,12 +1,12 @@
 package game;
 
-import java.util.ArrayList;
-import java.util.List;
 import osm.Coordinates;
 import osm.Node;
+import osm.OsmService;
 
 import java.sql.Timestamp;
-import osm.OsmService;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MobilePlayer extends AbstractPlayer {
 
@@ -57,6 +57,11 @@ public class MobilePlayer extends AbstractPlayer {
     }
 
     @Override
+    public Double getBanTimeLeft() {
+        return banDuration - (new Timestamp(System.currentTimeMillis()).getTime() - banTimestamp);
+    }
+
+    @Override
     public int pickUpDwarf(Dwarf dwarf) {
         if (isNearToDwarf(dwarf) && !isBanned()) {
             this.points += dwarf.getPoints();
@@ -70,7 +75,6 @@ public class MobilePlayer extends AbstractPlayer {
             return false;
         }
         if (new Timestamp(System.currentTimeMillis()).getTime() - banTimestamp >= banDuration) {
-            //TODO: change 100L to real ban time
             banTimestamp = null;
             return false;
         }
@@ -91,21 +95,21 @@ public class MobilePlayer extends AbstractPlayer {
     }
 
     @Override
-    public int makeMove(Move move, AbstractGame game) {
+    public MoveValidation makeMove(Move move, AbstractGame game) {
         Coordinates position = move.getCoords();
         if (speedBan) { // must stay in place for a set amount of time
             if (position.distanceTo(speedBanCoords) > OsmService.BAN_RADIUS) {
                 setBanTimestamp(move.getTimestamp());
-                return -1; // moved away so reset ban timer
+                return MoveValidation.SPEED_BAN_CONTINUE; // moved away so reset ban timer
             }
             if (isBanned()) {
-                return -1; // not long enough in place yet
+                return MoveValidation.SPEED_BAN_CONTINUE; // not long enough in place yet
             }
             speedBan = false;
         }
         if (positionBan) { // must return to node
             if (position.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
-                return -2; // not in node radius yet
+                return MoveValidation.POSITION_BAN_CONTINUE; // not in node radius yet
             }
             positionBan = false;
         }
@@ -116,7 +120,7 @@ public class MobilePlayer extends AbstractPlayer {
         double maxSpeed = game.getMobileMaxSpeed();
         if (maxSpeed < speed) {
             beginSpeedBan(move.getTimestamp(), position, speed, maxSpeed);
-            return 1; // max speed exceeded
+            return MoveValidation.SPEED_BAN; // max speed exceeded
         }
         // not in node radius so check if on the road
         if (position.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
@@ -124,20 +128,20 @@ public class MobilePlayer extends AbstractPlayer {
             double roadDist = node.distLinePoint(nextNode, position);
             if (roadDist > OsmService.MAX_DIST_FROM_ROAD) {
                 positionBan = true;
-                return 2; // too far from road
+                return MoveValidation.POSITION_BAN; // too far from road
             }
             double maxDist = node.getCoords().distanceTo(nextNode);
             double dist = node.getCoords().distanceTo(position);
             if (dist > maxDist) {
                 positionBan = true;
-                return 2; // too far from node (will probably exceed max speed so may never happen)
+                return MoveValidation.POSITION_BAN; // too far from node (will probably exceed max speed so may never happen)
             }
             if (dist > maxDist / 2) {
                 /* set new node */
                 node = new Node(game.getOsmService().getNodeByCoords(nextNode));
             }
-            return 0; // legal move
+            return MoveValidation.MOBILE_VALID_MOVE; // legal move
         }
-        return 0; // in node radius so legal for sure
+        return MoveValidation.MOBILE_VALID_MOVE; // in node radius so legal for sure
     }
 }

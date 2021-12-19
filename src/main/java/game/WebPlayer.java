@@ -17,6 +17,11 @@ public class WebPlayer extends AbstractPlayer {
     }
 
     @Override
+    public Double getBanTimeLeft() {
+        return null;
+    }
+
+    @Override
     public int pickUpDwarf(Dwarf dwarf) {
         if (isNearToDwarf(dwarf)) {
             this.points += dwarf.getPoints();
@@ -27,7 +32,7 @@ public class WebPlayer extends AbstractPlayer {
     }
 
     @Override
-    public int makeMove(Move move, AbstractGame game) {
+    public MoveValidation makeMove(Move move, AbstractGame game) {
         Coordinates from = coords;
         Coordinates to = null;
 
@@ -108,8 +113,8 @@ public class WebPlayer extends AbstractPlayer {
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
             this.setY(newY);
-            return 0;
+            return MoveValidation.WEB_VALID_MOVE;
         }
-        return 1;
+        return MoveValidation.WEB_INVALID_MOVE;
     }
 }
