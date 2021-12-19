@@ -1,14 +1,11 @@
 package server;
 
-import messages.Message;
-import messages.MessageParser;
-import messages.MessageType;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,6 +26,24 @@ public class ClientHandler extends Thread {
         logger.info("sending message: " + message);
         if (clientInput != null) {
             clientInput.print(message + '\n');
+        }
+    }
+
+    public void setTimeout(int millis) {
+        try {
+            clientSocket.setSoTimeout(millis);
+        } catch (SocketException e) {
+            logger.warning(e.getMessage());
+        }
+    }
+
+    // set timeout to default 45 minutes
+    public void clearTimeout() {
+        try {
+            int maxTimeoutMillis = 45 * 60 * 1000;
+            clientSocket.setSoTimeout(maxTimeoutMillis);
+        } catch (SocketException e) {
+            e.printStackTrace();
         }
     }
 
@@ -80,28 +95,25 @@ public class ClientHandler extends Thread {
                 } catch (IOException e1) {
                     logger.error(e1.getMessage());
                 }
-                return;
+                break;
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
-                continue mainLoop;
             }
         }
         clientInput.close();
-        disconnectUser();
         try {
             clientOutput.close();
             clientSocket.close();
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-
+        disconnectUser();
     }
 
     private void disconnectUser() {
-        Message<Object> msg = new Message<>(MessageType.DISCONNECT, null);
-        msg.clientId = id;
+        String msg = "{\"header\":\"DISCONNECT\",\"client_id\":" + id +  ",\"content\":null}";
         try {
-            output.put(MessageParser.toJsonString(msg));
+            output.put(msg);
         } catch (InterruptedException e) {
             logger.warning(e.getMessage());
         }
@@ -131,6 +143,7 @@ public class ClientHandler extends Thread {
         this.clientSocket = clientSocket;
         this.maxJsonLength = maxJsonLength;
         this.output = output;
+        clearTimeout();
         initStreams();
     }
 

@@ -163,6 +163,7 @@ public class MenuServer {
     }
 
     private void disconnectUser(User sender) {
+        logger.info(sender.getUsername() + " disconnect");
         users.remove(sender.getServerId());
         lobbyManager.disconnectUser(sender);
         gameManager.disconnectUser(sender);

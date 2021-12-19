@@ -5,6 +5,7 @@ import server.MenuServer;
 
 public abstract class AbstractCommunicationTest {
     private static boolean isServerRunning = false;
+    protected static int lobbyCounter = 0;
     @BeforeAll
     static void setupServer() {
         if (!isServerRunning) {

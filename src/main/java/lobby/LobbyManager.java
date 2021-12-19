@@ -458,6 +458,6 @@ public class LobbyManager {
     }
 
     public void disconnectUser(User sender) {
-        removePlayerFromLobby(sender, false);
+        removePlayerFromLobby(sender, true);
     }
 }
