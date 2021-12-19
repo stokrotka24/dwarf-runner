@@ -9,11 +9,16 @@ import java.sql.Timestamp;
 import osm.OsmService;
 
 public class MobilePlayer extends AbstractPlayer {
-    private Timestamp banTimestamp = null;
+
+    private Double banTimestamp = null;
+    private Double banDuration = null;
+    private boolean positionBan = false;
+    private boolean speedBan = false;
+    private Coordinates speedBanCoords;
     private final List<Double> distances;
     private final List<Double> timestamps;
     private Coordinates lastPosition = null;
-  
+
     public MobilePlayer(int id, Node node) {
         super(id, node);
         this.coords = new Coordinates(0.0, 0.0);
@@ -42,7 +47,7 @@ public class MobilePlayer extends AbstractPlayer {
         timestamps.add(newTimestamp);
     }
 
-    public void setBanTimestamp(Timestamp banTimestamp) {
+    public void setBanTimestamp(Double banTimestamp) {
         this.banTimestamp = banTimestamp;
     }
 
@@ -64,7 +69,7 @@ public class MobilePlayer extends AbstractPlayer {
         if (banTimestamp == null) {
             return false;
         }
-        if (new Timestamp(System.currentTimeMillis()).getTime() - banTimestamp.getTime() >= 100L) {
+        if (new Timestamp(System.currentTimeMillis()).getTime() - banTimestamp >= banDuration) {
             //TODO: change 100L to real ban time
             banTimestamp = null;
             return false;
@@ -72,14 +77,45 @@ public class MobilePlayer extends AbstractPlayer {
         return true;
     }
 
+    private void beginSpeedBan(Double timestamp, Coordinates coords, double speed, double maxSpeed) {
+        if (speed < 2 * maxSpeed) {
+            banDuration = 20000.0;
+        } else if (speed < 3 * maxSpeed) {
+            banDuration = 40000.0;
+        } else {
+            banDuration = 90000.0;
+        }
+        speedBan = true;
+        setBanTimestamp(timestamp);
+        speedBanCoords = coords;
+    }
+
     @Override
     public int makeMove(Move move, AbstractGame game) {
-         Coordinates position = move.getCoords();
+        Coordinates position = move.getCoords();
+        if (speedBan) { // must stay in place for a set amount of time
+            if (position.distanceTo(speedBanCoords) > OsmService.BAN_RADIUS) {
+                setBanTimestamp(move.getTimestamp());
+                return -1; // moved away so reset ban timer
+            }
+            if (isBanned()) {
+                return -1; // not long enough in place yet
+            }
+            speedBan = false;
+        }
+        if (positionBan) { // must return to node
+            if (position.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
+                return -2; // not in node radius yet
+            }
+            positionBan = false;
+        }
         updateDistances(position, move.getTimestamp());
         // TODO check units for that if condition below (should be m/s for now)
-        if (game.getMobileMaxSpeed() * 3.6 <
-            distances.stream().mapToDouble(Double::doubleValue).sum() /
-                ((timestamps.get(4) - timestamps.get(0)) / 2)) {
+        double speed = distances.stream().mapToDouble(Double::doubleValue).sum() /
+            ((timestamps.get(4) - timestamps.get(0)) / 1000) / 3.6;
+        double maxSpeed = game.getMobileMaxSpeed();
+        if (maxSpeed < speed) {
+            beginSpeedBan(move.getTimestamp(), position, speed, maxSpeed);
             return 1; // max speed exceeded
         }
         // not in node radius so check if on the road
@@ -87,11 +123,13 @@ public class MobilePlayer extends AbstractPlayer {
             Coordinates nextNode = node.nextNeighbor(position);
             double roadDist = node.distLinePoint(nextNode, position);
             if (roadDist > OsmService.MAX_DIST_FROM_ROAD) {
+                positionBan = true;
                 return 2; // too far from road
             }
             double maxDist = node.getCoords().distanceTo(nextNode);
             double dist = node.getCoords().distanceTo(position);
             if (dist > maxDist) {
+                positionBan = true;
                 return 2; // too far from node (will probably exceed max speed so may never happen)
             }
             if (dist > maxDist / 2) {
