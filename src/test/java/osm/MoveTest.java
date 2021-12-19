@@ -118,7 +118,8 @@ public class MoveTest {
         assertEquals(51.108111558464444, player.getCoords().getY());
     }
 
-    @Test
+    // TODO mobile move tests
+    /*@Test
     public void test2() {
         List<AbstractPlayer> players = new ArrayList<>();
         OsmService service = new OsmService(0);
@@ -133,5 +134,5 @@ public class MoveTest {
 
         double maxDistFromNode1 = 0.00004;
         double maxDistFromNode2 = 0.000004;
-    }
+    }*/
 }
