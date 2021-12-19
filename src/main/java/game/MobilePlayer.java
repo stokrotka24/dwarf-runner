@@ -101,11 +101,13 @@ public class MobilePlayer extends AbstractPlayer {
             if (isBanned()) {
                 return -1; // not long enough in place yet
             }
+            speedBan = false;
         }
         if (positionBan) { // must return to node
             if (position.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
                 return -2; // not in node radius yet
             }
+            positionBan = false;
         }
         updateDistances(position, move.getTimestamp());
         // TODO check units for that if condition below (should be m/s for now)
