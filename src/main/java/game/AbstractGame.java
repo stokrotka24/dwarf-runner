@@ -1,5 +1,9 @@
 package game;
 
+import osm.Coordinates;
+import osm.Node;
+import osm.OsmService;
+
 import java.util.List;
 import java.util.Map;
 
@@ -7,16 +11,18 @@ public abstract class AbstractGame {
 
     private int id;
     private GameMap gameMap;
+    private OsmService osmService;
     private List<AbstractPlayer> players;
     private double webSpeed;
     private double mobileMaxSpeed;
     private List<Dwarf> dwarfs;
     private Integer timeToEnd;
 
-    public AbstractGame(int id, GameMap gameMap, List<AbstractPlayer> players, double webSpeed,
-        double mobileMaxSpeed, List<Dwarf> dwarfs, Integer timeToEnd) {
+    public AbstractGame(int id, GameMap gameMap, OsmService osmService, List<AbstractPlayer> players, double webSpeed,
+                        double mobileMaxSpeed, List<Dwarf> dwarfs, Integer timeToEnd) {
         this.id = id;
         this.gameMap = gameMap;
+        this.osmService = osmService;
         this.players = players;
         this.webSpeed = webSpeed;
         this.mobileMaxSpeed = mobileMaxSpeed;
@@ -40,6 +46,14 @@ public abstract class AbstractGame {
         return dwarfs;
     }
 
+    public Dwarf getDwarfById(int dwarfId) {
+        return dwarfs.stream().filter(d -> d.getId() == dwarfId).findFirst().orElse(null);
+    }
+
+    public void removeDwarf(Dwarf dwarf) {
+        dwarfs.remove(dwarf);
+    }
+
     public void setDwarfs(List<Dwarf> dwarfs) {
         this.dwarfs = dwarfs;
     }
@@ -59,5 +73,9 @@ public abstract class AbstractGame {
 
     public double getMobileMaxSpeed() {
         return mobileMaxSpeed;
+    }
+
+    public OsmService getOsmService() {
+        return osmService;
     }
 }

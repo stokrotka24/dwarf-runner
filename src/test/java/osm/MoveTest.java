@@ -16,7 +16,7 @@ public class MoveTest {
         OsmService service = new OsmService(0);
         AbstractPlayer player = new WebPlayer(1, new Node(service.getNodes().get(8)));
         players.add(player);
-        AbstractGame game = new SoloGame(1,GameMap.OLD_TOWN,players,0.0000001,0,null,0);
+        AbstractGame game = new SoloGame(1,GameMap.OLD_TOWN, service, players,0.0000001,0,null,0);
 
         player.setCoords(new Coordinates(0.0,0.0));
         Coordinates coords1 = new Coordinates(17.029637492, 51.108117836);
@@ -26,7 +26,7 @@ public class MoveTest {
         double maxDistFromNode2 = 0.000004;
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode1);
+        OsmService.setNodeRadius(maxDistFromNode1);
         
         player.setCoords(coords1);
         player.makeMove(new Move(WebMove.UP), game);
@@ -49,7 +49,7 @@ public class MoveTest {
         assertEquals(51.10811781446444, player.getCoords().getY());
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode2);
+        OsmService.setNodeRadius(maxDistFromNode2);
 
         player.setCoords(coords1);
         player.makeMove(new Move(WebMove.UP), game);
@@ -72,7 +72,7 @@ public class MoveTest {
         assertEquals(51.10811781446444, player.getCoords().getY());
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode1);
+        OsmService.setNodeRadius(maxDistFromNode1);
 
         player.setCoords(coords2);
         player.makeMove(new Move(WebMove.UP), game);
@@ -95,7 +95,7 @@ public class MoveTest {
         assertEquals(51.108111558464444, player.getCoords().getY());
 
         /*----------------------------------------------------------------------*/
-        OsmService.setOnlyBackOrForward(maxDistFromNode2);
+        OsmService.setNodeRadius(maxDistFromNode2);
 
         player.setCoords(coords2);
         player.makeMove(new Move(WebMove.UP), game);

@@ -1,16 +1,15 @@
 package game;
 
 import game.json.MobileMove;
+import osm.Coordinates;
 
 public class Move {
-    private Double x;
-    private Double y;
+    private Coordinates coords;
     private WebMove webMove;
     private Double timestamp;
 
     public Move(MobileMove mobileMove) {
-        this.x = mobileMove.getLon();
-        this.y = mobileMove.getLat();
+        this.coords = new Coordinates(mobileMove.getLon(), mobileMove.getLat());
         this.timestamp = mobileMove.getTimestamp();
     }
 
@@ -18,12 +17,8 @@ public class Move {
         this.webMove = webWebMove;
     }
 
-    public Double getX() {
-        return x;
-    }
-
-    public Double getY() {
-        return y;
+    public Coordinates getCoords() {
+        return coords;
     }
 
     public WebMove getWebMove() {

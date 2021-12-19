@@ -26,8 +26,81 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
         }
     }
 
+    /**
+     * DUE TO SAVING OF EMAIL AND NICKNAME in DB
+     * REMEMBER TO CHANGE
+     * EMAIL AND NICKNAME BEFORE USING
+     */
     @Test
-    void testHandleLoginRequest_ShouldSucceed() {
+    void testHandleRegisterRequestShouldSucceed(){
+        String request1 = "{\n" +
+                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user12336631230@wp.pl\",\n" +
+                "        \"password\": \"user2\",\n" +
+                "        \"nickname\": \"juserekss366333\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":1,\"failure_reason\":null}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    @Test
+    void testHandleRegisterRequestShouldFailed(){
+        String request1 = "{\n" +
+                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"USER123330@wp.pl\",\n" +
+                "        \"password\": \"user2\",\n" +
+                "        \"nickname\": \"juserekss36333\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"EMAIL_TAKEN\"}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHandleRegisterRequestShouldFailed2(){
+        String request1 = "{\n" +
+                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"\",\n" +
+                "        \"password\": \"\",\n" +
+                "        \"nickname\":\"\"" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"UNKNOWN\"}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHandleLoginRequestShouldSucceed() {
         String request1 = "{\n" +
                 "    \"header\": \"LOG_IN_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -50,7 +123,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void testHandleLoginRequest_ShouldFail() {
+    void testHandleLoginRequestShouldFail() {
         String request1 = "{\n" +
                 "    \"header\": \"LOG_IN_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
@@ -119,7 +192,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void hash512_ShouldSucceed() {
+    void hash512ShouldSucceed() {
         String toHash = "user123";
         String afterHash;
         MessageDigest digest;
@@ -137,7 +210,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
     }
 
     @Test
-    void hash256_ShouldFail() {
+    void hash256ShouldFail() {
         String toHash = "user123";
         String toHash2 = "user1234";
         String afterHash;
