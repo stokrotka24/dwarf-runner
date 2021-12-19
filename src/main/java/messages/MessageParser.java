@@ -50,6 +50,7 @@ public class MessageParser {
                     .addSerializationExclusionStrategy(strategy)
                     .registerTypeAdapter(Lobby.class.getDeclaredField("teams").getType(), serializer)
                     .serializeNulls()
+                    .disableHtmlEscaping()
                     .create();
         } catch (NoSuchFieldException e) {
             e.printStackTrace();

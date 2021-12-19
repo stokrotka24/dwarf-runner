@@ -1,5 +1,7 @@
 package game;
 
+import osm.Coordinates;
+import osm.Node;
 import osm.OsmService;
 
 import java.util.List;
@@ -71,5 +73,9 @@ public abstract class AbstractGame {
 
     public double getMobileMaxSpeed() {
         return mobileMaxSpeed;
+    }
+
+    public OsmService getOsmService() {
+        return osmService;
     }
 }

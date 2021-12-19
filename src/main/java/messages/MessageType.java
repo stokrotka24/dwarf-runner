@@ -34,10 +34,12 @@ public enum MessageType {
     GAME_STATE_UPDATE,
     WEB_MOVE,
     MOBILE_MOVE,
+    MOBILE_MOVE_RESPONSE,
     PICK_DWARF_REQUEST,
     PICK_DWARF_RESPONSE,
     RANKING_DATA,
     ACKNOWLEDGE,
+    LOBBY_CREATOR_RIGHTS,
     ERROR;
 
     private static final MessageType[] msgTypeValues = MessageType.values();

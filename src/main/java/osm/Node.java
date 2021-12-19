@@ -53,9 +53,9 @@ public class Node {
         this.neighbors = new ArrayList<>();
     }
 
-    public int nextNeighbor(Coordinates position) {
+    public Coordinates nextNeighbor(Coordinates position) {
         List<Double> distances = distLinePoints(coords, position, neighbors);
-        return distances.indexOf(Collections.min(distances));
+        return neighbors.get(distances.indexOf(Collections.min(distances)));
     }
 
     private List<Double> distLinePoints(Coordinates A, Coordinates B, List<Coordinates> points) {
@@ -72,6 +72,17 @@ public class Node {
             distances.add(numerator/distAB);
         }
         return distances;
+    }
+
+    public double distLinePoint(Coordinates B, Coordinates C) {
+        Coordinates A = coords;
+        double x1 = A.getX();
+        double y1 = A.getY();
+        double x2 = B.getX();
+        double y2 = B.getY();
+        double x0 = C.getX();
+        double y0 = C.getY();
+        return Math.abs((x2 - x1) * (y1 - y0) - (x1 - x0) * (y2 - y1)) / A.distanceTo(B);
     }
 
 }
