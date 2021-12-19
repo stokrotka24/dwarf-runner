@@ -135,6 +135,7 @@ class GameControllerTest {
         assertEquals(expectedStatus, status);
         assertNull(points);
     }
+
     @Test
     void shouldCreateProperMsgAfterSuccessfulAttemptToDwarfPickUp() throws ParseException {
         var numberOfDwarfsLocations = 2;
@@ -169,6 +170,80 @@ class GameControllerTest {
 
     @Test
     void endGame() {
+    }
+
+    @Test
+    void disconnectUserInSoloGame() throws ParseException {
+        int nofPlayers = 3;
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(0, users);
+        var lobby = prepareLobbyMock("SOLO", users, teams, 0,2);
+        var gameController = prepareGameControllerMock(lobby, users);
+
+        gameController.removePlayer(users.get(nofPlayers - 1).getServerId());
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(gameController.createdPositionDataUpdate());
+        var content = (JSONObject) response.get("content");
+        var team0 = (JSONArray) content.get("team0");
+
+        System.out.println(response);
+
+        assertEquals(nofPlayers - 1, team0.size());
+
+        Gson gson = new Gson();
+        Map<Integer, Node> playerToNode = lobby.getPlayersToInitialNode();
+        for (int i = 0; i < team0.size(); i++) {
+            User user = users.get(i);
+            PositionData positionData = gson.fromJson(team0.get(i).toString(), PositionData.class);
+            assertEquals(user.getUsername(), positionData.getUsername());
+            assertEquals(playerToNode.get(user.getServerId()).getX(), positionData.getX());
+            assertEquals(playerToNode.get(user.getServerId()).getY(), positionData.getY());
+        }
+    }
+
+    @Test
+    void disconnectUserInTeamGame() throws ParseException {
+        int nofPlayers = 7;
+        int sizeTeam1 = 4;
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(1, users.subList(0, sizeTeam1));
+        teams.put(2, users.subList(sizeTeam1, 7));
+        var lobby = prepareLobbyMock("TEAM", users, teams, 0,2);
+        var gameController = prepareGameControllerMock(lobby, users);
+
+        gameController.removePlayer(teams.get(1).get(sizeTeam1 - 1).getServerId());
+        gameController.removePlayer(teams.get(2).get(0).getServerId());
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(gameController.createdPositionDataUpdate());
+        var content = (JSONObject) response.get("content");
+        var team1 = (JSONArray) content.get("team1");
+        var team2 = (JSONArray) content.get("team2");
+
+        System.out.println(response);
+
+        assertEquals(sizeTeam1 - 1, team1.size());
+        assertEquals(nofPlayers - sizeTeam1 - 1, team2.size());
+
+        Gson gson = new Gson();
+        Map<Integer, Node> playerToNode = lobby.getPlayersToInitialNode();
+        for (int i = 0; i < team1.size(); i++) {
+            User user = users.get(i);
+            PositionData positionData = gson.fromJson(team1.get(i).toString(), PositionData.class);
+            assertEquals(user.getUsername(), positionData.getUsername());
+            assertEquals(playerToNode.get(user.getServerId()).getX(), positionData.getX());
+            assertEquals(playerToNode.get(user.getServerId()).getY(), positionData.getY());
+        }
+        for (int i = 0; i < team2.size(); i++) {
+            User user = users.get(sizeTeam1 + i + 1);
+            PositionData positionData = gson.fromJson(team2.get(i).toString(), PositionData.class);
+            assertEquals(user.getUsername(), positionData.getUsername());
+            assertEquals(playerToNode.get(user.getServerId()).getX(), positionData.getX());
+            assertEquals(playerToNode.get(user.getServerId()).getY(), positionData.getY());
+        }
     }
 
     private GameController prepareGameControllerMock(Lobby lobby, List<User> users, AbstractGame game) {

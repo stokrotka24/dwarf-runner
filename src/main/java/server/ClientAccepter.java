@@ -25,13 +25,12 @@ public class ClientAccepter extends Thread {
             try {
                 Socket newClient = socket.accept();
                 ClientHandler newHandler = new ClientHandler(newClient, 20128, server.inMsgQueue);
-                Thread thread = new Thread(newHandler);
-                thread.start();
                 int id = server.addInput(newHandler);
+                newHandler.setId(id);
+                new Thread(newHandler).start();
                 sendServerHello(newHandler, id);
             } catch (IOException e) {
                 logger.warning(e.getMessage());
-                continue;
             } catch (Exception e) {
                 logger.error(e.getMessage());
                 break;

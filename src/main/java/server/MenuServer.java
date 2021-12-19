@@ -8,9 +8,9 @@ import game.GameManager;
 import game.Move;
 import game.User;
 import game.json.MobileMove;
-import lobby.JoinLobbyRequest;
+import lobby.json.JoinLobbyRequest;
 import lobby.Lobby;
-import lobby.LobbyListRequest;
+import lobby.json.LobbyListRequest;
 import lobby.LobbyManager;
 import messages.Message;
 import messages.MessageException;
@@ -137,6 +137,10 @@ public class MenuServer {
                                     .performDwarfPickUp(sender.getServerId(), MessageParser.getMsgContent(msgReceived, Integer.class));
                             break;
                         }
+                        case DISCONNECT: {
+                            disconnectUser(sender);
+                            break;
+                        }
                         default: {
                             logger.warning("Handling error for user with id: " + clientID);
                             Message<String> msg = new Message<>(MessageType.ERROR, "Header has been read correctly, " +
@@ -156,6 +160,15 @@ public class MenuServer {
                 logger.error(e.getMessage());
             }
         }
+    }
+
+    private void disconnectUser(User sender) {
+        logger.info(sender.getUsername() + " disconnect");
+        users.remove(sender.getServerId());
+        lobbyManager.disconnectUser(sender);
+        gameManager.disconnectUser(sender);
+        // TODO - log out
+        // UserAuthenticator.handleLogOutRequest(sender); ?
     }
 
     private void initComponents() {

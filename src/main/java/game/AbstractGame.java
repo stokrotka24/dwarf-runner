@@ -67,6 +67,10 @@ public abstract class AbstractGame {
         return null;
     }
 
+    public void removePlayer(Integer playerId) {
+        players.removeIf(p -> p.getId() == playerId);
+    }
+
     public double getWebSpeed() {
         return webSpeed;
     }

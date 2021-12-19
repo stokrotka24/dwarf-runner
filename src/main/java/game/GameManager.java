@@ -18,6 +18,14 @@ public class GameManager {
         gameController.runGame();
     }
 
+    public void disconnectUser(User sender) {
+        var controller = userToGameController.get(sender.getServerId());
+        if (controller != null) {
+            controller.removePlayer(sender.getServerId());
+        }
+        userToGameController.remove(sender.getServerId());
+    }
+
     private GameController createGameController(Lobby lobby, List<User> users) {
         var game = buildGame(lobby, users);
 
