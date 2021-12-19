@@ -1,5 +1,9 @@
 package server;
 
+import messages.Message;
+import messages.MessageParser;
+import messages.MessageType;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,6 +21,7 @@ public class ClientHandler extends Thread {
     private BufferedReader clientOutput;
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
     private final Integer maxJsonLength;
+    private int id;
     public LinkedBlockingQueue<String> output;
     private static final Logger logger = Logger.getInstance();
 
@@ -46,7 +51,7 @@ public class ClientHandler extends Thread {
                     nextCh = clientOutput.read();
                     if (nextCh == -1) {
                         isRunning.set(false);
-                        break;
+                        break mainLoop;
                     }
                 } while (nextCh != '{');
                 do {
@@ -82,6 +87,7 @@ public class ClientHandler extends Thread {
             }
         }
         clientInput.close();
+        disconnectUser();
         try {
             clientOutput.close();
             clientSocket.close();
@@ -89,6 +95,16 @@ public class ClientHandler extends Thread {
             logger.error(e.getMessage());
         }
 
+    }
+
+    private void disconnectUser() {
+        Message<Object> msg = new Message<>(MessageType.DISCONNECT, null);
+        msg.clientId = id;
+        try {
+            output.put(MessageParser.toJsonString(msg));
+        } catch (InterruptedException e) {
+            logger.warning(e.getMessage());
+        }
     }
 
     private void initStreams() {
@@ -116,5 +132,9 @@ public class ClientHandler extends Thread {
         this.maxJsonLength = maxJsonLength;
         this.output = output;
         initStreams();
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

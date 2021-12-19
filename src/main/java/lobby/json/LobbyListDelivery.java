@@ -1,6 +1,7 @@
-package lobby;
+package lobby.json;
 
 import com.google.gson.annotations.SerializedName;
+import lobby.Lobby;
 
 import java.util.List;
 

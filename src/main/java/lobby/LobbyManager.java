@@ -4,6 +4,7 @@ import game.GameMap;
 import game.GamePlatform;
 import game.GameType;
 import game.User;
+import lobby.json.*;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
@@ -454,5 +455,9 @@ public class LobbyManager {
             }
             lobby.setReadyPlayers(rnd.nextInt(lobby.getPlayers() + 1));
         }
+    }
+
+    public void disconnectUser(User sender) {
+        removePlayerFromLobby(sender, false);
     }
 }
