@@ -60,16 +60,13 @@ public class ClientHandler extends Thread {
         mainLoop: while (isRunning.get()) {
             try {
                 StringBuilder builder = new StringBuilder();
-                int bracketCount = 0;
-                int nextCh;
+                Integer bracketCount = 0;
                 do {
-                    nextCh = clientOutput.read();
+                    int nextCh = clientOutput.read();
                     if (nextCh == -1) {
                         isRunning.set(false);
                         break mainLoop;
                     }
-                } while (nextCh != '{');
-                do {
                     String nextChar = Character.toString((char) nextCh);
                     if (nextChar.equals("{")) {
                         bracketCount += 1;
@@ -79,11 +76,6 @@ public class ClientHandler extends Thread {
                     builder.append(nextChar);
                     if (builder.length() > this.maxJsonLength) {
                         continue mainLoop;
-                    }
-                    nextCh = clientOutput.read();
-                    if (nextCh == -1) {
-                        isRunning.set(false);
-                        break mainLoop;
                     }
                 } while (bracketCount > 0);
                 output.put(builder.toString());
@@ -95,9 +87,10 @@ public class ClientHandler extends Thread {
                 } catch (IOException e1) {
                     logger.error(e1.getMessage());
                 }
-                break;
+                return;
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
+                continue mainLoop;
             }
         }
         clientInput.close();
@@ -107,7 +100,6 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-        disconnectUser();
     }
 
     private void disconnectUser() {
@@ -143,7 +135,6 @@ public class ClientHandler extends Thread {
         this.clientSocket = clientSocket;
         this.maxJsonLength = maxJsonLength;
         this.output = output;
-        clearTimeout();
         initStreams();
     }
 
