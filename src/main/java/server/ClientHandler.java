@@ -69,7 +69,14 @@ public class ClientHandler extends Thread {
                         break mainLoop;
                     }
                 } while (nextCh != '{');
+                bracketCount++;
+                builder.append('{');
                 do {
+                    nextCh = clientOutput.read();
+                    if (nextCh == -1) {
+                        isRunning.set(false);
+                        break mainLoop;
+                    }
                     String nextChar = Character.toString((char) nextCh);
                     if (nextChar.equals("{")) {
                         bracketCount += 1;
@@ -79,11 +86,6 @@ public class ClientHandler extends Thread {
                     builder.append(nextChar);
                     if (builder.length() > this.maxJsonLength) {
                         continue mainLoop;
-                    }
-                    nextCh = clientOutput.read();
-                    if (nextCh == -1) {
-                        isRunning.set(false);
-                        break mainLoop;
                     }
                 } while (bracketCount > 0);
                 output.put(builder.toString());
