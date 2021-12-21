@@ -195,7 +195,7 @@ public class LobbyManager {
             onStartGameRequest(user, false);
             return Optional.empty();
         }
-        boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers() + 1;
+        boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers();
         onStartGameRequest(user, playersAreReady);
 
         if (playersAreReady) {
