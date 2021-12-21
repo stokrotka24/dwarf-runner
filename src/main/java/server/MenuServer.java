@@ -117,12 +117,12 @@ public class MenuServer {
                             break;
                         }
                         case WEB_MOVE: {
+                            sendServerAcknowledge(sender, MessageType.WEB_MOVE);
                             var move = new Move(MessageParser.getMsgContent(msgReceived, WebMove.class));
                             var gameController = gameManager.userToGameController.get(sender.getServerId());
                             if (gameController != null) {
                                 gameController.performMove(sender.getServerId(), move);
                             }
-                            sendServerAcknowledge(sender, MessageType.WEB_MOVE);
                             break;
                         }
                         case MOBILE_MOVE: {
