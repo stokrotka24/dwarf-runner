@@ -9,6 +9,7 @@ import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
 import server.Logger;
+import server.ServerData;
 import osm.Coordinates;
 import osm.OsmService;
 
@@ -27,8 +28,9 @@ public class LobbyManager {
     public LobbyManager() {
         lobbys = new ArrayList<>();
         lobbyToPlayers = new HashMap<>();
-        // TODO rm for release
-        generateDummyLobbys(20);
+        if (ServerData.getInstance().getIsDebug()) {
+            generateDummyLobbys(20);
+        }
     }
 
     /**
@@ -427,7 +429,6 @@ public class LobbyManager {
         }
     }
 
-    // TODO rm for release
     private void generateDummyLobbys(int n) {
         Random rnd = new Random();
         for (int i = 0; i < n; i++) {
