@@ -16,7 +16,7 @@ public class ClientAccepter extends Thread {
     public void run() {
         ServerSocket socket;
         try {
-            socket = new ServerSocket(2137);
+            socket = new ServerSocket(ServerData.getInstance().getServerPort());
         } catch (IOException e) {
             logger.error(e.getMessage());
             return;
