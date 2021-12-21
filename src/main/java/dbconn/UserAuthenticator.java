@@ -37,7 +37,7 @@ public class UserAuthenticator {
     public static void handleChangeUsernameRequest(Message<ChangeUsernameRequest> msg, User creator) {
         ChangeUsernameRequest request = msg.content;
         if (request == null || request.getEmail() == null || request.getNewUsername() == null) {
-            sendChangePasswordFailureResponse("DATA_LOST", creator);
+            sendChangeUsernameFailureResponse("DATA_LOST", creator);
         }
         
         try {
@@ -52,25 +52,25 @@ public class UserAuthenticator {
             logger.info("Change username result: " + errorCode);
             
             if (errorCode == CHANGE_USERNAME_OK) {
-                sendChangePasswordSuccessResponse(creator);
+                sendChangeUsernameSuccessResponse(creator);
             }
             else if (errorCode == CHANGE_USERNAME_NULL) {
-                sendChangePasswordFailureResponse("GOT_NULL", creator);
+                sendChangeUsernameFailureResponse("GOT_NULL", creator);
             }
             else if (errorCode == CHANGE_USERNAME_WRONG_CREDENTIALS) {
-                sendChangePasswordFailureResponse("WRONG_CREDENTIALS", creator);
+                sendChangeUsernameFailureResponse("WRONG_CREDENTIALS", creator);
             }
             else if (errorCode == CHANGE_USERNAME_TAKEN) {
-                sendChangePasswordFailureResponse("NICKNAME_TAKEN", creator);
+                sendChangeUsernameFailureResponse("NICKNAME_TAKEN", creator);
             }
             else {
-                sendChangePasswordFailureResponse("UNKNOWN", creator);
+                sendChangeUsernameFailureResponse("UNKNOWN", creator);
             }
         }
         catch (SQLException ex) {
             logger.error("Exception caught. Change username procedure error - reason UNKNOWN");
             logger.error(ex.getMessage());
-            sendChangePasswordFailureResponse("UNKNOWN", creator);
+            sendChangeUsernameFailureResponse("UNKNOWN", creator);
         }
     }
 
@@ -163,9 +163,8 @@ public class UserAuthenticator {
             cStatement.registerOutParameter(3, java.sql.Types.VARCHAR);
             cStatement.execute();
             String userNickname = cStatement.getString(3);
-            logger.info("username: " + userNickname);
             if (userNickname != null && !userNickname.isEmpty()) {
-//                creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
+                creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
                 sendLoginSuccessResponse(userNickname, creator);
                 return;
             }
@@ -210,14 +209,12 @@ public class UserAuthenticator {
     private static void sendLoginFailureResponse(String failureReason, User creator) {
         AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
         Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
-        logger.error("login failure");
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
     private static void sendLoginSuccessResponse(String nickname, User creator) {
         AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData(nickname);
         Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.LOG_IN_RESPONSE, responseData);
-        logger.info("login success");
         creator.setUsername(nickname);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
@@ -225,16 +222,32 @@ public class UserAuthenticator {
     private static void sendChangePasswordFailureResponse(String failureReason, User creator)
     {
         AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
-        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
-        logger.error("password change failure " + failureReason);
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_PASSWORD_RESPONSE
+                , responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
     private static void sendChangePasswordSuccessResponse(User creator)
     {
         AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData();
-        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.REGISTER_RESPONSE, responseData);
-        logger.info("password change success");
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_PASSWORD_RESPONSE
+                , responseData);
+        creator.sendMessage(MessageParser.toJsonString(respMsg));
+    }
+
+    private static void sendChangeUsernameFailureResponse(String failureReason, User creator)
+    {
+        AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_USERNAME_RESPONSE
+                , responseData);
+        creator.sendMessage(MessageParser.toJsonString(respMsg));
+    }
+
+    private static void sendChangeUsernameSuccessResponse(User creator)
+    {
+        AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData();
+        Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_USERNAME_RESPONSE
+                , responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
     
