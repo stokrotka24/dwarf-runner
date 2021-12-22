@@ -15,20 +15,13 @@ import messages.MessageType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import osm.Node;
-import osm.OsmService;
 import utility.ClientMock;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LobbyDisconnectTest extends AbstractCommunicationTest {
-    private static final ClientMock client1 = new ClientMock("localhost", 2137);
-    private static final ClientMock client2 = new ClientMock("localhost", 2137);
+    private static final ClientMock client1 = new ClientMock("localhost", defaultPort);
+    private static final ClientMock client2 = new ClientMock("localhost", defaultPort);
 
     private static final ExclusionStrategy strategy = new ExclusionStrategy() {
         @Override
@@ -194,9 +187,14 @@ public class LobbyDisconnectTest extends AbstractCommunicationTest {
         Message<Lobby> msg = new Message<>(MessageType.CREATE_LOBBY_REQUEST,
                 new Lobby("SOLO", 1, 3, 0, 5.0, 5.0, 2));
         manager.createLobby(msg, user);
-        manager.addPlayerToLobby(new JoinLobbyRequest(lobbyCounter, 0, 0.0, 0.0), user);
+        // So that test passes regardless of whether server runs in the background or not
         var lobby = manager.getLobbyInfo(lobbyCounter);
-        lobbyCounter++;
+        if (lobby == null) {
+            lobby = manager.getLobbyInfo(lobbyCounter - 1);
+        } else {
+            lobbyCounter++;
+        }
+        manager.addPlayerToLobby(new JoinLobbyRequest(lobby.getId(), 0, 0.0, 0.0), user);
 
         assertTrue(lobby.getTeams().get(0).contains(user));
         manager.disconnectUser(user);

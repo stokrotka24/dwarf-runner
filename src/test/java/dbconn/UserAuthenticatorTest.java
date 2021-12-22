@@ -12,7 +12,7 @@ import messages.AbstractCommunicationTest;
 import utility.ClientMock;
 
 class UserAuthenticatorTest extends AbstractCommunicationTest {
-    private static final ClientMock client = new ClientMock("localhost", 2137);
+    private static final ClientMock client = new ClientMock("localhost", defaultPort);
 
     @BeforeAll
     static void prepareClient() {

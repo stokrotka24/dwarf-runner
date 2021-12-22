@@ -205,6 +205,10 @@ public class LobbyManager {
         return Optional.empty();
     }
 
+    public int getNumberOfLobbys() {
+        return lobbys.size();
+    }
+
     private void setupNewLobby(Lobby lobby) {
         assignId(lobby);
         lobby.setPlayers(0);

@@ -18,7 +18,10 @@ import messages.MessageParser;
 import messages.MessageType;
 
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Thread responsible for creating other threads used for communication with clients, controlling games and controlling lobbies.
@@ -48,7 +51,8 @@ public class MenuServer {
 
     public void go() {
         initComponents();
-
+        initTickerService();
+        
         while(true) {
             try {
                 String msgReceived = inMsgQueue.take();
@@ -162,6 +166,18 @@ public class MenuServer {
         }
     }
 
+    private void initTickerService() {
+        ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
+
+        exec.scheduleAtFixedRate(() -> logger.info(getStatString()), 0, 10, TimeUnit.MINUTES);
+    }
+
+    private String getStatString() {
+        return "\n\tConnected players: " + users.size() +
+                "\n\tCurrent lobbys: " + lobbyManager.getNumberOfLobbys() +
+                "\n\tActive Games: " + gameManager.getNumberOfGames();
+    }
+
     private void disconnectUser(User sender) {
         logger.info(sender.getUsername() + " disconnect");
         users.remove(sender.getServerId());
@@ -176,8 +192,7 @@ public class MenuServer {
         lobbyManager = new LobbyManager();
         gameManager = new GameManager();
         users = new HashMap<>();
-        ClientAccepter clientAccepter = new ClientAccepter(this);
-        clientAccepter.start();
+        new ClientAccepter(this).start();
         logger.setLoggingLevel(LogLevel.ALL);
         logger.setOption(LoggerOption.LOG_TO_FILE);
     }

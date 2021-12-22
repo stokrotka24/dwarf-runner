@@ -6,7 +6,7 @@ import utility.ClientMock;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BasicCommunicationTest extends AbstractCommunicationTest {
-    private static final ClientMock client = new ClientMock("localhost", 2137);
+    private static final ClientMock client = new ClientMock("localhost", defaultPort);
 
     @BeforeAll
     static void prepareClient() {
