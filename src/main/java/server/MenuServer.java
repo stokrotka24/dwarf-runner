@@ -3,10 +3,7 @@ package server;
 import dbconn.UserAuthenticator;
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.RegisterCredentials;
-import game.WebMove;
-import game.GameManager;
-import game.Move;
-import game.User;
+import game.*;
 import game.json.MobileMove;
 import lobby.json.JoinLobbyRequest;
 import lobby.Lobby;
@@ -124,16 +121,20 @@ public class MenuServer {
                             break;
                         }
                         case WEB_MOVE: {
-                            var move = new Move(MessageParser.getMsgContent(msgReceived, WebMove.class));
-                            gameManager.userToGameController.get(sender.getServerId())
-                                    .performMove(sender.getServerId(), move);
                             sendServerAcknowledge(sender, MessageType.WEB_MOVE);
+                            var move = new Move(MessageParser.getMsgContent(msgReceived, WebMove.class));
+                            var gameController = gameManager.userToGameController.get(sender.getServerId());
+                            if (gameController != null) {
+                                gameController.performMove(sender.getServerId(), move);
+                            }
                             break;
                         }
                         case MOBILE_MOVE: {
                             var move = new Move(MessageParser.getMsgContent(msgReceived, MobileMove.class));
-                            gameManager.userToGameController.get(sender.getServerId())
-                                    .performMove(sender.getServerId(), move);
+                            var gameController = gameManager.userToGameController.get(sender.getServerId());
+                            if (gameController != null) {
+                                gameController.performMove(sender.getServerId(), move);
+                            }
                             break;
                         }
                         case PICK_DWARF_REQUEST: {
