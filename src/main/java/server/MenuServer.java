@@ -1,6 +1,8 @@
 package server;
 
 import dbconn.UserAuthenticator;
+import dbconn.jsonclasses.ChangePasswordRequest;
+import dbconn.jsonclasses.ChangeUsernameRequest;
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.RegisterCredentials;
 import game.*;
@@ -138,6 +140,16 @@ public class MenuServer {
                                     .performDwarfPickUp(sender.getServerId(), MessageParser.getMsgContent(msgReceived, Integer.class));
                             break;
                         }
+                        case CHANGE_PASSWORD_REQUEST: {
+                            UserAuthenticator.handleChangePasswordRequest(MessageParser.fromJsonString(msgReceived, 
+                                    ChangePasswordRequest.class), sender);
+                            break;
+                        }
+                        case CHANGE_USERNAME_REQUEST: {
+                            UserAuthenticator.handleChangeUsernameRequest(MessageParser.fromJsonString(msgReceived, 
+                                    ChangeUsernameRequest.class), sender);
+                            break;
+                        }
                         case DISCONNECT: {
                             disconnectUser(sender);
                             break;
@@ -189,12 +201,12 @@ public class MenuServer {
      * @return unique ID of client
      */
     public int addInput(ClientHandler handler) {
-    	while (users.containsKey(currID)) {
-    		currID = currID % MAX_CLIENTS_COUNT + 1;
-    	}
-    	users.put(currID, new User(currID, handler));
-    	int toReturn = currID;
-    	currID = currID % MAX_CLIENTS_COUNT + 1;
+        while (users.containsKey(currID)) {
+            currID = currID % MAX_CLIENTS_COUNT + 1;
+        }
+        users.put(currID, new User(currID, handler));
+        int toReturn = currID;
+        currID = currID % MAX_CLIENTS_COUNT + 1;
         return toReturn;
     }
     
@@ -203,15 +215,15 @@ public class MenuServer {
      * @param clientID of client that handler ought to be removed
      */
     public void deleteInput(int clientID) {
-    	users.remove(clientID);
+        users.remove(clientID);
     }
 
-	private void sendServerAcknowledge(User user, MessageType type) {
-		Message<MessageType> acknowledgeMsg = new Message<>(MessageType.ACKNOWLEDGE, type);
-		var stringMsg = MessageParser.toJsonString(acknowledgeMsg);
+    private void sendServerAcknowledge(User user, MessageType type) {
+        Message<MessageType> acknowledgeMsg = new Message<>(MessageType.ACKNOWLEDGE, type);
+        var stringMsg = MessageParser.toJsonString(acknowledgeMsg);
 
-		if (user != null) {
-			user.sendMessage(stringMsg);
-		}
-	}
+        if (user != null) {
+            user.sendMessage(stringMsg);
+        }
+    }
 }

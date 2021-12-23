@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import messages.JsonRequired;
 
-public class LoginResponseData {
+public class AuthenticationResponseData {
 
     @JsonRequired
     @SerializedName("status")
@@ -16,18 +16,22 @@ public class LoginResponseData {
     @SerializedName("failure_reason")
     private String failureReason;
     
-    public LoginResponseData(int loginStatus, String userNickname, String failureReason) {
+    public AuthenticationResponseData(int loginStatus, String userNickname, String failureReason) {
         this.loginStatus = loginStatus;
         this.userNickname = userNickname;
         this.failureReason = failureReason;
     }
     
-    static public LoginResponseData failedLoginData(String failureReason) {
-        return new LoginResponseData(0, null, failureReason);
+    static public AuthenticationResponseData failedAuthenticationData(String failureReason) {
+        return new AuthenticationResponseData(0, null, failureReason);
     }
-    static public LoginResponseData successLoginData(String nickname) {
-        return new LoginResponseData(1, nickname, null);
-        
+    
+    static public AuthenticationResponseData successAuthenticationData(String nickname) {
+        return new AuthenticationResponseData(1, nickname, null);   
+    }
+
+    static public AuthenticationResponseData successAuthenticationData() {
+        return new AuthenticationResponseData(1, null, null);
     }
 
     public int getLoginStatus() {
