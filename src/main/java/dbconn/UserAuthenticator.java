@@ -43,8 +43,8 @@ public class UserAuthenticator {
         try {
             CallableStatement cStatement = DBConnection.getConnection().prepareCall(changeUsernameQuery);
             cStatement.setString(1, request.getEmail());
-            cStatement.setString(2, "user2");
             cStatement.setString(2, creator.getUsername());
+            cStatement.setString(3, request.getNewUsername());
             cStatement.registerOutParameter(4, java.sql.Types.INTEGER);
             cStatement.execute();
 
@@ -92,8 +92,7 @@ public class UserAuthenticator {
                 int errorCode = cStatement.getInt(4);
                 logger.info("Change password result: " + errorCode);
                 
-                if (errorCode == CHANGE_PASSWORD_OK)
-                {
+                if (errorCode == CHANGE_PASSWORD_OK) {
                     logger.info("Change password procedure was successful");
                     sendChangePasswordSuccessResponse(creator);
                 }
@@ -180,8 +179,7 @@ public class UserAuthenticator {
         return;
     }
     
-    private static String hash256(String toHash)
-    {
+    private static String hash256(String toHash) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
@@ -219,32 +217,28 @@ public class UserAuthenticator {
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
-    private static void sendChangePasswordFailureResponse(String failureReason, User creator)
-    {
+    private static void sendChangePasswordFailureResponse(String failureReason, User creator) {
         AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
         Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_PASSWORD_RESPONSE
                 , responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
-    private static void sendChangePasswordSuccessResponse(User creator)
-    {
+    private static void sendChangePasswordSuccessResponse(User creator) {
         AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData();
         Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_PASSWORD_RESPONSE
                 , responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
-    private static void sendChangeUsernameFailureResponse(String failureReason, User creator)
-    {
+    private static void sendChangeUsernameFailureResponse(String failureReason, User creator) {
         AuthenticationResponseData responseData = AuthenticationResponseData.failedAuthenticationData(failureReason);
         Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_USERNAME_RESPONSE
                 , responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
-    private static void sendChangeUsernameSuccessResponse(User creator)
-    {
+    private static void sendChangeUsernameSuccessResponse(User creator) {
         AuthenticationResponseData responseData = AuthenticationResponseData.successAuthenticationData();
         Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_USERNAME_RESPONSE
                 , responseData);
