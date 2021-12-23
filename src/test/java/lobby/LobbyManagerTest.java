@@ -22,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class LobbyManagerTest extends AbstractCommunicationTest {
-    private static final ClientMock client = new ClientMock("localhost", 2137);
-    private static final ClientMock client2 = new ClientMock("localhost", 2137);
-    private static final ClientMock client3 = new ClientMock("localhost", 2137);
+    private static final ClientMock client = new ClientMock("localhost", defaultPort);
+    private static final ClientMock client2 = new ClientMock("localhost", defaultPort);
+    private static final ClientMock client3 = new ClientMock("localhost", defaultPort);
 
     private static final ExclusionStrategy strategy = new ExclusionStrategy() {
         @Override

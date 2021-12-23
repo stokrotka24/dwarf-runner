@@ -41,6 +41,10 @@ public class GameManager {
         return gameController;
     }
 
+    public int getNumberOfGames() {
+        return userToGameController.values().size();
+    }
+
     private AbstractGame buildGame(Lobby lobby, List<User> users) {
         return GameBuilder.aGame()
                 .withId(lobby.getId())
