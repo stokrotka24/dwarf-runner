@@ -22,6 +22,10 @@ public class OsmService {
     public static double MAX_DIST_FROM_ROAD = 0.000002; // value TBD
     private OsmMap map;
 
+    public OsmMap getMap() {
+        return map;
+    }
+
     public ArrayList<Node> getNodes() {
         return map.nodes;
     }
