@@ -42,6 +42,7 @@ public enum MessageType {
     RANKING_DATA,
     ACKNOWLEDGE,
     LOBBY_CREATOR_RIGHTS,
+    MAP_BOUNDS,
     PLAYERS_POINTS_UPDATE,
     DISCONNECT,
     ERROR;

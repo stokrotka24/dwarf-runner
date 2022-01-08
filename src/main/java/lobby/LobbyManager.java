@@ -8,10 +8,11 @@ import lobby.json.*;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
-import server.Logger;
-import server.ServerData;
 import osm.Coordinates;
 import osm.OsmService;
+import osm.maps.OsmMap;
+import server.Logger;
+import server.ServerData;
 
 import javax.management.modelmbean.InvalidTargetObjectTypeException;
 import java.util.*;
@@ -308,6 +309,9 @@ public class LobbyManager {
             sendJoinLobbyFailed(player);
         } else {
             sendJoinLobbySucceed(player, node.getX(), node.getY());
+            if (player.getPlatform().isPresent() && player.getPlatform().get() == GamePlatform.WEB) {
+                sendMapBounds(player, lobby);
+            }
         }
 
         notifyLobby(lobby);
@@ -350,6 +354,17 @@ public class LobbyManager {
         JoinLobbyResponse responseData = new JoinLobbyResponse(true, x, y);
         Message<JoinLobbyResponse> lobbyMsg = new Message<>(MessageType.JOIN_LOBBY_RESPONSE, responseData);
         var stringMsg = MessageParser.toJsonString(lobbyMsg);
+
+        if (player != null) {
+            player.sendMessage(stringMsg);
+        }
+    }
+
+    private void sendMapBounds(User player, Lobby lobby) {
+        OsmMap osmMap = lobby.getOsmService().getMap();
+        MapBounds mapBounds = new MapBounds(lobby.getMapId(), osmMap.north, osmMap.south, osmMap.east, osmMap.west);
+        Message<MapBounds> boundsMsg = new Message<>(MessageType.MAP_BOUNDS, mapBounds);
+        var stringMsg = MessageParser.toJsonString(boundsMsg);
 
         if (player != null) {
             player.sendMessage(stringMsg);
