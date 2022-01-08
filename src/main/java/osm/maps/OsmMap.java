@@ -17,6 +17,10 @@ public abstract class OsmMap {
 
     //public ArrayList<Way> ways;
     public ArrayList<Node> nodes;
+    public double south;
+    public double west;
+    public double north;
+    public double east;
 
     public void parseMap(String file) {
         List<Way> ways = new ArrayList<>();
