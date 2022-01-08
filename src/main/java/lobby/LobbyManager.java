@@ -195,15 +195,16 @@ public class LobbyManager {
             lobby = getLobbyForUser(user);
         } catch (Exception e) {
             logger.warning(e.getMessage());
-            onStartGameRequest(user, false);
+            onStartGameRequestFailed(user);
             return Optional.empty();
         }
         boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers();
-        onStartGameRequest(user, playersAreReady);
 
         if (playersAreReady) {
             return Optional.of(lobby);
         }
+
+        onStartGameRequestFailed(user);
 
         return Optional.empty();
     }
@@ -439,8 +440,8 @@ public class LobbyManager {
                 .orElseThrow(() -> new Exception("User " + user.getServerId() + " with username " + user.getUsername() + " isn't in any lobby"));
     }
 
-    private void onStartGameRequest(User player, boolean status) {
-        Message<Boolean> gameMsg = new Message<>(MessageType.START_GAME_RESPONSE, status);
+    private void onStartGameRequestFailed(User player) {
+        Message<Boolean> gameMsg = new Message<>(MessageType.START_GAME_RESPONSE, false);
         var stringMsg = MessageParser.toJsonString(gameMsg);
 
         if (player != null) {

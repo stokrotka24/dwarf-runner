@@ -101,8 +101,18 @@ public class GameController {
             new TimerTask(timeMillis).start();
         }
 
+        sendStartGameResponse();
         sendDwarfsLocation();
         sendPositionDataUpdate();
+    }
+
+    private void sendStartGameResponse() {
+        Message<Boolean> gameMsg = new Message<>(MessageType.START_GAME_RESPONSE, true);
+        var stringMsg = MessageParser.toJsonString(gameMsg);
+
+        for (AbstractPlayer player: game.getPlayers()) {
+            playerToUser.get(player.getId()).sendMessage(stringMsg);
+        }
     }
 
     public void endGame() {
