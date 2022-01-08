@@ -44,6 +44,7 @@ public enum MessageType {
     LOBBY_CREATOR_RIGHTS,
     MAP_BOUNDS,
     PLAYERS_POINTS_UPDATE,
+    END_GAME,
     DISCONNECT,
     ERROR;
 

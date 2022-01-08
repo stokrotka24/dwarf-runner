@@ -14,7 +14,15 @@ public class GameController {
     private final Map<Integer, User> playerToUser;
     private AbstractGame game;
     private static final Logger logger = Logger.getInstance();
+    private GameManager gameManager;
 
+    public GameController(AbstractGame game, Map<Integer, User> playerToUser, GameManager gameManager) {
+        this.game = game;
+        this.playerToUser = playerToUser;
+        this.gameManager = gameManager;
+    }
+
+    // for tests
     public GameController(AbstractGame game, Map<Integer, User> playerToUser) {
         this.game = game;
         this.playerToUser = playerToUser;
@@ -90,13 +98,26 @@ public class GameController {
         var timeToEnd =  game.getTimeToEnd();
         if (timeToEnd > 0) {
             long timeMillis = timeToEnd * 60 * 1000;
-            new TimerTask(timeMillis);
+            new TimerTask(timeMillis).start();
         }
+
         sendDwarfsLocation();
         sendPositionDataUpdate();
     }
 
     public void endGame() {
+        sendEndGameMsg();
+        sendPlayersPointsUpdate();
+        gameManager.clearGame(this);
+    }
+
+    private void sendEndGameMsg() {
+        Message<String> msg = new Message<>(MessageType.END_GAME);
+        msg.content = null;
+        var endGameMsg = MessageParser.toJsonString(msg);
+        for (AbstractPlayer player: game.getPlayers()) {
+            playerToUser.get(player.getId()).sendMessage(endGameMsg);
+        }
     }
 
     public void performMove(Integer playerId, Move move) {

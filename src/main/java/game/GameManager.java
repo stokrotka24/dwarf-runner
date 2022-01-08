@@ -34,7 +34,7 @@ public class GameManager {
             playerToUser.put(user.getServerId(), user);
         }
 
-        var gameController = new GameController(game, playerToUser);
+        var gameController = new GameController(game, playerToUser, this);
         for (User user : users) {
             userToGameController.put(user.getServerId(), gameController);
         }
@@ -58,5 +58,9 @@ public class GameManager {
                 .withGameType(lobby.getType())
                 .withEndCondition(lobby.getEnd())
                 .build();
+    }
+
+    public void clearGame(GameController gameController) {
+        while (userToGameController.values().remove(gameController));
     }
 }
