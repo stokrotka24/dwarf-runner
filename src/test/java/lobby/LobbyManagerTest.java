@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import game.GameType;
-import game.User;
 import lobby.json.JoinLobbyRequest;
 import lobby.json.LobbyListDelivery;
 import lobby.json.LobbyListRequest;
@@ -183,7 +182,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         msg.clientId = client.id;
         client.sendMsg(gson.toJson(msg));
 
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":" + lobbyCounter + ",\"lobby_name\":\"user1\u0027s lobby\"," +
+        String expected4 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":" + lobbyCounter + ",\"lobby_name\":\"user1\u0027s lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
@@ -196,7 +195,9 @@ class LobbyManagerTest extends AbstractCommunicationTest {
             Assertions.assertTrue(response2.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
             Assertions.assertTrue(response2.contains("\"response\":true"));
             String response3 = client.queue.take();
-            assertEquals(expected2, response3);
+            Assertions.assertTrue(response3.contains("\"header\":\"MAP_BOUNDS\""));
+            String response4 = client.queue.take();
+            assertEquals(expected4, response4);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -210,7 +211,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         msg.clientId = client2.id;
         client2.sendMsg(gson.toJson(msg));
 
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":" + lobbyCounter + ",\"lobby_name\":\"user2's lobby\"," +
+        String expected4 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":" + lobbyCounter + ",\"lobby_name\":\"user2's lobby\"," +
                 "\"gametype\":\"solo\",\"map\":4,\"curr_players\":1,\"players_amount\":3,\"endgame_cond\":10," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team0\":[\"user2\"]}}}";
@@ -223,7 +224,9 @@ class LobbyManagerTest extends AbstractCommunicationTest {
             Assertions.assertTrue(response2.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
             Assertions.assertTrue(response2.contains("\"response\":true"));
             String response3 = client2.queue.take();
-            assertEquals(expected2, response3);
+            Assertions.assertTrue(response3.contains("\"header\":\"MAP_BOUNDS\""));
+            String response4 = client2.queue.take();
+            assertEquals(expected4, response4);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -249,7 +252,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         client2.sendMsg(gson.toJson(msg));
 
         String expected1 = "{\"header\":\"LOG_IN_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":\"user2\",\"failure_reason\":null}}";
-        String expected3 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":" + (lobbyCounter - 2) +",\"lobby_name\":\"user1's lobby\"," +
+        String expected4 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":" + (lobbyCounter - 2) +",\"lobby_name\":\"user1's lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team1\":[\"user1\",\"user2\"],\"team2\":[]}}}";
@@ -260,9 +263,11 @@ class LobbyManagerTest extends AbstractCommunicationTest {
             Assertions.assertTrue(response2.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
             Assertions.assertTrue(response2.contains("\"response\":true"));
             String response3 = client2.queue.take();
-            assertEquals(expected3, response3);
-            String response4 = client.queue.take();
-            assertEquals(expected3, response4);
+            Assertions.assertTrue(response3.contains("\"header\":\"MAP_BOUNDS\""));
+            String response4 = client2.queue.take();
+            assertEquals(expected4, response4);
+            String response5 = client.queue.take();
+            assertEquals(expected4, response5);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

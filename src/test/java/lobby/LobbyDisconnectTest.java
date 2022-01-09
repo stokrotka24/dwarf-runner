@@ -5,9 +5,7 @@ import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import game.GamePlatform;
-import game.GameType;
 import game.User;
-import lobby.LobbyManager;
 import lobby.json.JoinLobbyRequest;
 import messages.AbstractCommunicationTest;
 import messages.Message;
@@ -67,7 +65,7 @@ public class LobbyDisconnectTest extends AbstractCommunicationTest {
         msg.clientId = client1.id;
         client1.sendMsg(gson.toJson(msg));
 
-        String expected2 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1\u0027s lobby\"," +
+        String expected4 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1\u0027s lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":1,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team1\":[\"user1\"],\"team2\":[]}}}";
@@ -79,7 +77,9 @@ public class LobbyDisconnectTest extends AbstractCommunicationTest {
             Assertions.assertTrue(response2.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
             Assertions.assertTrue(response2.contains("\"response\":true"));
             String response3 = client1.queue.take();
-            assertEquals(expected2, response3);
+            Assertions.assertTrue(response3.contains("\"header\":\"MAP_BOUNDS\""));
+            String response4 = client1.queue.take();
+            assertEquals(expected4, response4);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -103,7 +103,7 @@ public class LobbyDisconnectTest extends AbstractCommunicationTest {
         client2.sendMsg(gson.toJson(msg));
 
         String expected1 = "{\"header\":\"LOG_IN_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":\"user2\",\"failure_reason\":null}}";
-        String expected3 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\"," +
+        String expected4 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
                 "\"teams\":{\"team1\":[\"user1\",\"user2\"],\"team2\":[]}}}";
@@ -114,9 +114,11 @@ public class LobbyDisconnectTest extends AbstractCommunicationTest {
             Assertions.assertTrue(response2.contains("\"header\":\"JOIN_LOBBY_RESPONSE\""));
             Assertions.assertTrue(response2.contains("\"response\":true"));
             String response3 = client2.queue.take();
-            assertEquals(expected3, response3);
-            String response4 = client1.queue.take();
-            assertEquals(expected3, response4);
+            Assertions.assertTrue(response3.contains("\"header\":\"MAP_BOUNDS\""));
+            String response4 = client2.queue.take();
+            assertEquals(expected4, response4);
+            String response5 = client1.queue.take();
+            assertEquals(expected4, response5);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
