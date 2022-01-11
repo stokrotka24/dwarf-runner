@@ -4,6 +4,8 @@ import server.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public final class DBConnection {
 
@@ -30,7 +32,28 @@ public final class DBConnection {
                 logger.warning("Cannot create database connection");
             }
         }
+        
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeQuery("SELECT 1");
+        } 
+        catch (SQLException e) {
+            logger.warning(e.getMessage());
+            connection = reopenConnection();
+        }
+
         logger.info("Returning database connection");
+        return connection;
+    }
+    
+    public static Connection reopenConnection() {
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(url);
+            logger.info("Connection reopen successful. Url: " + url);
+        } 
+        catch (Exception e) {
+            logger.warning("Connection reopen failure");
+        }
         return connection;
     }
 }
