@@ -93,7 +93,7 @@ public class WebPlayer extends AbstractPlayer {
                             }
                         }
                     }
-                    double angle = Math.toDegrees(Math.atan2(node.getY() - y, node.getX() - x)) - (i * 90);
+                    /*double angle = Math.toDegrees(Math.atan2(node.getY() - y, node.getX() - x)) - (i * 90);
                     if (angle < 0) {
                         angle += 360;
                     }
@@ -102,7 +102,7 @@ public class WebPlayer extends AbstractPlayer {
                             to = node.getCoords();
                             newNode = node;
                         }
-                    }
+                    }*/
                     break;
                 }
             }
@@ -112,7 +112,7 @@ public class WebPlayer extends AbstractPlayer {
         // Y - lat
         if (to != null) {
             double dist = from.distanceTo(to);
-            double t = Math.min(1, game.getWebSpeed() / dist);
+            double t = Math.min(1, 0.1 * game.getWebSpeed() / dist);
             double newX = from.getX() + t * (to.getX() - from.getX());
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
