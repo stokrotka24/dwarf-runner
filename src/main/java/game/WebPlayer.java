@@ -39,12 +39,12 @@ public class WebPlayer extends AbstractPlayer {
         Double x = from.getX();
         Double y = from.getY();
 
-        // to far from node so only move back to node or to next node on this road
+        Node newNode = node;
+
+        // too far from node so only move back to node or to next node on this road
         if (from.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
             for (int i = 0; i < 4; i++) {
                 if (move.getWebMove() == WebMove.fromInt(i)) {
-                    // int next = node.nextNeighbor(from);
-                    // was changed, if doesn't work revert (should be fine tho)
                     Coordinates nextNode = node.nextNeighbor(from);
                     Double next_x = nextNode.getX();
                     Double next_y = nextNode.getY();
@@ -62,10 +62,12 @@ public class WebPlayer extends AbstractPlayer {
                     if (Math.abs(forward - 90) <= Math.abs(back - 90)) {
                         if (forward >= 45 && forward <= 135) {
                             to = nextNode;
+                            newNode = game.getOsmService().getNodeByCoords(to);
                         }
                     } else {
                         if (back >= 45 && back <= 135) {
                             to = node.getCoords();
+                            newNode = node;
                         }
                     }
                     break;
@@ -87,6 +89,7 @@ public class WebPlayer extends AbstractPlayer {
                             if (Math.abs(angle - 90) < Math.abs(mini - 90)) {
                                 mini = angle;
                                 to = node.getNeighbors().get(j);
+                                newNode = game.getOsmService().getNodeByCoords(to);
                             }
                         }
                     }
@@ -97,6 +100,7 @@ public class WebPlayer extends AbstractPlayer {
                     if (angle >= 45 && angle <= 135) {
                         if (Math.abs(angle - 90) < Math.abs(mini - 90)) {
                             to = node.getCoords();
+                            newNode = node;
                         }
                     }
                     break;
@@ -113,6 +117,12 @@ public class WebPlayer extends AbstractPlayer {
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
             this.setY(newY);
+            if (node.getCoords() != newNode.getCoords()) {
+                if (node.getCoords().distanceTo(coords) >
+                    newNode.getCoords().distanceTo(coords)) {
+                    node = new Node(newNode);
+                }
+            }
             return MoveValidation.WEB_VALID_MOVE;
         }
         return MoveValidation.WEB_INVALID_MOVE;
