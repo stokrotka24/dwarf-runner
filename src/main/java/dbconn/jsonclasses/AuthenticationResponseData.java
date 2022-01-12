@@ -21,9 +21,14 @@ public class AuthenticationResponseData {
         this.userNickname = userNickname;
         this.failureReason = failureReason;
     }
+
+    public AuthenticationResponseData(int loginStatus, String failureReason) {
+        this.loginStatus = loginStatus;
+        this.failureReason = failureReason;
+    }
     
     static public AuthenticationResponseData failedAuthenticationData(String failureReason) {
-        return new AuthenticationResponseData(0, null, failureReason);
+        return new AuthenticationResponseData(0, failureReason);
     }
     
     static public AuthenticationResponseData successAuthenticationData(String nickname) {
@@ -31,7 +36,7 @@ public class AuthenticationResponseData {
     }
 
     static public AuthenticationResponseData successAuthenticationData() {
-        return new AuthenticationResponseData(1, null, null);
+        return new AuthenticationResponseData(1, null);
     }
 
     public int getLoginStatus() {
