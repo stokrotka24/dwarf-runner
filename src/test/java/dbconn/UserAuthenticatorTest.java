@@ -117,9 +117,9 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "    \"header\": \"REGISTER_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
                 "    \"content\": {\n" +
-                "        \"email\": \"user12336dd63dd12eee30@wp.pl\",\n" +
+                "        \"email\": \"user12336dd63dd12eee3330@wp.pl\",\n" +
                 "        \"password\": \"user2\",\n" +
-                "        \"nickname\": \"juserekdddss3rr66333\"\n" +
+                "        \"nickname\": \"juserekdddss3r33r66333\"\n" +
                 "    }\n" +
                 "}";
 
