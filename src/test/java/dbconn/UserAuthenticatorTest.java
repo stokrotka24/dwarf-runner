@@ -37,14 +37,14 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "    \"header\": \"REGISTER_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
                 "    \"content\": {\n" +
-                "        \"email\": \"user12336631230@wp.pl\",\n" +
-                "        \"password\": \"user2\",\n" +
-                "        \"nickname\": \"juserekss366333\"\n" +
+                "        \"email\": \"user30@wp.pl\",\n" +
+                "        \"password\": \"user30\",\n" +
+                "        \"nickname\": \"user30\"\n" +
                 "    }\n" +
                 "}";
 
         client.sendMsg(request1);
-        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":1,\"failure_reason\":null}}";
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":null,\"failure_reason\":null}}";
 
         try {
             String response1 = client.queue.take();
@@ -66,7 +66,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "}";
 
         client.sendMsg(request1);
-        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"EMAIL_TAKEN\"}}";
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"EMAIL_TAKEN\"}}";
 
         try {
             String response1 = client.queue.take();
@@ -89,7 +89,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "}";
 
         client.sendMsg(request1);
-        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"UNKNOWN\"}}";
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"UNKNOWN\"}}";
 
         try {
             String response1 = client.queue.take();
