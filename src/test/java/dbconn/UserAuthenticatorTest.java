@@ -27,6 +27,11 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
         }
     }
 
+    /**
+     * DUE TO CHANING OF PASSWORD in DB
+     * REMEMBER TO CHANGE
+     * CURRENT PASSWORD BEFORE USING
+     */
     @Test
     void testHandleChangePasswordRequestShouldSucceed() {
         String request1 = "{\n" +
@@ -35,13 +40,62 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "    \"content\": {\n" +
                 "        \"email\": \"user1@wp.pl\",\n" +
                 "        \"current_password\": \"user1\",\n" +
-                "        \"new_password\": \"user11\"\n" +
+                "        \"new_password\": \"user11\",\n" +
                 "        \"new_password_confirm\": \"user11\"\n" +
                 "    }\n" +
                 "}";
 
         client.sendMsg(request1);
-        String expected1 = "{\"header\":\"CHANGE_PASSWORD_RESPONSE\",\"content\":{\"status\":1,\"failure_reason\":null}}";
+        String expected1 = "{\"header\":\"CHANGE_PASSWORD_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":null,\"failure_reason\":null}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+    @Test
+    void testHandleChangePasswordRequestShouldFailed() {
+        String request1 = "{\n" +
+                "    \"header\": \"CHANGE_PASSWORD_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user1@wp.pl\",\n" +
+                "        \"current_password\": \"user11\",\n" +
+                "        \"new_password\": \"user1\",\n" +
+                "        \"new_password_confirm\": \"user1\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"CHANGE_PASSWORD_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"WRONG_CREDENTIALS\"}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    void testHandleChangePasswordRequestShouldFailed2() {
+        String request1 = "{\n" +
+                "    \"header\": \"CHANGE_PASSWORD_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user1@wp.pl\",\n" +
+                "        \"current_password\": \"user1\",\n" +
+                "        \"new_password\": \"user1\",\n" +
+                "        \"new_password_confirm\": \"user12\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"CHANGE_PASSWORD_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"DIFFERENT_NEW_PASSWORDS\"}}";
 
         try {
             String response1 = client.queue.take();
@@ -63,14 +117,14 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "    \"header\": \"REGISTER_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
                 "    \"content\": {\n" +
-                "        \"email\": \"user1233663dd12eee30@wp.pl\",\n" +
+                "        \"email\": \"user12336dd63dd12eee30@wp.pl\",\n" +
                 "        \"password\": \"user2\",\n" +
-                "        \"nickname\": \"juserekddss3rr66333\"\n" +
+                "        \"nickname\": \"juserekdddss3rr66333\"\n" +
                 "    }\n" +
                 "}";
 
         client.sendMsg(request1);
-        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":1,\"failure_reason\":null}}";
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":null,\"failure_reason\":null}}";
 
         try {
             String response1 = client.queue.take();
@@ -92,7 +146,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "}";
 
         client.sendMsg(request1);
-        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"EMAIL_TAKEN\"}}";
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"EMAIL_TAKEN\"}}";
 
         try {
             String response1 = client.queue.take();
@@ -115,7 +169,7 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "}";
 
         client.sendMsg(request1);
-        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"failure_reason\":\"UNKNOWN\"}}";
+        String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"UNKNOWN\"}}";
 
         try {
             String response1 = client.queue.take();
