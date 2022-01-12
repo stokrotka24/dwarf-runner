@@ -12,6 +12,7 @@ import messages.AbstractCommunicationTest;
 import utility.ClientMock;
 
 class UserAuthenticatorTest extends AbstractCommunicationTest {
+
     private static final ClientMock client = new ClientMock("localhost", defaultPort);
 
     @BeforeAll
@@ -26,6 +27,31 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
         }
     }
 
+    @Test
+    void testHandleChangePasswordRequestShouldSucceed() {
+        String request1 = "{\n" +
+                "    \"header\": \"CHANGE_PASSWORD_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user1@wp.pl\",\n" +
+                "        \"current_password\": \"user1\",\n" +
+                "        \"new_password\": \"user11\"\n" +
+                "        \"new_password_confirm\": \"user11\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request1);
+        String expected1 = "{\"header\":\"CHANGE_PASSWORD_RESPONSE\",\"content\":{\"status\":1,\"failure_reason\":null}}";
+
+        try {
+            String response1 = client.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /**
      * DUE TO SAVING OF EMAIL AND NICKNAME in DB
      * REMEMBER TO CHANGE
@@ -37,9 +63,9 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
                 "    \"header\": \"REGISTER_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
                 "    \"content\": {\n" +
-                "        \"email\": \"user12336631230@wp.pl\",\n" +
+                "        \"email\": \"user1233663dd12eee30@wp.pl\",\n" +
                 "        \"password\": \"user2\",\n" +
-                "        \"nickname\": \"juserekss366333\"\n" +
+                "        \"nickname\": \"juserekddss3rr66333\"\n" +
                 "    }\n" +
                 "}";
 
