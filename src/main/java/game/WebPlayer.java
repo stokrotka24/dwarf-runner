@@ -39,7 +39,7 @@ public class WebPlayer extends AbstractPlayer {
         Double x = from.getX();
         Double y = from.getY();
 
-        Node newNode = node;
+        Node newNode = null;
 
         // too far from node so only move back to node or to next node on this road
         if (from.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
@@ -67,7 +67,7 @@ public class WebPlayer extends AbstractPlayer {
                     } else {
                         if (back >= 45 && back <= 135) {
                             to = node.getCoords();
-                            newNode = node;
+                            newNode = null;
                         }
                     }
                     break;
@@ -102,7 +102,7 @@ public class WebPlayer extends AbstractPlayer {
                         if (angle >= 45 && angle <= 135) {
                             if (Math.abs(angle - 90) < Math.abs(mini - 90)) {
                                 to = node.getCoords();
-                                newNode = node;
+                                newNode = null;
                             }
                         }
                     }
@@ -120,7 +120,7 @@ public class WebPlayer extends AbstractPlayer {
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
             this.setY(newY);
-            if (node.getCoords() != newNode.getCoords()) {
+            if (newNode != null) {
                 if (node.getCoords().distanceTo(coords) >
                     newNode.getCoords().distanceTo(coords)) {
                     node = new Node(newNode);
