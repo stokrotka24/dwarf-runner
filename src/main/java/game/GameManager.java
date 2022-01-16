@@ -42,7 +42,7 @@ public class GameManager {
     }
 
     public int getNumberOfGames() {
-        return userToGameController.values().size();
+        return (int) userToGameController.values().stream().distinct().count();
     }
 
     private AbstractGame buildGame(Lobby lobby, List<User> users) {
