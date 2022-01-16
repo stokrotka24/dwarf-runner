@@ -45,6 +45,7 @@ public enum MessageType {
     MAP_BOUNDS,
     PLAYERS_POINTS_UPDATE,
     FINAL_PLAYERS_POINTS,
+    LEAVE_GAME,
     END_GAME,
     DISCONNECT,
     ERROR;
