@@ -10,6 +10,7 @@ public class User {
     private GamePlatform platform = null;
     private Integer serverId;
     private String username = "Guest";
+    private String email = "";
 
     // TODO - rm for release
     public User(String username) {
@@ -57,5 +58,13 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

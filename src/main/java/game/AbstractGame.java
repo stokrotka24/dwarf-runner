@@ -82,4 +82,8 @@ public abstract class AbstractGame {
     public OsmService getOsmService() {
         return osmService;
     }
+
+    public GameMap getGameMap() {
+        return gameMap;
+    }
 }
