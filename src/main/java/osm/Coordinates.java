@@ -36,4 +36,9 @@ public class Coordinates {
         double deltaY = y - to.getY();
         return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     }
+
+    public boolean equlas(Coordinates coords) {
+        boolean eq = (x.equals(coords.getX()) && y.equals(coords.getY()));
+        return eq;
+    }
 }
