@@ -1,6 +1,7 @@
 package game;
 
 import com.google.gson.Gson;
+import game.json.PlayerPoints;
 import game.json.PositionData;
 import lobby.Lobby;
 import org.json.simple.JSONArray;
@@ -107,6 +108,70 @@ class GameControllerTest {
             assertEquals(user.getUsername(), positionData.getUsername());
             assertEquals(playerToNode.get(user.getServerId()).getX(), positionData.getX());
             assertEquals(playerToNode.get(user.getServerId()).getY(), positionData.getY());
+        }
+    }
+
+    @Test
+    void shouldCreatePlayersPointsUpdateForSoloGame() throws ParseException {
+        int nofPlayers = 3;
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(0, users);
+        var lobby = prepareLobbyMock("SOLO", users, teams, 0,2);
+        var gameController = prepareGameControllerMock(lobby, users);
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(gameController.createdPlayersPointsUpdate(false));
+        var content = (JSONObject) response.get("content");
+        var team0 = (JSONArray) content.get("team0");
+
+        System.out.println(response);
+
+        assertEquals(nofPlayers, team0.size());
+
+        Gson gson = new Gson();
+        for (int i = 0; i < team0.size(); i++) {
+            User user = users.get(i);
+            var playerPoints = gson.fromJson(team0.get(i).toString(), PlayerPoints.class);
+            assertEquals(user.getUsername(), playerPoints.getUsername());
+            assertEquals(0, playerPoints.getPoints());
+        }
+    }
+
+    @Test
+    void shouldCreatePlayersPointsUpdateForTeamGame() throws ParseException {
+        int nofPlayers = 7;
+        int sizeTeam1 = 4;
+        var users = prepareUsersMock(nofPlayers);
+        Map<Integer, List<User>> teams = new HashMap<>();
+        teams.put(1, users.subList(0, sizeTeam1));
+        teams.put(2, users.subList(sizeTeam1, 7));
+        var lobby = prepareLobbyMock("TEAM", users, teams, 0,2);
+        var gameController = prepareGameControllerMock(lobby, users);
+
+        var parser = new JSONParser();
+        var response = (JSONObject) parser.parse(gameController.createdPlayersPointsUpdate(false));
+        var content = (JSONObject) response.get("content");
+        var team1 = (JSONArray) content.get("team1");
+        var team2 = (JSONArray) content.get("team2");
+
+        System.out.println(response);
+
+        assertEquals(sizeTeam1, team1.size());
+        assertEquals(nofPlayers - sizeTeam1, team2.size());
+
+        Gson gson = new Gson();
+        for (int i = 0; i < team1.size(); i++) {
+            User user = users.get(i);
+            var playerPoints = gson.fromJson(team1.get(i).toString(), PlayerPoints.class);
+            assertEquals(user.getUsername(), playerPoints.getUsername());
+            assertEquals(0, playerPoints.getPoints());
+        }
+        for (int i = 0; i < team2.size(); i++) {
+            User user = users.get(sizeTeam1 + i);
+            var playerPoints = gson.fromJson(team2.get(i).toString(), PlayerPoints.class);
+            assertEquals(user.getUsername(), playerPoints.getUsername());
+            assertEquals(0, playerPoints.getPoints());
         }
     }
 
