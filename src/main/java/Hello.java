@@ -7,7 +7,7 @@ public class Hello {
 
   public static void main(String[] args) {
     if (Arrays.stream(args).anyMatch("-debug"::equals)) {
-      ServerData.getInstance(2139).setIsDebug(true);;
+      ServerData.getInstance(2139).setIsDebug(true);
     } else {
       ServerData.getInstance(2137);
     }

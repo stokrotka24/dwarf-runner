@@ -1,11 +1,13 @@
 package game;
 
+import dbconn.GameStatsManager;
 import game.json.*;
 import messages.Message;
 import messages.MessageParser;
 import messages.MessageType;
 import server.Logger;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -119,7 +121,47 @@ public class GameController {
     public void endGame() {
         sendEndGameMsg();
         sendPlayersPointsUpdate(true);
+        saveEndGameStats();
         gameManager.clearGame(this);
+    }
+
+    private void saveEndGameStats() {
+        int i = GameStatsManager.saveGameInfo(game);
+
+        if (game.getType() == GameType.SOLO_GAME) {
+            savePlacesInSoloGame(i);
+            return;
+        }
+
+        savePlacesInTeamGame(i);
+    }
+
+    private void savePlacesInSoloGame(int i) {
+        game.getPlayers().sort(Comparator.comparingInt(p -> p.points));
+        int place = game.getPlayers().size();
+
+        for (var player : game.getPlayers()) {
+            GameStatsManager.savePlayerResultInfo(i, playerToUser.get(player.getId()).getEmail(), place--);
+        }
+    }
+
+    private void savePlacesInTeamGame(int i) {
+        TeamGame teamGame = (TeamGame) game;
+        var teams = teamGame.getTeams();
+
+        var team1Points = teams.get(1).stream().map(AbstractPlayer::getPoints).mapToInt(Integer::intValue).sum();
+        var team2Points = teams.get(2).stream().map(AbstractPlayer::getPoints).mapToInt(Integer::intValue).sum();
+
+        int team1Place = team1Points < team2Points ? 2 : 1;
+        int team2Place = team2Points < team1Points ? 2 : 1;
+
+        for (var player : teamGame.getTeams().get(1)) {
+            GameStatsManager.savePlayerResultInfo(i, playerToUser.get(player.getId()).getEmail(), team1Place);
+        }
+
+        for (var player : teamGame.getTeams().get(2)) {
+            GameStatsManager.savePlayerResultInfo(i, playerToUser.get(player.getId()).getEmail(), team2Place);
+        }
     }
 
     private void sendEndGameMsg() {

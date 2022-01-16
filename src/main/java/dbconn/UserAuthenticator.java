@@ -164,6 +164,7 @@ public class UserAuthenticator {
             String userNickname = cStatement.getString(3);
             if (userNickname != null && !userNickname.isEmpty()) {
                 creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
+                creator.setEmail(credentials.getEmail());
                 sendLoginSuccessResponse(userNickname, creator);
                 return;
             }
