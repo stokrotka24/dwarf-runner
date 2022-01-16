@@ -70,20 +70,21 @@ public class GameController {
                 .collect(Collectors.toList());
     }
 
-    private void sendPlayersPointsUpdate() {
-        var update = createdPlayersPointsUpdate();
+    private void sendPlayersPointsUpdate(boolean finalPoints) {
+        var update = createdPlayersPointsUpdate(finalPoints);
         for (AbstractPlayer player: game.getPlayers()) {
             playerToUser.get(player.getId()).sendMessage(update);
         }
     }
 
-    protected String createdPlayersPointsUpdate() {
+    protected String createdPlayersPointsUpdate(boolean finalPoints) {
+        MessageType header = finalPoints ? MessageType.FINAL_PLAYERS_POINTS : MessageType.PLAYERS_POINTS_UPDATE;
         Map<String, List<PlayerPoints>> playersPointsUpdate =
                 game.getTeams()
                         .entrySet()
                         .stream()
                         .collect(Collectors.toMap(entry -> "team" + entry.getKey(), entry -> mapUsernamesToPoints(entry.getValue())));
-        var msg = new Message<>(MessageType.PLAYERS_POINTS_UPDATE, playersPointsUpdate);
+        var msg = new Message<>(header, playersPointsUpdate);
         return MessageParser.toJsonString(msg);
     }
 
@@ -119,7 +120,7 @@ public class GameController {
 
     public void endGame() {
         sendEndGameMsg();
-        sendPlayersPointsUpdate();
+        sendPlayersPointsUpdate(true);
         saveEndGameStats();
         gameManager.clearGame(this);
     }
@@ -213,7 +214,7 @@ public class GameController {
         var resultMsg = pickUpDwarf(player, dwarfId);
 
         playerToUser.get(player.getId()).sendMessage(resultMsg);
-        sendPlayersPointsUpdate();
+        sendPlayersPointsUpdate(false);
         sendDwarfsLocation();
         if (game.getDwarfs().isEmpty()) {
             endGame();
