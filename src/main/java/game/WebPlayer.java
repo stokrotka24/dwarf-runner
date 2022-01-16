@@ -3,10 +3,12 @@ package game;
 import osm.Coordinates;
 import osm.Node;
 import osm.OsmService;
-import server.Logger;
-import server.LoggerOption;
+
+import java.sql.Timestamp;
 
 public class WebPlayer extends AbstractPlayer {
+    private Long lastMoveTimestamp = 0L;
+    private WebMove lastMoveDirection = null;
 
     public WebPlayer(int id, Node node) {
         super(id, node);
@@ -35,6 +37,13 @@ public class WebPlayer extends AbstractPlayer {
 
     @Override
     public MoveValidation makeMove(Move move, AbstractGame game) {
+        if (move.getWebMove() == lastMoveDirection) {
+            if (new Timestamp(System.currentTimeMillis()).getTime() - lastMoveTimestamp < 1000) {
+                // ignore move in lastMoveDirection by second
+                return MoveValidation.WEB_VALID_MOVE;
+            }
+        }
+
         Coordinates from = coords;
         Coordinates to = null;
 
@@ -132,6 +141,8 @@ public class WebPlayer extends AbstractPlayer {
                     node = new Node(newNode);
                 }
             }
+            lastMoveDirection = move.getWebMove();
+            lastMoveTimestamp = new Timestamp(System.currentTimeMillis()).getTime();
             return MoveValidation.WEB_VALID_MOVE;
         }
         return MoveValidation.WEB_INVALID_MOVE;

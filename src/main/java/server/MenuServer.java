@@ -140,8 +140,19 @@ public class MenuServer {
                             break;
                         }
                         case PICK_DWARF_REQUEST: {
-                            gameManager.userToGameController.get(sender.getServerId())
-                                    .performDwarfPickUp(sender.getServerId(), MessageParser.getMsgContent(msgReceived, Integer.class));
+                            var gameController = gameManager.userToGameController.get(sender.getServerId());
+                            if (gameController != null) {
+                                 gameController.performDwarfPickUp(sender.getServerId(), MessageParser.getMsgContent(msgReceived, Integer.class));
+                            }
+                            break;
+                        }
+                        case LEAVE_GAME: {
+                            var gameController = gameManager.userToGameController.get(sender.getServerId());
+                            if (gameController != null) {
+                                gameController.removePlayer(sender.getServerId());
+                                gameManager.userToGameController.remove(sender.getServerId());
+                            }
+                            sendServerAcknowledge(sender, MessageType.LEAVE_GAME);
                             break;
                         }
                         case CHANGE_PASSWORD_REQUEST: {
