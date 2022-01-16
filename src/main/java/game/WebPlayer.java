@@ -38,8 +38,8 @@ public class WebPlayer extends AbstractPlayer {
     @Override
     public MoveValidation makeMove(Move move, AbstractGame game) {
         if (move.getWebMove() == lastMoveDirection) {
-            if (new Timestamp(System.currentTimeMillis()).getTime() - lastMoveTimestamp < 1000) {
-                // ignore move in lastMoveDirection by second
+            if (new Timestamp(System.currentTimeMillis()).getTime() - lastMoveTimestamp < 200) {
+                // ignore move in lastMoveDirection by 200 ms
                 return MoveValidation.WEB_VALID_MOVE;
             }
         }
@@ -130,7 +130,7 @@ public class WebPlayer extends AbstractPlayer {
         // Y - lat
         if (to != null) {
             double dist = from.distanceTo(to);
-            double t = Math.min(1, OsmService.METRE * game.getWebSpeed() / dist);
+            double t = Math.min(1, 0.2 * OsmService.METRE * game.getWebSpeed() / dist);
             double newX = from.getX() + t * (to.getX() - from.getX());
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
