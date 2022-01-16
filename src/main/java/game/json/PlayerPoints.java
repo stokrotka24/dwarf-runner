@@ -13,4 +13,12 @@ public class PlayerPoints {
         this.username = username;
         this.points = points;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public Integer getPoints() {
+        return points;
+    }
 }

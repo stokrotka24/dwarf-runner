@@ -17,6 +17,7 @@ public class GameController {
     private AbstractGame game;
     private static final Logger logger = Logger.getInstance();
     private GameManager gameManager;
+    private volatile boolean isRunning = true;
 
     public GameController(AbstractGame game, Map<Integer, User> playerToUser, GameManager gameManager) {
         this.game = game;
@@ -118,7 +119,8 @@ public class GameController {
         }
     }
 
-    public void endGame() {
+    public synchronized void endGame() {
+        isRunning = false;
         sendEndGameMsg();
         sendPlayersPointsUpdate(true);
         saveEndGameStats();
@@ -259,7 +261,9 @@ public class GameController {
         public void run() {
             try {
                 Thread.sleep(time);
-                GameController.this.endGame();
+                if (GameController.this.isRunning) {
+                    GameController.this.endGame();
+                }
             } catch (InterruptedException e) {
                 logger.warning(e.getMessage());
             }
