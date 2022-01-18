@@ -310,9 +310,7 @@ public class LobbyManager {
             sendJoinLobbyFailed(player);
         } else {
             sendJoinLobbySucceed(player, node.getX(), node.getY());
-            if (player.getPlatform().isPresent() && player.getPlatform().get() == GamePlatform.WEB) {
-                sendMapBounds(player, lobby);
-            }
+            sendMapBounds(player, lobby);
         }
 
         notifyLobby(lobby);
