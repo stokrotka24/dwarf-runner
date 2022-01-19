@@ -3,17 +3,14 @@ package game;
 import osm.Node;
 import osm.OsmService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class GameBuilder {
     private int id;
     private GameMap gameMap;
     private OsmService osmService;
-    private List<AbstractPlayer> players;
+    private List<AbstractPlayer> players = new ArrayList<>();
     private double webSpeed;
     private double mobileMaxSpeed;
     private List<Dwarf> dwarfs;
@@ -75,6 +72,7 @@ public final class GameBuilder {
         return this;
     }
 
+    // should be called after withPlayers
     public GameBuilder withTeams(Map<Integer, List<User>> teams, Map<Integer, Node> playerToInitialNode) {
         Map<Integer, List<AbstractPlayer>> mappedTeams = new HashMap<>();
         for (var teamEntry : teams.entrySet()) {
@@ -104,9 +102,17 @@ public final class GameBuilder {
 
         if (gamePlatform.isPresent()) {
             if (gamePlatform.get().equals(GamePlatform.MOBILE)) {
-                player = new MobilePlayer(user.getServerId(), node);
+                player = this.players
+                        .stream()
+                        .filter(p -> p.getId() == user.getServerId())
+                        .findFirst()
+                        .orElse(new MobilePlayer(user.getServerId(), node));
             } else if (gamePlatform.get().equals(GamePlatform.WEB)) {
-                player = new WebPlayer(user.getServerId(), node);
+                player = this.players
+                        .stream()
+                        .filter(p -> p.getId() == user.getServerId())
+                        .findFirst()
+                        .orElse(new WebPlayer(user.getServerId(), node));
             }
         }
 
