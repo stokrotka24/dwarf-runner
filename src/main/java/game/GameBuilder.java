@@ -75,6 +75,7 @@ public final class GameBuilder {
         return this;
     }
 
+    // should be called after withPlayers
     public GameBuilder withTeams(Map<Integer, List<User>> teams, Map<Integer, Node> playerToInitialNode) {
         Map<Integer, List<AbstractPlayer>> mappedTeams = new HashMap<>();
         for (var teamEntry : teams.entrySet()) {
@@ -104,9 +105,17 @@ public final class GameBuilder {
 
         if (gamePlatform.isPresent()) {
             if (gamePlatform.get().equals(GamePlatform.MOBILE)) {
-                player = new MobilePlayer(user.getServerId(), node);
+                player = this.players
+                        .stream()
+                        .filter(p -> p.getId() == user.getServerId())
+                        .findFirst()
+                        .orElse(new MobilePlayer(user.getServerId(), node));
             } else if (gamePlatform.get().equals(GamePlatform.WEB)) {
-                player = new WebPlayer(user.getServerId(), node);
+                player = this.players
+                        .stream()
+                        .filter(p -> p.getId() == user.getServerId())
+                        .findFirst()
+                        .orElse(new WebPlayer(user.getServerId(), node));
             }
         }
 
