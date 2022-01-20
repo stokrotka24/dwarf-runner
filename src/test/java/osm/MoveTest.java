@@ -29,7 +29,7 @@ public class MoveTest {
         OsmService.setNodeRadius(maxDistFromNode1);
         
         player.setCoords(coords1);
-        player.makeMove(new Move(WebMove.UP), game);
+        player.makeMove(new Move(WebMove.NORTH), game);
         assertEquals(17.029637492, player.getCoords().getX());
         assertEquals(51.108117836, player.getCoords().getY());
 
