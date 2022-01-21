@@ -52,6 +52,7 @@ public class UserAuthenticator {
             logger.info("Change username result: " + errorCode);
             
             if (errorCode == CHANGE_USERNAME_OK) {
+                creator.setUsername(request.getNewUsername());
                 sendChangeUsernameSuccessResponse(creator);
             }
             else if (errorCode == CHANGE_USERNAME_NULL) {
