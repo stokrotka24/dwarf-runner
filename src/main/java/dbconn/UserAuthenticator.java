@@ -4,6 +4,7 @@ import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.AuthenticationResponseData;
 import dbconn.jsonclasses.ChangePasswordRequest;
 import dbconn.jsonclasses.ChangeUsernameRequest;
+import dbconn.jsonclasses.LogOutRequest;
 import dbconn.jsonclasses.RegisterCredentials;
 import game.GamePlatform;
 import game.User;
@@ -263,6 +264,10 @@ public class UserAuthenticator {
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
 
+    /**
+     * 
+     * only called by internal DISCONNECT
+     */
     public static void handleLogOutRequest(User sender) {
         CallableStatement logStatement;
         try {
@@ -274,5 +279,22 @@ public class UserAuthenticator {
             logger.error(e.getMessage());
         }
     }
-    
+
+    public static void handleLogOutRequest(Message<LogOutRequest> msg, User sender) {
+        LogOutRequest request = msg.content;
+        if (request == null || request.getEmail() == null || request.getEmail() != sender.getEmail()) {
+            sendLoginFailureResponse("DATA_LOST", sender);
+            return;
+        }
+        CallableStatement logStatement;
+        try {
+            logStatement = DBConnection.getConnection().prepareCall(loginStatusOff);
+            logStatement.setString(1, sender.getEmail());
+            logStatement.execute();
+        } catch (SQLException e) {
+            sendLoginFailureResponse("DATABASE_ERROR", sender);
+            logger.error("Exception caught. Logout procedure error - reason UNKNOWN");
+            logger.error(e.getMessage());
+        }
+    }
 }
