@@ -22,6 +22,9 @@ import java.util.Base64;
 public class UserAuthenticator {
     
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
+    private static final String loginStatusOn = "{call Log_in(?)}";
+    private static final String loginCheck = "{call Is_logged(?, ?)}";
+    private static final String loginStatusOff = "{call Log_out(?)}";
     private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
     private static final String changePasswordQuery = "{call Change_Pass(?, ?, ?, ?)}";
     private static final String changeUsernameQuery = "{call Change_Nick(?, ?, ?, ?)}";
@@ -157,6 +160,16 @@ public class UserAuthenticator {
         }
 
         try {
+            CallableStatement loginCheck = DBConnection.getConnection().prepareCall(UserAuthenticator.loginCheck);
+            loginCheck.setString(1, credentials.getEmail());
+            loginCheck.registerOutParameter(2, java.sql.Types.INTEGER);
+            loginCheck.execute();
+            Integer isLogged = loginCheck.getInt(2);
+            if (isLogged == 1) {
+                sendLoginFailureResponse("ALREADY_LOGGED_IN", creator);
+                return;
+            }
+
             CallableStatement cStatement = DBConnection.getConnection().prepareCall(loginQuery);
             cStatement.setString(1, credentials.getEmail());
             cStatement.setString(2, hash256(credentials.getPassword()));
@@ -167,6 +180,9 @@ public class UserAuthenticator {
                 creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
                 creator.setEmail(credentials.getEmail());
                 sendLoginSuccessResponse(userNickname, creator);
+                CallableStatement logStatement = DBConnection.getConnection().prepareCall(loginStatusOn);
+                logStatement.setString(1, credentials.getEmail());
+                logStatement.execute();
                 return;
             }
             else {
@@ -245,6 +261,18 @@ public class UserAuthenticator {
         Message<AuthenticationResponseData> respMsg = new Message<>(MessageType.CHANGE_USERNAME_RESPONSE
                 , responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
+    }
+
+    public static void handleLogOutRequest(User sender) {
+        CallableStatement logStatement;
+        try {
+            logStatement = DBConnection.getConnection().prepareCall(loginStatusOff);
+            logStatement.setString(1, sender.getEmail());
+            logStatement.execute();
+        } catch (SQLException e) {
+            logger.error("Exception caught. Logout procedure error - reason UNKNOWN");
+            logger.error(e.getMessage());
+        }
     }
     
 }

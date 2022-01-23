@@ -207,8 +207,7 @@ public class MenuServer {
         users.remove(sender.getServerId());
         lobbyManager.disconnectUser(sender);
         gameManager.disconnectUser(sender);
-        // TODO - log out
-        // UserAuthenticator.handleLogOutRequest(sender); ?
+        UserAuthenticator.handleLogOutRequest(sender);
     }
 
     private void initComponents() {
