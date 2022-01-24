@@ -5,6 +5,7 @@ import osm.Node;
 import osm.OsmService;
 
 import java.sql.Timestamp;
+import server.Logger;
 
 public class WebPlayer extends AbstractPlayer {
     private Long lastMoveTimestamp = 0L;
@@ -40,6 +41,7 @@ public class WebPlayer extends AbstractPlayer {
             // ignore move by 200 ms
             return MoveValidation.WEB_VALID_MOVE;
         }
+        //Logger logger = Logger.getInstance();
 
         Coordinates from = coords;
         Coordinates to = null;
@@ -51,14 +53,15 @@ public class WebPlayer extends AbstractPlayer {
 
         // too far from node so only move back to node or to next node on this road
         if (from.distanceTo(node.getCoords()) > OsmService.NODE_RADIUS) {
-            for (int i = 0; i < 4; i++) {
+            //logger.info("far");
+            for (int i = 0; i < 8; i++) {
                 if (move.getWebMove() == WebMove.fromInt(i)) {
                     Coordinates nextNode = node.nextNeighbor(from);
                     Double next_x = nextNode.getX();
                     Double next_y = nextNode.getY();
 
-                    double back = Math.toDegrees(Math.atan2(node.getY() - y, node.getX() - x)) - (i * 90);
-                    double forward = Math.toDegrees(Math.atan2(next_y - y, next_x - x)) - (i * 90);
+                    double back = Math.toDegrees(Math.atan2(node.getY() - y, node.getX() - x)) - (i * 45);
+                    double forward = Math.toDegrees(Math.atan2(next_y - y, next_x - x)) - (i * 45);
 
                     if (back < 0) {
                         back += 360;
@@ -66,14 +69,16 @@ public class WebPlayer extends AbstractPlayer {
                     if (forward < 0) {
                         forward += 360;
                     }
+                    //logger.info("neighbor: " + forward);
+                    //logger.info("node: " + back);
 
-                    if (Math.abs(forward - 90) <= Math.abs(back - 90)) {
-                        if (forward >= 45 && forward <= 135) {
+                    if (Math.abs(forward - 45) <= Math.abs(back - 45)) {
+                        if (forward >= 22.5 && forward <= 67.5) {
                             to = nextNode;
                             newNode = game.getOsmService().getNodeByCoords(to);
                         }
                     } else {
-                        if (back >= 45 && back <= 135) {
+                        if (back >= 22.5 && back <= 67.5) {
                             to = node.getCoords();
                             newNode = null;
                         }
@@ -82,9 +87,10 @@ public class WebPlayer extends AbstractPlayer {
                 }
             }
         } else {
+            //logger.info("close");
             // find node closest to direction given by WebMove move
             // null if there are no such nodes in the direction's quarter circle
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 8; i++) {
                 if (move.getWebMove() == WebMove.fromInt(i)) {
                     double mini = 1000;
                     for (int j = 0; j < node.getNeighbors().size(); j++) {
@@ -92,12 +98,13 @@ public class WebPlayer extends AbstractPlayer {
                         if (!neighbor.equals(node.getCoords())) {
                             double angle =
                                 Math.toDegrees(Math.atan2(neighbor.getY() - y, neighbor.getX() - x))
-                                    - (i * 90);
+                                    - (i * 45);
                             if (angle < 0) {
                                 angle += 360;
                             }
-                            if (angle >= 45 && angle <= 135) {
-                                if (Math.abs(angle - 90) < Math.abs(mini - 90)) {
+                            //logger.info("neighbor: " + angle);
+                            if (angle >= 22.5 && angle <= 67.5) {
+                                if (Math.abs(angle - 45) < Math.abs(mini - 45)) {
                                     mini = angle;
                                     to = node.getNeighbors().get(j);
                                     newNode = game.getOsmService().getNodeByCoords(to);
@@ -107,12 +114,13 @@ public class WebPlayer extends AbstractPlayer {
                     }
                     if (!coords.equals(node.getCoords())) {
                         double angle =
-                            Math.toDegrees(Math.atan2(node.getY() - y, node.getX() - x)) - (i * 90);
+                            Math.toDegrees(Math.atan2(node.getY() - y, node.getX() - x)) - (i * 45);
                         if (angle < 0) {
                             angle += 360;
                         }
-                        if (angle >= 45 && angle <= 135) {
-                            if (Math.abs(angle - 90) < Math.abs(mini - 90)) {
+                        //logger.info("node: " + angle);
+                        if (angle >= 22.5 && angle <= 67.5) {
+                            if (Math.abs(angle - 45) < Math.abs(mini - 45)) {
                                 to = node.getCoords();
                                 newNode = null;
                             }
@@ -127,7 +135,7 @@ public class WebPlayer extends AbstractPlayer {
         // Y - lat
         if (to != null) {
             double dist = from.distanceTo(to);
-            double t = Math.min(1, 0.2 * OsmService.METRE * game.getWebSpeed() / dist);
+            double t = Math.min(1, 0.2 * OsmService.METRE * game.getWebSpeed() / 3.6 / dist);
             double newX = from.getX() + t * (to.getX() - from.getX());
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
