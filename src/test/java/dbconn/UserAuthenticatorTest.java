@@ -26,6 +26,143 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
         }
     }
 
+
+    /**
+     * DUE TO SAVING OF NICKNAME IN DB
+     * DO ALL CHANGING USER NICKNAME TESTS 
+     * IN THIS EXACT ORDER
+     */
+    @Test
+    void testHandleChangeUsernameRequestShouldSucceed() {
+        String request1 = "{\n" +
+                "    \"header\": \"LOG_IN_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user6@wp.pl\",\n" +
+                "        \"password\": \"user6\",\n" +
+                "        \"is_mobile\": false\n" +
+                "    }\n" +
+                "}";
+
+        String request = "{\n" +
+                "    \"header\": \"CHANGE_USERNAME_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user6@wp.pl\",\n" +
+                "        \"new_username\": \"user6a\"\n" +
+                "}}";
+
+        String expected = "{\"header\":\"CHANGE_USERNAME_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":null,\"failure_reason\":null}}";
+
+        client.sendMsg(request1);
+        client.sendMsg(request);
+    
+        try {
+            client.queue.take();
+            String response = client.queue.take();
+            assertEquals(expected, response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHandleChangeUsernameRequestShouldFail() {
+        String request = "{\n" +
+                "    \"header\": \"CHANGE_USERNAME_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user6@wp.pl\",\n" +
+                "        \"new_username\": \"user6a\"\n" +
+                "}}";
+
+        client.sendMsg(request);
+        String expected = "{\"header\":\"CHANGE_USERNAME_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"NICKNAME_TAKEN\"}}";
+
+        try {
+            String response = client.queue.take();
+            assertEquals(expected, response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHandleChangeUsernameRequestShouldFail2() {
+        String request = "{\n" +
+                "    \"header\": \"CHANGE_USERNAME_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user6abcdefu@wp.pl\",\n" +
+                "        \"new_username\": \"user6abcdefu\"\n" +
+                "}}";
+
+        client.sendMsg(request);
+        String expected = "{\"header\":\"CHANGE_USERNAME_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"WRONG_CREDENTIALS\"}}";
+
+        try {
+            String response = client.queue.take();
+            assertEquals(expected, response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHandleChangeUsernameRequestShouldFail3() {
+        String request = "{\n" +
+                "    \"header\": \"CHANGE_USERNAME_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user6@wp.pl\",\n" +
+                "        \"new_username\": \"\"\n" +
+                "}}";
+
+        client.sendMsg(request);
+        String expected = "{\"header\":\"CHANGE_USERNAME_RESPONSE\",\"content\":{\"status\":0,\"user_nickname\":null,\"failure_reason\":\"GOT_NULL\"}}";
+
+        try {
+            String response = client.queue.take();
+            assertEquals(expected, response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void testHandleChangeUsernameRequestShouldSucceed2() {
+        String request1 = "{\n" +
+                "    \"header\": \"LOG_IN_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user6@wp.pl\",\n" +
+                "        \"password\": \"user6\",\n" +
+                "        \"is_mobile\": false\n" +
+                "    }\n" +
+                "}";
+
+        String request = "{\n" +
+                "    \"header\": \"CHANGE_USERNAME_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"user6@wp.pl\",\n" +
+                "        \"new_username\": \"user6\"\n" +
+                "}}";
+
+        String expected = "{\"header\":\"CHANGE_USERNAME_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":null,\"failure_reason\":null}}";
+
+        client.sendMsg(request1);
+        client.sendMsg(request);
+    
+        try {
+            client.queue.take();
+            String response = client.queue.take();
+            assertEquals(expected, response);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * DUE TO SAVING OF EMAIL AND NICKNAME in DB
      * REMEMBER TO CHANGE
