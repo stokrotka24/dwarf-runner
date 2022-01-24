@@ -4,6 +4,7 @@ import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.AuthenticationResponseData;
 import dbconn.jsonclasses.ChangePasswordRequest;
 import dbconn.jsonclasses.ChangeUsernameRequest;
+import dbconn.jsonclasses.LogOutRequest;
 import dbconn.jsonclasses.RegisterCredentials;
 import game.GamePlatform;
 import game.User;
@@ -22,6 +23,9 @@ import java.util.Base64;
 public class UserAuthenticator {
     
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
+    private static final String loginStatusOn = "{call Log_in(?)}";
+    private static final String loginCheck = "{call Is_logged(?, ?)}";
+    private static final String loginStatusOff = "{call Log_out(?)}";
     private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
     private static final String changePasswordQuery = "{call Change_Pass(?, ?, ?, ?)}";
     private static final String changeUsernameQuery = "{call Change_Nick(?, ?, ?, ?)}";
@@ -157,6 +161,16 @@ public class UserAuthenticator {
         }
 
         try {
+            CallableStatement loginCheck = DBConnection.getConnection().prepareCall(UserAuthenticator.loginCheck);
+            loginCheck.setString(1, credentials.getEmail());
+            loginCheck.registerOutParameter(2, java.sql.Types.INTEGER);
+            loginCheck.execute();
+            Integer isLogged = loginCheck.getInt(2);
+            if (isLogged == 1) {
+                sendLoginFailureResponse("ALREADY_LOGGED_IN", creator);
+                return;
+            }
+
             CallableStatement cStatement = DBConnection.getConnection().prepareCall(loginQuery);
             cStatement.setString(1, credentials.getEmail());
             cStatement.setString(2, hash256(credentials.getPassword()));
@@ -167,6 +181,11 @@ public class UserAuthenticator {
                 creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
                 creator.setEmail(credentials.getEmail());
                 sendLoginSuccessResponse(userNickname, creator);
+
+                CallableStatement logStatement = DBConnection.getConnection().prepareCall(loginStatusOn);
+                logStatement.setString(1, credentials.getEmail());
+                logStatement.execute();
+                return;
             }
             else {
                 sendLoginFailureResponse("WRONG_CREDENTIALS", creator);
@@ -244,5 +263,38 @@ public class UserAuthenticator {
                 , responseData);
         creator.sendMessage(MessageParser.toJsonString(respMsg));
     }
-    
+
+    /**
+     * 
+     * only called by internal DISCONNECT
+     */
+    public static void handleLogOutRequest(User sender) {
+        CallableStatement logStatement;
+        try {
+            logStatement = DBConnection.getConnection().prepareCall(loginStatusOff);
+            logStatement.setString(1, sender.getEmail());
+            logStatement.execute();
+        } catch (SQLException e) {
+            logger.error("Exception caught. Logout procedure error - reason UNKNOWN");
+            logger.error(e.getMessage());
+        }
+    }
+
+    public static void handleLogOutRequest(Message<LogOutRequest> msg, User sender) {
+        LogOutRequest request = msg.content;
+        if (request == null || request.getEmail() == null || request.getEmail() != sender.getEmail()) {
+            sendLoginFailureResponse("DATA_LOST", sender);
+            return;
+        }
+        CallableStatement logStatement;
+        try {
+            logStatement = DBConnection.getConnection().prepareCall(loginStatusOff);
+            logStatement.setString(1, sender.getEmail());
+            logStatement.execute();
+        } catch (SQLException e) {
+            sendLoginFailureResponse("DATABASE_ERROR", sender);
+            logger.error("Exception caught. Logout procedure error - reason UNKNOWN");
+            logger.error(e.getMessage());
+        }
+    }
 }

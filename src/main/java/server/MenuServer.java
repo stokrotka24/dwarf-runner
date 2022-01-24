@@ -3,6 +3,7 @@ package server;
 import dbconn.UserAuthenticator;
 import dbconn.jsonclasses.ChangePasswordRequest;
 import dbconn.jsonclasses.ChangeUsernameRequest;
+import dbconn.jsonclasses.LogOutRequest;
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.RegisterCredentials;
 import game.*;
@@ -165,6 +166,11 @@ public class MenuServer {
                                     ChangeUsernameRequest.class), sender);
                             break;
                         }
+                        case LOG_OUT_REQUEST: {
+                            UserAuthenticator.handleLogOutRequest(MessageParser.fromJsonString(msgReceived,
+                             LogOutRequest.class), sender);
+                             break;
+                        }
                         case DISCONNECT: {
                             disconnectUser(sender);
                             break;
@@ -222,8 +228,7 @@ public class MenuServer {
         users.remove(sender.getServerId());
         lobbyManager.disconnectUser(sender);
         gameManager.disconnectUser(sender);
-        // TODO - log out
-        // UserAuthenticator.handleLogOutRequest(sender); ?
+        UserAuthenticator.handleLogOutRequest(sender);
     }
 
     private void initComponents() {
