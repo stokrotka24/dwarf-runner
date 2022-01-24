@@ -198,9 +198,9 @@ public class LobbyManager {
             onStartGameRequestFailed(user);
             return Optional.empty();
         }
-        boolean playersAreReady = lobby.getPlayers() == lobby.getReadyPlayers();
+        boolean playersAreReady = lobby.getMaxPlayers() == lobby.getReadyPlayers();
 
-        if (playersAreReady) {
+        if (playersAreReady && user == lobby.getCreator()) {
             return Optional.of(lobby);
         }
 
