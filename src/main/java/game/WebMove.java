@@ -1,14 +1,14 @@
 package game;
 
 public enum WebMove {
-    NORTH,
-    WEST,
-    SOUTH,
-    EAST,
     NORTHEAST,
+    NORTH,
     NORTHWEST,
+    WEST,
+    SOUTHWEST,
+    SOUTH,
     SOUTHEAST,
-    SOUTHWEST;
+    EAST;
 
     private static final WebMove[] webMoveTypeValues = WebMove.values();
 

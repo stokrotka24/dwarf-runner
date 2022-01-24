@@ -17,7 +17,7 @@ public class OsmService {
     // one degree is about 111 kilometers
     public static final double METRE = 1.0 / 111000.0;
     /* if player is farther than this from the node, don't allow stepping off the current way */
-    public static double NODE_RADIUS = 0.000004; // value TBD
+    public static double NODE_RADIUS = 0.000036; // value TBD
     public static double BAN_RADIUS = 0.000002; // value TBD
     public static double MAX_DIST_FROM_ROAD = 0.000002; // value TBD
     private OsmMap map;
