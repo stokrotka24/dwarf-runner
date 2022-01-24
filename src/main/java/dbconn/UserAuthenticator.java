@@ -181,6 +181,7 @@ public class UserAuthenticator {
                 creator.setPlatform(credentials.isMobile() ? GamePlatform.MOBILE : GamePlatform.WEB);
                 creator.setEmail(credentials.getEmail());
                 sendLoginSuccessResponse(userNickname, creator);
+
                 CallableStatement logStatement = DBConnection.getConnection().prepareCall(loginStatusOn);
                 logStatement.setString(1, credentials.getEmail());
                 logStatement.execute();
@@ -188,14 +189,13 @@ public class UserAuthenticator {
             }
             else {
                 sendLoginFailureResponse("WRONG_CREDENTIALS", creator);
-                return;
             }
+            return;
         }
         catch (SQLException ex) {
             logger.warning(ex.getMessage());
         }
         sendLoginFailureResponse("UNKNOWN", creator);
-        return;
     }
     
     private static String hash256(String toHash) {

@@ -89,7 +89,7 @@ public class WebPlayer extends AbstractPlayer {
                     double mini = 1000;
                     for (int j = 0; j < node.getNeighbors().size(); j++) {
                         Coordinates neighbor = node.getNeighbors().get(j);
-                        if (!neighbor.equlas(node.getCoords())) {
+                        if (!neighbor.equals(node.getCoords())) {
                             double angle =
                                 Math.toDegrees(Math.atan2(neighbor.getY() - y, neighbor.getX() - x))
                                     - (i * 90);
@@ -105,7 +105,7 @@ public class WebPlayer extends AbstractPlayer {
                             }
                         }
                     }
-                    if (!coords.equlas(node.getCoords())) {
+                    if (!coords.equals(node.getCoords())) {
                         double angle =
                             Math.toDegrees(Math.atan2(node.getY() - y, node.getX() - x)) - (i * 90);
                         if (angle < 0) {

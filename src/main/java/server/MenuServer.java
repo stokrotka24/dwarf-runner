@@ -116,7 +116,7 @@ public class MenuServer {
                         }
                         case START_GAME_REQUEST: {
                             var lobby = lobbyManager.getLobbyIfReady(sender);
-                            if (lobby.isPresent() && sender == lobby.get().getCreator()) {
+                            if (lobby.isPresent()) {
                                 var players = lobbyManager.getPlayerList(lobby.get().getId());
                                 gameManager.runGame(lobby.get(), players);
                                 lobbyManager.removeLobby(lobby.get().getId(), false);
@@ -196,6 +196,21 @@ public class MenuServer {
         }
     }
 
+    /**
+     * Stores handler into map of clients, allowing for further communication with client corresponding to handler
+     * @param handler corresponding to client connected to server
+     * @return unique ID of client
+     */
+    public int addInput(ClientHandler handler) {
+        while (users.containsKey(currID)) {
+            currID = currID % MAX_CLIENTS_COUNT + 1;
+        }
+        users.put(currID, new User(currID, handler));
+        int toReturn = currID;
+        currID = currID % MAX_CLIENTS_COUNT + 1;
+        return toReturn;
+    }
+
     private void initTickerService() {
         ScheduledExecutorService exec = Executors.newScheduledThreadPool(1);
 
@@ -224,29 +239,6 @@ public class MenuServer {
         new ClientAccepter(this).start();
         logger.setLoggingLevel(LogLevel.ALL);
         logger.setOption(LoggerOption.LOG_TO_FILE);
-    }
-
-    /**
-     * Stores handler into map of clients, allowing for further communication with client corresponding to handler
-     * @param handler corresponding to client connected to server
-     * @return unique ID of client
-     */
-    public int addInput(ClientHandler handler) {
-        while (users.containsKey(currID)) {
-            currID = currID % MAX_CLIENTS_COUNT + 1;
-        }
-        users.put(currID, new User(currID, handler));
-        int toReturn = currID;
-        currID = currID % MAX_CLIENTS_COUNT + 1;
-        return toReturn;
-    }
-    
-    /**
-     * deletes entry for client from players map. Should be called after client disconnected
-     * @param clientID of client that handler ought to be removed
-     */
-    public void deleteInput(int clientID) {
-        users.remove(clientID);
     }
 
     private void sendServerAcknowledge(User user, MessageType type) {

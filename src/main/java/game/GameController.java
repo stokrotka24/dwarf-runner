@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class GameController {
     private final Map<Integer, User> playerToUser;
-    private AbstractGame game;
+    private final AbstractGame game;
     private static final Logger logger = Logger.getInstance();
     private GameManager gameManager;
     private volatile boolean isRunning = true;

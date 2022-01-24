@@ -11,16 +11,19 @@ import java.time.format.FormatStyle;
 public class Logger {
     private static Logger instance;
     private static final Object mutex = new Object();
-    private Logger () {}
+
     private LogLevel level = LogLevel.ERROR;
     private LoggerOption option = LoggerOption.LOG_TO_FILE;
+    private final String dirName = "logs/";
+    private String filename = "log_" + Instant.now().getEpochSecond() + ".txt";
+
+    private FileWriter writer;
     private final DateTimeFormatter formatter =
             DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
             .withZone(ZoneId.systemDefault());
-    private String filename = "log_" + Instant.now().getEpochSecond() + ".txt";
-    private final String dirName = "logs/";
-    private FileWriter writer;
-    
+
+    private Logger () {}
+
     public static Logger getInstance() {
         Logger result = instance;
         if (result == null) {

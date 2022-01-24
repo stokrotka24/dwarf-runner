@@ -56,11 +56,11 @@ public class Lobby {
 
     private Map<Integer, List<User>> teams = new HashMap<>();
 
-    private transient List<Integer> readyPlayersIds = new ArrayList<>();
+    private final transient List<Integer> readyPlayersIds = new ArrayList<>();
 
     private transient User creator;
 
-    private transient Map<Integer, Node> playersToInitialNode = new HashMap<>();
+    private final transient Map<Integer, Node> playersToInitialNode = new HashMap<>();
 
     private transient OsmService osmService;
 
