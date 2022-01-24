@@ -115,7 +115,7 @@ public class MenuServer {
                         }
                         case START_GAME_REQUEST: {
                             var lobby = lobbyManager.getLobbyIfReady(sender);
-                            if (lobby.isPresent() && sender == lobby.get().getCreator()) {
+                            if (lobby.isPresent()) {
                                 var players = lobbyManager.getPlayerList(lobby.get().getId());
                                 gameManager.runGame(lobby.get(), players);
                                 lobbyManager.removeLobby(lobby.get().getId(), false);
