@@ -162,7 +162,7 @@ public class UserAuthenticator {
 
         try {
             CallableStatement loginCheck = DBConnection.getConnection().prepareCall(UserAuthenticator.loginCheck);
-            loginCheck.setString(1, credentials.getEmail());
+            loginCheck.setString(2, credentials.getEmail());
             loginCheck.registerOutParameter(1, java.sql.Types.INTEGER);
             loginCheck.execute();
             Integer isLogged = loginCheck.getInt(1);
