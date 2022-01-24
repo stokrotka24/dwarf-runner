@@ -135,7 +135,7 @@ public class WebPlayer extends AbstractPlayer {
         // Y - lat
         if (to != null) {
             double dist = from.distanceTo(to);
-            double t = Math.min(1, 0.2 * OsmService.METRE * game.getWebSpeed() / dist);
+            double t = Math.min(1, 0.2 * OsmService.METRE * game.getWebSpeed() / 3.6 / dist);
             double newX = from.getX() + t * (to.getX() - from.getX());
             double newY = from.getY() + t * (to.getY() - from.getY());
             this.setX(newX);
