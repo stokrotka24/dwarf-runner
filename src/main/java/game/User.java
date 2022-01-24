@@ -8,7 +8,7 @@ import java.util.Optional;
 public class User {
     private ClientHandler handler;
     private GamePlatform platform = null;
-    private Integer serverId;
+    private final Integer serverId;
     private String username = "Guest";
     private String email = "";
 

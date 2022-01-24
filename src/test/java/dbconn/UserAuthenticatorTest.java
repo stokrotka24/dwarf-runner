@@ -170,22 +170,39 @@ class UserAuthenticatorTest extends AbstractCommunicationTest {
      */
     @Test
     void testHandleRegisterRequestShouldSucceed(){
+        String username = "user1234567890";
+
         String request1 = "{\n" +
-                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"header\": \"LOG_IN_REQUEST\",\n" +
                 "    \"client_id\":" + client.id + ",\n" +
                 "    \"content\": {\n" +
-                "        \"email\": \"user30@wp.pl\",\n" +
-                "        \"password\": \"user30\",\n" +
-                "        \"nickname\": \"user30\"\n" +
+                "        \"email\": \"" + username + "@wp.pl\",\n" +
+                "        \"password\": \"" + username + "\",\n" +
+                "        \"is_mobile\": false\n" +
                 "    }\n" +
                 "}";
 
         client.sendMsg(request1);
+
+        String request2 = "{\n" +
+                "    \"header\": \"REGISTER_REQUEST\",\n" +
+                "    \"client_id\":" + client.id + ",\n" +
+                "    \"content\": {\n" +
+                "        \"email\": \"" + username + "@wp.pl\",\n" +
+                "        \"password\": \"" + username + "\",\n" +
+                "        \"nickname\": \"" + username + "\"\n" +
+                "    }\n" +
+                "}";
+
+        client.sendMsg(request2);
         String expected1 = "{\"header\":\"REGISTER_RESPONSE\",\"content\":{\"status\":1,\"user_nickname\":null,\"failure_reason\":null}}";
 
         try {
             String response1 = client.queue.take();
-            assertEquals(expected1, response1);
+            String response2 = client.queue.take();
+            if (!response1.contains("\"status\":1")) {
+                assertEquals(expected1, response2);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -7,7 +7,6 @@ import game.User;
 import lobby.Lobby;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,21 +24,18 @@ public class MessageParser {
         }
     };
 
-    private static JsonSerializer<Map<Integer, List<User>>> serializer = new JsonSerializer<>() {
-        @Override
-        public JsonElement serialize(Map<Integer, List<User>> integerListMap, Type type, JsonSerializationContext jsonSerializationContext) {
-            var json = new JsonObject();
+    private static final JsonSerializer<Map<Integer, List<User>>> serializer = (integerListMap, type, jsonSerializationContext) -> {
+        var json = new JsonObject();
 
-            for (var key : integerListMap.keySet()) {
-                var usernames = new JsonArray();
-                for (var user : integerListMap.get(key)) {
-                    usernames.add(user.getUsername());
-                }
-                json.add("team" + key.toString(), usernames);
+        for (var key : integerListMap.keySet()) {
+            var usernames = new JsonArray();
+            for (var user : integerListMap.get(key)) {
+                usernames.add(user.getUsername());
             }
-
-            return json;
+            json.add("team" + key.toString(), usernames);
         }
+
+        return json;
     };
 
     private static Gson gson = null;

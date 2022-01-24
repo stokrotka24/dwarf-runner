@@ -47,14 +47,6 @@ public class ClientHandler extends Thread {
         }
     }
 
-    public void stopRunning() {
-        this.isRunning.set(false);
-    }
-
-    public Boolean isRunning() {
-        return this.isRunning.get();
-    }
-
     @Override
     public void run() {
         mainLoop: while (isRunning.get()) {
@@ -133,7 +125,7 @@ public class ClientHandler extends Thread {
     public ClientHandler(Socket clientSocket, Integer maxJsonLength) {
         this.clientSocket = clientSocket;
         this.maxJsonLength = maxJsonLength;
-        this.output = new LinkedBlockingQueue<String>();
+        this.output = new LinkedBlockingQueue<>();
         // TODO because of dummy users
         // can be rm later but doesn't have to
         if (clientSocket.isConnected()) {

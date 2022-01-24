@@ -16,8 +16,6 @@ public class MessageBuilder implements IMessageBuilder {
         this.type = type;
     }
 
-    public MessageBuilder() {}
-
     @Override
     public <T> void addField(String label, T value) {
         json.add(label, gson.toJsonTree(value));
