@@ -37,7 +37,7 @@ public class Coordinates {
         return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     }
 
-    public boolean equlas(Coordinates coords) {
+    public boolean equals(Coordinates coords) {
         boolean eq = (x.equals(coords.getX()) && y.equals(coords.getY()));
         return eq;
     }

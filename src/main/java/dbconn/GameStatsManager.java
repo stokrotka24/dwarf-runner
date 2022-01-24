@@ -27,7 +27,6 @@ public class GameStatsManager {
             cStatement.execute();
             id = cStatement.getInt(6);
         } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
             logger.warning(ex.getMessage());
         }
         return id;
@@ -43,7 +42,6 @@ public class GameStatsManager {
 
             cStatement.execute();
         } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
             logger.warning(ex.getMessage());
         }
     }

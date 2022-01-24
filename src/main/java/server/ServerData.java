@@ -7,7 +7,7 @@ package server;
 public class ServerData {
     private static ServerData instance;
     private Boolean isDebug = false;
-    private Integer serverPort;
+    private final Integer serverPort;
 
     public Integer getServerPort() {
         return this.serverPort;

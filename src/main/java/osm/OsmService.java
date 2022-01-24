@@ -64,7 +64,7 @@ public class OsmService {
             throw new InvalidParameterException(
                 "demanded number of nodes greater than actual number of nodes");
         }
-        List<Node> copy = new ArrayList<Node>(map.nodes);
+        List<Node> copy = new ArrayList<>(map.nodes);
         Collections.shuffle(copy);
         return copy.subList(0, numberOfNodes);
     }

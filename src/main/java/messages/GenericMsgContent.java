@@ -10,8 +10,6 @@ public class GenericMsgContent {
         this.json = json;
     }
 
-    public GenericMsgContent() {}
-
     public boolean hasField(final String label) {
         return json.has(label);
     }

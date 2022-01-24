@@ -9,10 +9,10 @@ import java.sql.Statement;
 
 public final class DBConnection {
 
-    private static String url = "jdbc:sqlserver://SQL5080.site4now.net:1433;databaseName=db_a7d05b_dwarfrunnerdb;"
+    private static final String url = "jdbc:sqlserver://SQL5080.site4now.net:1433;databaseName=db_a7d05b_dwarfrunnerdb;"
             + "user=db_a7d05b_dwarfrunnerdb_admin;password=Dwarf1Runner";
-    private static String username = "db_a7d05b_dwarfrunnerdb_admin";
-    private static String password = "Dwarf1Runner";
+    private static final String username = "db_a7d05b_dwarfrunnerdb_admin";
+    private static final String password = "Dwarf1Runner";
     private static final Logger logger = Logger.getInstance();
     private static Connection connection;
 
