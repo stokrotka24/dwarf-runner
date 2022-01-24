@@ -24,7 +24,7 @@ public class UserAuthenticator {
     
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
     private static final String loginStatusOn = "{call Log_in(?)}";
-    private static final String loginCheck = "{call Is_logged(?)}";
+    private static final String loginCheck = "{?= call Is_logged(?)}";
     private static final String loginStatusOff = "{call Log_out(?)}";
     private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
     private static final String changePasswordQuery = "{call Change_Pass(?, ?, ?, ?)}";
@@ -163,9 +163,9 @@ public class UserAuthenticator {
         try {
             CallableStatement loginCheck = DBConnection.getConnection().prepareCall(UserAuthenticator.loginCheck);
             loginCheck.setString(1, credentials.getEmail());
-            loginCheck.registerOutParameter(2, java.sql.Types.INTEGER);
+            loginCheck.registerOutParameter(1, java.sql.Types.INTEGER);
             loginCheck.execute();
-            Integer isLogged = loginCheck.getInt(2);
+            Integer isLogged = loginCheck.getInt(1);
             if (isLogged == 1) {
                 sendLoginFailureResponse("ALREADY_LOGGED_IN", creator);
                 return;
