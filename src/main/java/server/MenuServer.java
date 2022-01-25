@@ -6,6 +6,7 @@ import dbconn.jsonclasses.ChangeUsernameRequest;
 import dbconn.jsonclasses.LogOutRequest;
 import dbconn.jsonclasses.LoginCredentials;
 import dbconn.jsonclasses.RegisterCredentials;
+import dbconn.jsonclasses.UserStatisticsRequest;
 import game.*;
 import game.json.MobileMove;
 import lobby.json.JoinLobbyRequest;
@@ -164,6 +165,11 @@ public class MenuServer {
                         case CHANGE_USERNAME_REQUEST: {
                             UserAuthenticator.handleChangeUsernameRequest(MessageParser.fromJsonString(msgReceived, 
                                     ChangeUsernameRequest.class), sender);
+                            break;
+                        }
+                        case USER_STATISTICS_REQUEST: {
+                            UserAuthenticator.handleGetStatisticsRequest(MessageParser.fromJsonString(msgReceived, 
+                                    UserStatisticsRequest.class), sender);
                             break;
                         }
                         case LOG_OUT_REQUEST: {
