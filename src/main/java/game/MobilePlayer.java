@@ -97,6 +97,7 @@ public class MobilePlayer extends AbstractPlayer {
     @Override
     public MoveValidation makeMove(Move move, AbstractGame game) {
         Coordinates position = move.getCoords();
+        coords = move.getCoords();
         if (speedBan) { // must stay in place for a set amount of time
             if (position.distanceTo(speedBanCoords) > OsmService.BAN_RADIUS) {
                 setBanTimestamp(move.getTimestamp());
