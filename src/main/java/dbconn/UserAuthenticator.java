@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class UserAuthenticator {
         UserStatisticsRequest request = msg.content;
         
         CallableStatement cStatement;
+        Connection dbconn = DBConnection.getConnection();
         try
         {
             int soloWR = -1;
@@ -63,25 +65,25 @@ public class UserAuthenticator {
             int teamPlace = -1;
             List<MapStatistics> maps = new ArrayList<>();
             ResultSet rs;
-            cStatement = DBConnection.getConnection().prepareCall(soloWRQuery);
+            cStatement = dbconn.prepareCall(soloWRQuery);
             cStatement.setString(1, request.getEmail());
             rs = cStatement.executeQuery();
             rs.next();
             soloWR = rs.getInt(1);
             
-            cStatement = DBConnection.getConnection().prepareCall(teamWRQuery);
+            cStatement = dbconn.prepareCall(teamWRQuery);
             cStatement.setString(1, request.getEmail());
             rs = cStatement.executeQuery();
             rs.next();
             teamWR = rs.getInt(1);
             
-            cStatement = DBConnection.getConnection().prepareCall(soloPlaceQuery);
+            cStatement = dbconn.prepareCall(soloPlaceQuery);
             cStatement.setString(1, request.getEmail());
             rs = cStatement.executeQuery();
             rs.next();
             soloPlace = rs.getInt(1);
             
-            cStatement = DBConnection.getConnection().prepareCall(teamPlaceQuery);
+            cStatement = dbconn.prepareCall(teamPlaceQuery);
             cStatement.setString(1, request.getEmail());
             rs = cStatement.executeQuery();
             rs.next();
@@ -91,13 +93,13 @@ public class UserAuthenticator {
             {
                 int placeOnMap = -1;
                 int wrOnMap = -1;
-                cStatement = DBConnection.getConnection().prepareCall(placeOnMapQuery);
+                cStatement = dbconn.prepareCall(placeOnMapQuery);
                 cStatement.setString(1, request.getEmail());
                 cStatement.setString(2, map.toString());
                 rs = cStatement.executeQuery();
                 rs.next();
                 placeOnMap = rs.getInt(1);
-                cStatement = DBConnection.getConnection().prepareCall(winsOnMapQuery);
+                cStatement = dbconn.prepareCall(winsOnMapQuery);
                 cStatement.setString(1, request.getEmail());
                 cStatement.setString(2, map.toString());
                 rs = cStatement.executeQuery();
