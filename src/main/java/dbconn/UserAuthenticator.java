@@ -1,11 +1,15 @@
 package dbconn;
 
 import dbconn.jsonclasses.LoginCredentials;
+import dbconn.jsonclasses.MapStatistics;
 import dbconn.jsonclasses.AuthenticationResponseData;
 import dbconn.jsonclasses.ChangePasswordRequest;
 import dbconn.jsonclasses.ChangeUsernameRequest;
 import dbconn.jsonclasses.LogOutRequest;
 import dbconn.jsonclasses.RegisterCredentials;
+import dbconn.jsonclasses.UserStatisticsRequest;
+import dbconn.jsonclasses.UserStatisticsResponse;
+import game.GameMap;
 import game.GamePlatform;
 import game.User;
 import messages.Message;
@@ -17,8 +21,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.CallableStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 public class UserAuthenticator {
     
@@ -29,6 +36,12 @@ public class UserAuthenticator {
     private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
     private static final String changePasswordQuery = "{call Change_Pass(?, ?, ?, ?)}";
     private static final String changeUsernameQuery = "{call Change_Nick(?, ?, ?, ?)}";
+    private static final String soloWRQuery = "{call Your_place(?)}";
+    private static final String teamWRQuery = "{call Your_win(?)}";
+    private static final String soloPlaceQuery = "{call Higher_place(?)}";
+    private static final String teamPlaceQuery = "{call More_wins(?)}";
+    private static final String placeOnMapQuery = "{call Place_on_map(?, ?)}";
+    private static final String winsOnMapQuery = "{call Wins_on_map(?, ?)}";
     private static final int USER_ALREADY_EXISTS_CODE = 15600;
     private static final int CHANGE_PASSWORD_OK = 0;
     private static final int CHANGE_PASSWORD_WRONG_CREDENTIALS = 100;
@@ -37,6 +50,72 @@ public class UserAuthenticator {
     private static final int CHANGE_USERNAME_WRONG_CREDENTIALS = 100;
     private static final int CHANGE_USERNAME_TAKEN = 1000;
     private static final Logger logger = Logger.getInstance();
+    
+    public static void handleGetStatisticsRequest(Message<UserStatisticsRequest> msg, User creator) {
+        UserStatisticsRequest request = msg.content;
+        
+        CallableStatement cStatement;
+        try
+        {
+            int soloWR = -1;
+            int teamWR = -1;
+            int soloPlace = -1;
+            int teamPlace = -1;
+            List<MapStatistics> maps = new ArrayList<>();
+            ResultSet rs;
+            cStatement = DBConnection.getConnection().prepareCall(soloWRQuery);
+            cStatement.setString(1, request.getEmail());
+            rs = cStatement.executeQuery();
+            rs.next();
+            soloWR = rs.getInt(1);
+            
+            cStatement = DBConnection.getConnection().prepareCall(teamWRQuery);
+            cStatement.setString(1, request.getEmail());
+            rs = cStatement.executeQuery();
+            rs.next();
+            teamWR = rs.getInt(1);
+            
+            cStatement = DBConnection.getConnection().prepareCall(soloPlaceQuery);
+            cStatement.setString(1, request.getEmail());
+            rs = cStatement.executeQuery();
+            rs.next();
+            soloPlace = rs.getInt(1);
+            
+            cStatement = DBConnection.getConnection().prepareCall(teamPlaceQuery);
+            cStatement.setString(1, request.getEmail());
+            rs = cStatement.executeQuery();
+            rs.next();
+            teamPlace = rs.getInt(1);
+
+            for (GameMap map : GameMap.values())
+            {
+                int placeOnMap = -1;
+                int wrOnMap = -1;
+                cStatement = DBConnection.getConnection().prepareCall(placeOnMapQuery);
+                cStatement.setString(1, request.getEmail());
+                cStatement.setString(2, map.toString());
+                rs = cStatement.executeQuery();
+                rs.next();
+                placeOnMap = rs.getInt(1);
+                cStatement = DBConnection.getConnection().prepareCall(winsOnMapQuery);
+                cStatement.setString(1, request.getEmail());
+                cStatement.setString(2, map.toString());
+                rs = cStatement.executeQuery();
+                //uncomment this when db is fixed
+//                rs.next();
+//                wrOnMap = rs.getInt(1);
+                maps.add(new MapStatistics(map.ordinal(), placeOnMap, wrOnMap));
+            }
+            UserStatisticsResponse response = new UserStatisticsResponse(maps, soloPlace, soloWR, teamPlace, teamWR);
+            Message<UserStatisticsResponse> respMsg = new Message<>(MessageType.USER_STATISTICS_RESPONSE, response);
+            creator.sendMessage(MessageParser.toJsonString(respMsg));
+        } 
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        System.out.println(GameMap.OLD_TOWN.toString());
+    }
 
     public static void handleChangeUsernameRequest(Message<ChangeUsernameRequest> msg, User creator) {
         ChangeUsernameRequest request = msg.content;
