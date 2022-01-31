@@ -255,7 +255,7 @@ class LobbyManagerTest extends AbstractCommunicationTest {
         String expected4 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":" + (lobbyCounter - 2) +",\"lobby_name\":\"user1's lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
-                "\"teams\":{\"team1\":[\"user1\",\"user2\"],\"team2\":[]}}}";
+                "\"teams\":{\"team1\":[\"user1\"],\"team2\":[\"user2\"]}}}";
         try {
             String response1 = client2.queue.take();
             assertEquals(expected1, response1);
@@ -330,7 +330,24 @@ class LobbyManagerTest extends AbstractCommunicationTest {
 
     @Test
     @Order(7)
-    void changeTeam_ShouldFail() {
+    void changeTeamWrongNumberOfPlayers_ShouldFail() {
+        Message<Integer> msg = new Message<>(MessageType.CHANGE_TEAM_REQUEST, 1);
+        msg.clientId = client2.id;
+        client2.sendMsg(gson.toJson(msg));
+
+        String expected1 = "{\"header\":\"CHANGE_TEAM_RESPONSE\",\"content\":false}";
+
+        try {
+            String response1 = client2.queue.take();
+            assertEquals(expected1, response1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    @Order(7)
+    void changeTeamWrongTeamId_ShouldFail() {
         Message<Integer> msg = new Message<>(MessageType.CHANGE_TEAM_REQUEST, 0);
         msg.clientId = client2.id;
         client2.sendMsg(gson.toJson(msg));

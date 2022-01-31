@@ -106,7 +106,7 @@ public class LobbyDisconnectTest extends AbstractCommunicationTest {
         String expected4 = "{\"header\":\"LOBBY_STATUS_UPDATE\",\"content\":{\"lobby_id\":0,\"lobby_name\":\"user1's lobby\"," +
                 "\"gametype\":\"team\",\"map\":1,\"curr_players\":2,\"players_amount\":2,\"endgame_cond\":1," +
                 "\"web_speed\":3.0,\"mobile_max_speed\":5.0,\"dwarves_amount\":4,\"ready_players\":0," +
-                "\"teams\":{\"team1\":[\"user1\",\"user2\"],\"team2\":[]}}}";
+                "\"teams\":{\"team1\":[\"user1\"],\"team2\":[\"user2\"]}}}";
         try {
             String response1 = client2.queue.take();
             assertEquals(expected1, response1);
