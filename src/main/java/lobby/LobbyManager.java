@@ -87,6 +87,16 @@ public class LobbyManager {
             return;
         }
 
+        int otherTeam = 3 - teamId;
+        // prevent player from switching team, if he's the last player
+        // in the team (unless there is only one player in lobby)
+        if (lobby.getTeams().get(otherTeam).contains(player) &&
+                lobby.getTeams().get(otherTeam).size() == 1 &&
+                lobby.getTeams().get(teamId).size() > 0) {
+            player.sendMessage(MessageParser.toJsonString(msg));
+            return;
+        }
+
         lobby.removePlayerFromTeam(player);
         lobby.getTeams().computeIfAbsent(teamId, k -> new ArrayList<>());
         if (!lobby.getTeams().get(teamId).contains(player)) {
@@ -250,6 +260,7 @@ public class LobbyManager {
                 return;
             }
             checkCreator(player, lobby);
+
             addPlayerToTeam(player, teamId, lobby);
         }
 
@@ -262,6 +273,18 @@ public class LobbyManager {
 
     private void addPlayerToTeam(User player, int teamId, Lobby lobby) {
         lobby.getTeams().computeIfAbsent(teamId, k -> new ArrayList<>());
+
+        // In team game, if number of players >= 2,
+        // both teams should be non-empty
+        if (lobby.getType() == GameType.TEAM_GAME) {
+            int otherTeam = 3 - teamId;
+            lobby.getTeams().computeIfAbsent(otherTeam, k -> new ArrayList<>());
+            if (lobby.getTeams().get(otherTeam).size() == 0 &&
+                    lobby.getTeams().get(teamId).size() > 0) {
+                teamId = otherTeam;
+            }
+        }
+
         if (!lobby.getTeams().get(teamId).contains(player)) {
             lobby.getTeams().get(teamId).add(player);
         }

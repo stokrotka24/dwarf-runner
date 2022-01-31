@@ -7,7 +7,7 @@ import java.util.Map;
 
 public abstract class AbstractGame {
 
-    private int id;
+    private final int id;
     private final GameMap gameMap;
     private final OsmService osmService;
     private final List<AbstractPlayer> players;
