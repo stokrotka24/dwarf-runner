@@ -32,7 +32,7 @@ public class UserAuthenticator {
     
     private static final String loginQuery = "{call LoginIn(?, ?, ?)}";
     private static final String loginStatusOn = "{call Log_in(?)}";
-    private static final String loginCheck = "{?= call Is_logged(?)}";
+    private static final String loginCheck = "{?= call Is_logged3(?)}";
     private static final String loginStatusOff = "{call Log_out(?)}";
     private static final String registerQuery = "{call Register(?, ?, ?, ?)}";
     private static final String changePasswordQuery = "{call Change_Pass(?, ?, ?, ?)}";
@@ -363,7 +363,7 @@ public class UserAuthenticator {
 
     public static void handleLogOutRequest(Message<LogOutRequest> msg, User sender) {
         LogOutRequest request = msg.content;
-        if (request == null || request.getEmail() == null || request.getEmail() != sender.getEmail()) {
+        if (request == null || request.getEmail() == null) {
             sendLoginFailureResponse("DATA_LOST", sender);
             return;
         }
